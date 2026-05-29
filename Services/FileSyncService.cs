@@ -7,6 +7,11 @@ namespace ServerLauncher.Services;
 
 public sealed class FileSyncService
 {
+    public const string StatusCurrent = "Актуален";
+    public const string StatusMissing = "Отсутствует";
+    public const string StatusWrongSize = "Неверный размер";
+    public const string StatusCorrupt = "Поврежден";
+
     private readonly HttpClient _httpClient = new();
 
     public async Task<IReadOnlyList<FileStatusItem>> VerifyAndRepairAsync(
@@ -29,7 +34,7 @@ public sealed class FileSyncService
             var fullPath = ResolveInsideInstallDirectory(settings.InstallDirectory, file.Path);
             var status = await CheckFileAsync(fullPath, file, cancellationToken);
 
-            if (status != "Актуален" && downloadMissingFiles)
+            if (status != StatusCurrent && downloadMissingFiles)
             {
                 await DownloadFileAsync(file, fullPath, progress, cancellationToken);
                 status = await CheckFileAsync(fullPath, file, cancellationToken);
@@ -71,13 +76,13 @@ public sealed class FileSyncService
     {
         if (!File.Exists(fullPath))
         {
-            return "Отсутствует";
+            return StatusMissing;
         }
 
         var info = new FileInfo(fullPath);
         if (file.Size > 0 && info.Length != file.Size)
         {
-            return "Неверный размер";
+            return StatusWrongSize;
         }
 
         if (HasRealHash(file.Sha256))
@@ -85,11 +90,11 @@ public sealed class FileSyncService
             var actualHash = await ComputeSha256Async(fullPath, cancellationToken);
             if (!string.Equals(actualHash, file.Sha256, StringComparison.OrdinalIgnoreCase))
             {
-                return "Поврежден";
+                return StatusCorrupt;
             }
         }
 
-        return "Актуален";
+        return StatusCurrent;
     }
 
     private async Task DownloadFileAsync(
@@ -107,10 +112,29 @@ public sealed class FileSyncService
         var tempPath = destinationPath + ".download";
         progress?.Report($"Скачивание: {file.Path}");
 
-        await using (var source = await _httpClient.GetStreamAsync(file.Url, cancellationToken))
-        await using (var target = File.Create(tempPath))
+        try
         {
+            await using var source = await _httpClient.GetStreamAsync(file.Url, cancellationToken);
+            await using var target = File.Create(tempPath);
             await source.CopyToAsync(target, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+
+            throw;
+        }
+        catch (Exception ex)
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+
+            throw new InvalidOperationException($"Не удалось скачать файл {file.Path}: {file.Url}. {ex.Message}", ex);
         }
 
         if (HasRealHash(file.Sha256))

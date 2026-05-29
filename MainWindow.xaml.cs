@@ -18,12 +18,15 @@ public partial class MainWindow : Window
     private readonly ManifestService _manifestService = new();
     private readonly FileSyncService _fileSyncService = new();
     private readonly GameLaunchService _gameLaunchService = new();
+    private readonly BugReportService _bugReportService = new();
+    private readonly LauncherUpdateService _launcherUpdateService = new();
     private readonly ObservableCollection<FileStatusItem> _fileStatuses = [];
 
     private LauncherSettings _settings = new();
     private LauncherManifest? _manifest;
     private CancellationTokenSource? _operationCts;
     private bool _visualControlsReady;
+    private bool _gameFilesReady;
 
     public MainWindow()
     {
@@ -41,19 +44,77 @@ public partial class MainWindow : Window
             _settings = await _settingsService.LoadAsync();
             BindSettingsToUi();
             ApplyVisualSettings();
-            await LoadManifestAsync();
+            if (await CheckLauncherUpdateAsync())
+            {
+                return;
+            }
+
+            await LoadManifestAsync(repairMissingGameFiles: true);
         });
     }
 
-    private async Task LoadManifestAsync()
+    private async Task<bool> CheckLauncherUpdateAsync()
+    {
+        try
+        {
+            var progress = new Progress<string>(message => ProgressText.Text = message);
+            var updating = await _launcherUpdateService.CheckAndApplyUpdateAsync(_settings, progress, CurrentToken());
+            if (updating)
+            {
+                ProgressText.Text = "Обновление скачано. Перезапускаю лаунчер...";
+                System.Windows.Application.Current.Shutdown();
+                return true;
+            }
+        }
+        catch (Exception ex)
+        {
+            await _bugReportService.HandleAsync(ex, "Launcher self-update", _settings, _manifest, openEmailDraft: false);
+            ProgressText.Text = "Автообновление недоступно, продолжаю запуск.";
+        }
+
+        return false;
+    }
+
+    private async Task LoadManifestAsync(bool repairMissingGameFiles = true)
     {
         SetBusy(true, "Загружаю manifest.json...");
         _manifest = await _manifestService.LoadAsync(_settings.ManifestUrl, CurrentToken());
         RenderManifest();
-        await VerifyFilesAsync(downloadMissingFiles: false);
+        await EnsureGameFilesReadyAsync(repairMissingGameFiles);
     }
 
-    private async Task VerifyFilesAsync(bool downloadMissingFiles)
+    private async Task EnsureGameFilesReadyAsync(bool repairMissingFiles)
+    {
+        var statuses = await VerifyFilesAsync(downloadMissingFiles: false);
+        var outdated = CountOutdated(statuses);
+        if (outdated == 0)
+        {
+            _gameFilesReady = true;
+            UpdateLaunchReadinessStatus();
+            return;
+        }
+
+        _gameFilesReady = false;
+        if (!repairMissingFiles)
+        {
+            return;
+        }
+
+        MainStatusText.Text = $"Не хватает файлов для запуска: {outdated}. Докачиваю сборку...";
+        SidebarStatusText.Text = "Докачиваю сборку";
+        statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+        outdated = CountOutdated(statuses);
+        _gameFilesReady = outdated == 0;
+
+        if (!_gameFilesReady)
+        {
+            throw new InvalidOperationException($"Не удалось подготовить сборку: {outdated} файлов не прошли проверку.");
+        }
+
+        UpdateLaunchReadinessStatus();
+    }
+
+    private async Task<IReadOnlyList<FileStatusItem>> VerifyFilesAsync(bool downloadMissingFiles)
     {
         if (_manifest is null)
         {
@@ -70,11 +131,15 @@ public partial class MainWindow : Window
             _fileStatuses.Add(item);
         }
 
-        var outdated = statuses.Count(item => item.Status != "Актуален");
-        MainStatusText.Text = outdated == 0
-            ? "Сборка актуальна. Пользовательские моды не тронуты."
-            : $"Нужно обновить файлов: {outdated}. Нажмите \"Проверить файлы\" для восстановления.";
+        var outdated = CountOutdated(statuses);
+        MainStatusText.Text = outdated switch
+        {
+            0 => "Сборка готова к запуску. Пользовательские моды не тронуты.",
+            _ when downloadMissingFiles => $"После восстановления осталось проблемных файлов: {outdated}.",
+            _ => $"Не хватает файлов для запуска: {outdated}. Лаунчер докачает их автоматически."
+        };
         SidebarStatusText.Text = outdated == 0 ? "Готово" : "Есть обновления";
+        return statuses;
     }
 
     private async Task SaveSettingsFromUiAsync()
@@ -85,6 +150,11 @@ public partial class MainWindow : Window
         _settings.JavaPath = JavaPathBox.Text.Trim();
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
+        _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
+        _settings.BugReportEmail = BugReportEmailBox.Text.Trim();
+        _settings.BugReportEndpoint = BugReportEndpointBox.Text.Trim();
+        _settings.OpenEmailOnError = OpenEmailOnErrorCheckBox.IsChecked == true;
+        _settings.UpdateManifestUrl = UpdateManifestUrlBox.Text.Trim();
         _settings.VisualTheme = SelectedComboValue(ThemeBox, _settings.VisualTheme);
         _settings.AccentColor = SelectedComboValue(AccentBox, _settings.AccentColor);
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
@@ -109,6 +179,11 @@ public partial class MainWindow : Window
         JavaPathBox.Text = _settings.JavaPath;
         PlayerNameBox.Text = _settings.PlayerName;
         ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
+        AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
+        BugReportEmailBox.Text = _settings.BugReportEmail;
+        BugReportEndpointBox.Text = _settings.BugReportEndpoint;
+        OpenEmailOnErrorCheckBox.IsChecked = _settings.OpenEmailOnError;
+        UpdateManifestUrlBox.Text = _settings.UpdateManifestUrl;
         SelectComboValue(ThemeBox, _settings.VisualTheme);
         SelectComboValue(AccentBox, _settings.AccentColor);
         DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
@@ -187,10 +262,23 @@ public partial class MainWindow : Window
             await SaveSettingsFromUiAsync();
             if (_manifest is null)
             {
-                await LoadManifestAsync();
+                await LoadManifestAsync(repairMissingGameFiles: true);
             }
 
-            await VerifyFilesAsync(downloadMissingFiles: true);
+            var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+            var outdated = CountOutdated(statuses);
+            _gameFilesReady = outdated == 0;
+            if (!_gameFilesReady)
+            {
+                throw new InvalidOperationException($"Minecraft не готов к запуску: {outdated} файлов отсутствуют или повреждены.");
+            }
+
+            var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings);
+            if (launchIssues.Count > 0)
+            {
+                throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", launchIssues.Take(4)));
+            }
+
             SetBusy(true, "Запускаю Minecraft...");
             _gameLaunchService.Start(_manifest!, _settings);
             MainStatusText.Text = "Minecraft запущен.";
@@ -205,10 +293,11 @@ public partial class MainWindow : Window
             await SaveSettingsFromUiAsync();
             if (_manifest is null)
             {
-                await LoadManifestAsync();
+                await LoadManifestAsync(repairMissingGameFiles: false);
             }
 
-            await VerifyFilesAsync(downloadMissingFiles: true);
+            var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+            _gameFilesReady = CountOutdated(statuses) == 0;
         });
     }
 
@@ -217,7 +306,7 @@ public partial class MainWindow : Window
         await RunGuardedAsync(async () =>
         {
             await SaveSettingsFromUiAsync();
-            await LoadManifestAsync();
+            await LoadManifestAsync(repairMissingGameFiles: true);
         });
     }
 
@@ -228,7 +317,7 @@ public partial class MainWindow : Window
             await SaveSettingsFromUiAsync();
             MainStatusText.Text = "Настройки сохранены локально.";
             SidebarStatusText.Text = "Настройки сохранены";
-            await LoadManifestAsync();
+            await LoadManifestAsync(repairMissingGameFiles: true);
         });
     }
 
@@ -399,9 +488,20 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
+            var reportPath = await _bugReportService.HandleAsync(
+                ex,
+                "Launcher operation",
+                _settings,
+                _manifest,
+                openEmailDraft: true,
+                CurrentToken());
             MainStatusText.Text = ex.Message;
             SidebarStatusText.Text = "Ошибка";
-            System.Windows.MessageBox.Show(ex.Message, "Ошибка лаунчера", MessageBoxButton.OK, MessageBoxImage.Error);
+            System.Windows.MessageBox.Show(
+                $"{ex.Message}\n\nОтчет сохранен:\n{reportPath}\n\nТекст отчета также скопирован в буфер обмена.",
+                "Ошибка лаунчера",
+                MessageBoxButton.OK,
+                MessageBoxImage.Error);
         }
         finally
         {
@@ -412,6 +512,30 @@ public partial class MainWindow : Window
     private CancellationToken CurrentToken()
     {
         return _operationCts?.Token ?? CancellationToken.None;
+    }
+
+    private static int CountOutdated(IEnumerable<FileStatusItem> statuses)
+    {
+        return statuses.Count(item => item.Status != FileSyncService.StatusCurrent);
+    }
+
+    private void UpdateLaunchReadinessStatus()
+    {
+        if (!_gameFilesReady || _manifest is null)
+        {
+            return;
+        }
+
+        var launchIssues = _gameLaunchService.ValidateReady(_manifest, _settings);
+        if (launchIssues.Count == 0)
+        {
+            MainStatusText.Text = "Minecraft готов к запуску.";
+            SidebarStatusText.Text = "Готово";
+            return;
+        }
+
+        MainStatusText.Text = "Файлы скачаны, но запуск требует настройки: " + string.Join("; ", launchIssues.Take(3));
+        SidebarStatusText.Text = "Нужна настройка";
     }
 
     private void SetBusy(bool busy, string message)

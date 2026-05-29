@@ -4,6 +4,11 @@ public sealed class LauncherSettings
 {
     public string ManifestUrl { get; set; } = "https://raw.githubusercontent.com/wawgame123/Minecraft/main/manifest.json";
     public string InstallDirectory { get; set; } = DefaultInstallDirectory();
+    public bool EnableAutoUpdate { get; set; } = true;
+    public string UpdateManifestUrl { get; set; } = "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/update.json";
+    public string BugReportEmail { get; set; } = "tupikp37@gmail.com";
+    public string BugReportEndpoint { get; set; } = "";
+    public bool OpenEmailOnError { get; set; } = true;
     public bool EnableShaders { get; set; }
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";
@@ -18,6 +23,6 @@ public sealed class LauncherSettings
     public static string DefaultInstallDirectory()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        return System.IO.Path.Combine(appData, "ServerLauncher", "Game");
+        return System.IO.Path.Combine(appData, "Minivibe", "Game");
     }
 }

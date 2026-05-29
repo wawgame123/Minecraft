@@ -46,6 +46,13 @@ public sealed class ManifestService
             return File.OpenRead(uri.LocalPath);
         }
 
-        return await _httpClient.GetStreamAsync(manifestUrl, cancellationToken);
+        try
+        {
+            return await _httpClient.GetStreamAsync(manifestUrl, cancellationToken);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new InvalidOperationException($"Не удалось загрузить manifest.json: {manifestUrl}. {ex.Message}", ex);
+        }
     }
 }

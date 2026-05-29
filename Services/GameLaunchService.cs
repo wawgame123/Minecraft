@@ -6,12 +6,38 @@ namespace ServerLauncher.Services;
 
 public sealed class GameLaunchService
 {
+    public IReadOnlyList<string> ValidateReady(LauncherManifest manifest, LauncherSettings settings)
+    {
+        var issues = new List<string>();
+
+        if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
+        {
+            issues.Add("Java не найдена. Укажите java.exe в настройках или добавьте Java в PATH.");
+        }
+
+        if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
+        {
+            issues.Add("В manifest.json не заполнен launch.mainClass.");
+        }
+
+        foreach (var relativePath in manifest.Launch.Classpath.Where(path => !string.IsNullOrWhiteSpace(path)))
+        {
+            var fullPath = Path.Combine(settings.InstallDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath))
+            {
+                issues.Add($"Не найден файл classpath: {relativePath}");
+            }
+        }
+
+        return issues;
+    }
+
     public Process Start(LauncherManifest manifest, LauncherSettings settings)
     {
-        var javaPath = ResolveJava(settings);
+        var javaPath = TryResolveJava(settings);
         if (string.IsNullOrWhiteSpace(javaPath))
         {
-            throw new InvalidOperationException("Java не найдена. Укажите путь к java.exe в настройках.");
+            throw new InvalidOperationException("Java не найдена. Укажите путь к java.exe в настройках или добавьте Java в PATH.");
         }
 
         if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
@@ -33,7 +59,7 @@ public sealed class GameLaunchService
             ?? throw new InvalidOperationException("Не удалось запустить процесс Minecraft.");
     }
 
-    private static string ResolveJava(LauncherSettings settings)
+    private static string? TryResolveJava(LauncherSettings settings)
     {
         if (!string.IsNullOrWhiteSpace(settings.JavaPath) && File.Exists(settings.JavaPath))
         {
@@ -50,7 +76,34 @@ public sealed class GameLaunchService
             }
         }
 
-        return "java";
+        return FindOnPath("java.exe") ?? FindOnPath("java");
+    }
+
+    private static string? FindOnPath(string fileName)
+    {
+        var pathVariable = Environment.GetEnvironmentVariable("PATH");
+        if (string.IsNullOrWhiteSpace(pathVariable))
+        {
+            return null;
+        }
+
+        foreach (var directory in pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        {
+            try
+            {
+                var candidate = Path.Combine(directory.Trim('"'), fileName);
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+            catch
+            {
+                // Ignore malformed PATH entries.
+            }
+        }
+
+        return null;
     }
 
     private static string BuildArguments(LauncherManifest manifest, LauncherSettings settings)

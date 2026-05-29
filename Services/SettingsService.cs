@@ -13,7 +13,7 @@ public sealed class SettingsService
     public SettingsService()
     {
         var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-        var directory = Path.Combine(appData, "ServerLauncher");
+        var directory = Path.Combine(appData, "Minivibe");
         Directory.CreateDirectory(directory);
         SettingsPath = Path.Combine(directory, "settings.json");
     }
