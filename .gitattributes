@@ -1,0 +1,11 @@
+*.jar binary
+*.zip binary
+*.png binary
+*.dll binary
+*.exe binary
+*.pdb binary
+*.json text eol=crlf
+*.cs text eol=crlf
+*.xaml text eol=crlf
+*.md text eol=crlf
+*.ps1 text eol=crlf

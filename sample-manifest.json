@@ -1,0 +1,58 @@
+{
+  "serverName": "My Minecraft Server",
+  "packVersion": "1.0.0",
+  "minecraftVersion": "1.20.1",
+  "loader": "forge",
+  "loaderVersion": "47.4.0",
+  "blueMapUrl": "https://map.example.com",
+  "requiredFiles": [
+    {
+      "path": "mods/create.jar",
+      "url": "https://example.com/files/create.jar",
+      "sha256": "HASH_HERE",
+      "size": 12345678,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "config/create-common.toml",
+      "url": "https://example.com/files/create-common.toml",
+      "sha256": "HASH_HERE",
+      "size": 12345,
+      "category": "config",
+      "required": true
+    }
+  ],
+  "optionalShaders": [
+    {
+      "path": "shaderpacks/complementary.zip",
+      "url": "https://example.com/files/complementary.zip",
+      "sha256": "HASH_HERE",
+      "size": 98765432,
+      "category": "shaderpack",
+      "required": false
+    }
+  ],
+  "news": [
+    "Добро пожаловать на сервер!",
+    "Перед входом лаунчер проверит только обязательные файлы."
+  ],
+  "changelog": [
+    "Добавлен Create",
+    "Обновлены конфиги сервера",
+    "Добавлена поддержка BlueMap"
+  ],
+  "launch": {
+    "mainClass": "",
+    "classpath": [],
+    "jvmArgs": [],
+    "gameArgs": [
+      "--username",
+      "${player_name}",
+      "--version",
+      "${version_name}",
+      "--gameDir",
+      "${game_directory}"
+    ]
+  }
+}
