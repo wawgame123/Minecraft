@@ -12,7 +12,7 @@ public sealed class LauncherSettings
     public bool EnableShaders { get; set; }
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";
-    public string PlayerName { get; set; } = "wawgame";
+    public string PlayerName { get; set; } = "";
     public string ExtraLaunchArguments { get; set; } = "";
     public string VisualTheme { get; set; } = "Obsidian";
     public string AccentColor { get; set; } = "Crimson";

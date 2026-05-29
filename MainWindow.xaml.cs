@@ -14,6 +14,8 @@ namespace ServerLauncher;
 
 public partial class MainWindow : Window
 {
+    private const string PlayerNamePlaceholder = "Введите ник";
+
     private readonly SettingsService _settingsService = new();
     private readonly ManifestService _manifestService = new();
     private readonly FileSyncService _fileSyncService = new();
@@ -189,7 +191,7 @@ public partial class MainWindow : Window
         DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
         CompactModeCheckBox.IsChecked = _settings.CompactMode;
         PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
-        PlayerPreviewText.Text = string.IsNullOrWhiteSpace(_settings.PlayerName) ? "wawgame" : _settings.PlayerName;
+        UpdatePlayerPreview();
     }
 
     private void RenderManifest()
@@ -207,7 +209,7 @@ public partial class MainWindow : Window
         InstallInfoText.Text = $"Папка игры: {_settings.InstallDirectory}";
         PackPreviewText.Text = $"{_manifest.PackVersion} / Minecraft {_manifest.MinecraftVersion}";
         LoaderPreviewText.Text = $"{_manifest.Loader} {_manifest.LoaderVersion}";
-        PlayerPreviewText.Text = string.IsNullOrWhiteSpace(_settings.PlayerName) ? "wawgame" : _settings.PlayerName;
+        UpdatePlayerPreview();
         SidebarStatusText.Text = "Manifest загружен";
 
         var changelog = _manifest.Changelog.Count > 0
@@ -348,6 +350,11 @@ public partial class MainWindow : Window
         {
             JavaPathBox.Text = dialog.FileName;
         }
+    }
+
+    private void PlayerNameBox_TextChanged(object sender, TextChangedEventArgs e)
+    {
+        UpdatePlayerPreview();
     }
 
     private void OpenInstallDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -536,6 +543,12 @@ public partial class MainWindow : Window
 
         MainStatusText.Text = "Файлы скачаны, но запуск требует настройки: " + string.Join("; ", launchIssues.Take(3));
         SidebarStatusText.Text = "Нужна настройка";
+    }
+
+    private void UpdatePlayerPreview()
+    {
+        var playerName = PlayerNameBox.Text.Trim();
+        PlayerPreviewText.Text = string.IsNullOrWhiteSpace(playerName) ? PlayerNamePlaceholder : playerName;
     }
 
     private void SetBusy(bool busy, string message)

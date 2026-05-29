@@ -1,9 +1,9 @@
 ﻿{
-    "version":  "0.1.0",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.0-framework.zip",
-    "sha256":  "8ed3e43d6c9f47a25db1bed09e0dcd08f2b16a521df3c505aa673d1959004bbc",
+    "version":  "0.1.1",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.1-framework.zip",
+    "sha256":  "b2a931dd76944a4282841d59bc7e92905e0481788ea211598fd9ea70eb4cc837",
     "mandatory":  false,
     "notes":  [
-                  "Launcher visual polish, icon, error reports and self-update support."
+                  "Custom player names, launch readiness checks, icon, reports and self-update support."
               ]
 }

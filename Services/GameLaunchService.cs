@@ -10,6 +10,15 @@ public sealed class GameLaunchService
     {
         var issues = new List<string>();
 
+        if (string.IsNullOrWhiteSpace(settings.PlayerName))
+        {
+            issues.Add("Введите ник игрока в настройках.");
+        }
+        else if (!IsValidMinecraftName(settings.PlayerName))
+        {
+            issues.Add("Ник должен быть 3-16 символов: латиница, цифры или _.");
+        }
+
         if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
         {
             issues.Add("Java не найдена. Укажите java.exe в настройках или добавьте Java в PATH.");
@@ -34,22 +43,17 @@ public sealed class GameLaunchService
 
     public Process Start(LauncherManifest manifest, LauncherSettings settings)
     {
+        var issues = ValidateReady(manifest, settings);
+        if (issues.Count > 0)
+        {
+            throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", issues.Take(4)));
+        }
+
         var javaPath = TryResolveJava(settings);
-        if (string.IsNullOrWhiteSpace(javaPath))
-        {
-            throw new InvalidOperationException("Java не найдена. Укажите путь к java.exe в настройках или добавьте Java в PATH.");
-        }
-
-        if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
-        {
-            throw new InvalidOperationException(
-                "Файлы проверены, но запуск Minecraft не настроен. Добавьте в manifest.json блок launch с mainClass, classpath, jvmArgs и gameArgs.");
-        }
-
         var args = BuildArguments(manifest, settings);
         var startInfo = new ProcessStartInfo
         {
-            FileName = javaPath,
+            FileName = javaPath!,
             Arguments = args,
             WorkingDirectory = settings.InstallDirectory,
             UseShellExecute = false
@@ -57,6 +61,13 @@ public sealed class GameLaunchService
 
         return Process.Start(startInfo)
             ?? throw new InvalidOperationException("Не удалось запустить процесс Minecraft.");
+    }
+
+    private static bool IsValidMinecraftName(string playerName)
+    {
+        var trimmed = playerName.Trim();
+        return trimmed.Length is >= 3 and <= 16
+            && trimmed.All(character => char.IsAsciiLetterOrDigit(character) || character == '_');
     }
 
     private static string? TryResolveJava(LauncherSettings settings)

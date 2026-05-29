@@ -72,7 +72,7 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        "Launcher visual polish, icon, error reports and self-update support."
+        "Custom player names, launch readiness checks, icon, reports and self-update support."
     )
 }
 

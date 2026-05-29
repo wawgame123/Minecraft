@@ -233,7 +233,7 @@
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock Text="Профиль" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                <TextBlock x:Name="PlayerPreviewText" Text="wawgame" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,14"/>
+                <TextBlock x:Name="PlayerPreviewText" Text="Введите ник" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,14"/>
                 <TextBlock Text="Сборка" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
                 <TextBlock x:Name="PackPreviewText" Text="ожидает manifest" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
                 <TextBlock Text="Loader" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
@@ -331,7 +331,7 @@
                 <TextBox x:Name="RamBox"/>
 
                 <TextBlock Text="Имя игрока" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="PlayerNameBox"/>
+                <TextBox x:Name="PlayerNameBox" TextChanged="PlayerNameBox_TextChanged"/>
 
                 <TextBlock Text="Путь к java.exe" Style="{StaticResource LabelStyle}"/>
                 <DockPanel>
