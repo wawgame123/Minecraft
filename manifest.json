@@ -1,5 +1,5 @@
 ﻿{
-    "serverName":  "WawGame Minecraft",
+    "serverName":  "minivibe",
     "packVersion":  "1.0.0",
     "minecraftVersion":  "1.21.1",
     "loader":  "neoforge",
@@ -12178,7 +12178,7 @@
                             }
                         ],
     "news":  [
-                 "WawGame Minecraft pack is ready for launcher sync.",
+                 "minivibe pack is ready for launcher sync.",
                  "The launcher checks only required files and does not delete user mods."
              ],
     "changelog":  [

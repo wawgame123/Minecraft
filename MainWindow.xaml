@@ -1,189 +1,385 @@
 <Window x:Class="ServerLauncher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Server Launcher"
-        Width="1120"
-        Height="720"
-        MinWidth="940"
-        MinHeight="620"
-        Background="#F4F7F5">
+        Title="minivibe"
+        Width="1180"
+        Height="760"
+        MinWidth="980"
+        MinHeight="640"
+        FontFamily="Segoe UI"
+        Background="{DynamicResource AppBackgroundBrush}"
+        Foreground="{DynamicResource TextBrush}">
   <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="MinHeight" Value="38"/>
+      <Setter Property="Padding" Value="16,8"/>
+      <Setter Property="Margin" Value="0,0,8,0"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Background" Value="{DynamicResource AccentBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="Button">
+            <Border x:Name="ButtonRoot"
+                    Background="{TemplateBinding Background}"
+                    BorderBrush="{TemplateBinding BorderBrush}"
+                    BorderThickness="{TemplateBinding BorderThickness}"
+                    CornerRadius="8"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="Center"
+                                VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsMouseOver" Value="True">
+                <Setter TargetName="ButtonRoot" Property="Opacity" Value="0.88"/>
+              </Trigger>
+              <Trigger Property="IsPressed" Value="True">
+                <Setter TargetName="ButtonRoot" Property="RenderTransform">
+                  <Setter.Value>
+                    <ScaleTransform ScaleX="0.98" ScaleY="0.98"/>
+                  </Setter.Value>
+                </Setter>
+                <Setter TargetName="ButtonRoot" Property="RenderTransformOrigin" Value="0.5,0.5"/>
+              </Trigger>
+              <Trigger Property="IsEnabled" Value="False">
+                <Setter TargetName="ButtonRoot" Property="Opacity" Value="0.45"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
+    <Style x:Key="SecondaryButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
     <Style x:Key="NavButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
       <Setter Property="HorizontalContentAlignment" Value="Left"/>
       <Setter Property="Margin" Value="0,0,0,8"/>
-      <Setter Property="Background" Value="#E6EFEA"/>
-      <Setter Property="Foreground" Value="#17201B"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="BorderThickness" Value="0"/>
+      <Setter Property="Padding" Value="14,10"/>
     </Style>
+
+    <Style x:Key="CardStyle" TargetType="Border">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius" Value="8"/>
+      <Setter Property="Padding" Value="18"/>
+    </Style>
+
     <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
       <Setter Property="FontSize" Value="26"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
-      <Setter Property="Foreground" Value="{StaticResource TextBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="Margin" Value="0,0,0,16"/>
     </Style>
+
     <Style x:Key="LabelStyle" TargetType="TextBlock">
-      <Setter Property="Foreground" Value="{StaticResource MutedBrush}"/>
-      <Setter Property="Margin" Value="0,12,0,4"/>
+      <Setter Property="Foreground" Value="{DynamicResource MutedBrush}"/>
+      <Setter Property="Margin" Value="0,12,0,5"/>
+    </Style>
+
+    <Style TargetType="TextBox">
+      <Setter Property="MinHeight" Value="36"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
+    <Style TargetType="ComboBox">
+      <Setter Property="MinHeight" Value="36"/>
+      <Setter Property="Padding" Value="8,5"/>
+      <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+
+    <Style TargetType="CheckBox">
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="Margin" Value="0,14,0,0"/>
+    </Style>
+
+    <Style TargetType="ListBox">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+    </Style>
+
+    <Style TargetType="ListView">
+      <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
     </Style>
   </Window.Resources>
 
-  <Grid>
-    <Grid.ColumnDefinitions>
-      <ColumnDefinition Width="230"/>
-      <ColumnDefinition Width="*"/>
-    </Grid.ColumnDefinitions>
+  <Grid x:Name="MainRoot" Background="{DynamicResource AppBackgroundBrush}">
+    <Grid x:Name="DynamicLayer" IsHitTestVisible="False" ClipToBounds="True">
+      <Rectangle Fill="{DynamicResource AtmosphereBrush}" Opacity="0.55"/>
+      <Rectangle x:Name="SignalLine"
+                 Width="420"
+                 Height="2"
+                 HorizontalAlignment="Left"
+                 VerticalAlignment="Top"
+                 Margin="0,86,0,0"
+                 Opacity="0.9">
+        <Rectangle.Fill>
+          <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+            <GradientStop Color="#00FFFFFF" Offset="0"/>
+            <GradientStop Color="#AAFFFFFF" Offset="0.5"/>
+            <GradientStop Color="#00FFFFFF" Offset="1"/>
+          </LinearGradientBrush>
+        </Rectangle.Fill>
+        <Rectangle.RenderTransform>
+          <TranslateTransform X="-460"/>
+        </Rectangle.RenderTransform>
+        <Rectangle.Triggers>
+          <EventTrigger RoutedEvent="Loaded">
+            <BeginStoryboard>
+              <Storyboard RepeatBehavior="Forever">
+                <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.X)"
+                                 From="-460"
+                                 To="1400"
+                                 Duration="0:0:7"/>
+                <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                 From="0.25"
+                                 To="0.95"
+                                 AutoReverse="True"
+                                 Duration="0:0:2.8"/>
+              </Storyboard>
+            </BeginStoryboard>
+          </EventTrigger>
+        </Rectangle.Triggers>
+      </Rectangle>
+    </Grid>
 
-    <Border Grid.Column="0" Background="#FFFFFF" BorderBrush="#D9E2DD" BorderThickness="0,0,1,0">
-      <DockPanel Margin="18">
-        <StackPanel DockPanel.Dock="Top">
-          <TextBlock Text="Minecraft" FontSize="24" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
-          <TextBlock Text="Server Launcher" Foreground="{StaticResource MutedBrush}" Margin="0,2,0,24"/>
+    <Grid Margin="22">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="250"/>
+        <ColumnDefinition Width="*"/>
+      </Grid.ColumnDefinitions>
 
-          <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Click="HomeNavButton_Click"/>
-          <Button x:Name="NewsNavButton" Content="Новости" Style="{StaticResource NavButtonStyle}" Click="NewsNavButton_Click"/>
-          <Button x:Name="ModsNavButton" Content="Моды" Style="{StaticResource NavButtonStyle}" Click="ModsNavButton_Click"/>
-          <Button x:Name="MapNavButton" Content="Карта" Style="{StaticResource NavButtonStyle}" Click="MapNavButton_Click"/>
-          <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click"/>
-        </StackPanel>
+      <Border Grid.Column="0"
+              Background="{DynamicResource SidebarBrush}"
+              BorderBrush="{DynamicResource BorderBrush}"
+              BorderThickness="1"
+              CornerRadius="8"
+              Padding="18">
+        <DockPanel>
+          <StackPanel DockPanel.Dock="Top">
+            <TextBlock Text="minivibe" FontSize="27" FontWeight="Black" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap"/>
+            <TextBlock Text="i'm Cruciffied" Foreground="{DynamicResource MutedBrush}" Margin="0,3,0,24"/>
 
-        <StackPanel DockPanel.Dock="Bottom">
-          <TextBlock Text="Статус" Foreground="{StaticResource MutedBrush}" Margin="0,0,0,4"/>
-          <TextBlock x:Name="SidebarStatusText" Text="Загрузка..." TextWrapping="Wrap" Foreground="{StaticResource TextBrush}"/>
-        </StackPanel>
-      </DockPanel>
-    </Border>
+            <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Click="HomeNavButton_Click"/>
+            <Button x:Name="NewsNavButton" Content="Новости" Style="{StaticResource NavButtonStyle}" Click="NewsNavButton_Click"/>
+            <Button x:Name="ModsNavButton" Content="Моды" Style="{StaticResource NavButtonStyle}" Click="ModsNavButton_Click"/>
+            <Button x:Name="MapNavButton" Content="Карта" Style="{StaticResource NavButtonStyle}" Click="MapNavButton_Click"/>
+            <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click"/>
+          </StackPanel>
 
-    <Grid Grid.Column="1" Margin="28">
-      <Grid.RowDefinitions>
-        <RowDefinition Height="*"/>
-        <RowDefinition Height="Auto"/>
-      </Grid.RowDefinitions>
+          <StackPanel DockPanel.Dock="Bottom">
+            <Border Background="{DynamicResource SurfaceAltBrush}" CornerRadius="8" Padding="12">
+              <StackPanel>
+                <TextBlock Text="Статус" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                <TextBlock x:Name="SidebarStatusText" Text="Загрузка..." TextWrapping="Wrap" Foreground="{DynamicResource TextBrush}" FontWeight="SemiBold" Margin="0,4,0,0"/>
+              </StackPanel>
+            </Border>
+          </StackPanel>
+        </DockPanel>
+      </Border>
 
-      <Grid x:Name="HomePanel">
+      <Grid x:Name="ContentShell" Grid.Column="1" Margin="26,0,0,0">
         <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="Auto"/>
           <RowDefinition Height="*"/>
+          <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <StackPanel>
-          <TextBlock x:Name="ServerNameText" Text="Minecraft Server" FontSize="36" FontWeight="Bold" Foreground="{StaticResource TextBrush}"/>
-          <TextBlock x:Name="ServerVersionText" Text="Manifest не загружен" FontSize="15" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,18"/>
-          <TextBlock x:Name="MainStatusText" Text="Укажите ссылку на manifest.json в настройках." FontSize="17" Foreground="{StaticResource TextBrush}" TextWrapping="Wrap"/>
-        </StackPanel>
+        <Grid x:Name="HomePanel">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,26,0,24">
-          <Button x:Name="PlayButton" Content="Играть" MinWidth="140" Click="PlayButton_Click"/>
-          <Button x:Name="RepairButton" Content="Проверить файлы" Background="#FFFFFF" Foreground="{StaticResource TextBrush}" BorderBrush="#C8D4CE" BorderThickness="1" Click="RepairButton_Click"/>
-          <Button x:Name="RefreshManifestButton" Content="Обновить manifest" Background="#FFFFFF" Foreground="{StaticResource TextBrush}" BorderBrush="#C8D4CE" BorderThickness="1" Click="RefreshManifestButton_Click"/>
-        </StackPanel>
+          <Border Style="{StaticResource CardStyle}" Padding="24">
+            <Grid>
+              <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="260"/>
+              </Grid.ColumnDefinitions>
 
-        <Grid Grid.Row="2">
-          <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="*"/>
-            <ColumnDefinition Width="*"/>
-          </Grid.ColumnDefinitions>
+              <StackPanel>
+                <TextBlock x:Name="ServerNameText" Text="minivibe" FontSize="42" FontWeight="Black" Foreground="{DynamicResource TextBrush}"/>
+                <TextBlock x:Name="ServerVersionText" Text="Manifest не загружен" FontSize="15" Foreground="{DynamicResource MutedBrush}" Margin="0,6,0,18"/>
+                <TextBlock x:Name="MainStatusText" Text="Укажите ссылку на manifest.json в настройках." FontSize="17" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" MaxWidth="640"/>
 
-          <Border Background="{StaticResource SurfaceBrush}" BorderBrush="#D9E2DD" BorderThickness="1" Padding="18" Margin="0,0,10,0">
-            <StackPanel>
-              <TextBlock Text="Сборка" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-              <TextBlock x:Name="PackInfoText" Text="Ожидает manifest" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0" TextWrapping="Wrap"/>
-              <TextBlock x:Name="LoaderInfoText" Text="" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
-              <TextBlock x:Name="InstallInfoText" Text="" Foreground="{StaticResource MutedBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
-            </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,26,0,0">
+                  <Button x:Name="PlayButton" Content="Играть" MinWidth="150" Click="PlayButton_Click"/>
+                  <Button x:Name="RepairButton" Content="Проверить файлы" Style="{StaticResource SecondaryButtonStyle}" Click="RepairButton_Click"/>
+                  <Button x:Name="RefreshManifestButton" Content="Обновить manifest" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
+                </StackPanel>
+              </StackPanel>
+
+              <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                <TextBlock Text="Профиль" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                <TextBlock x:Name="PlayerPreviewText" Text="wawgame" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,14"/>
+                <TextBlock Text="Сборка" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                <TextBlock x:Name="PackPreviewText" Text="ожидает manifest" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
+                <TextBlock Text="Loader" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                <TextBlock x:Name="LoaderPreviewText" Text="NeoForge" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,0"/>
+              </StackPanel>
+            </Grid>
           </Border>
 
-          <Border Grid.Column="1" Background="{StaticResource SurfaceBrush}" BorderBrush="#D9E2DD" BorderThickness="1" Padding="18" Margin="10,0,0,0">
-            <StackPanel>
-              <TextBlock Text="Последние изменения" FontSize="18" FontWeight="SemiBold" Foreground="{StaticResource TextBrush}"/>
-              <ItemsControl x:Name="HomeChangelogList" Margin="0,8,0,0"/>
-            </StackPanel>
+          <Grid Grid.Row="1" Margin="0,18,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="1.05*"/>
+              <ColumnDefinition Width="0.95*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,9,0">
+              <StackPanel>
+                <TextBlock Text="Сборка" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+                <TextBlock x:Name="PackInfoText" Text="Ожидает manifest" Foreground="{DynamicResource MutedBrush}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                <TextBlock x:Name="LoaderInfoText" Text="" Foreground="{DynamicResource MutedBrush}" Margin="0,7,0,0" TextWrapping="Wrap"/>
+                <TextBlock x:Name="InstallInfoText" Text="" Foreground="{DynamicResource MutedBrush}" Margin="0,7,0,0" TextWrapping="Wrap"/>
+              </StackPanel>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="9,0,0,0">
+              <StackPanel>
+                <TextBlock Text="Последние изменения" FontSize="18" FontWeight="SemiBold" Foreground="{DynamicResource TextBrush}"/>
+                <ItemsControl x:Name="HomeChangelogList" Margin="0,10,0,0"/>
+              </StackPanel>
+            </Border>
+          </Grid>
+        </Grid>
+
+        <Grid x:Name="NewsPanel" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <TextBlock Text="Новости" Style="{StaticResource SectionTitleStyle}"/>
+          <ListBox x:Name="NewsList" Grid.Row="1"/>
+        </Grid>
+
+        <Grid x:Name="ModsPanel" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <TextBlock Text="Моды и файлы сборки" Style="{StaticResource SectionTitleStyle}"/>
+          <ListView x:Name="FilesList" Grid.Row="1">
+            <ListView.View>
+              <GridView>
+                <GridViewColumn Header="Путь" DisplayMemberBinding="{Binding Path}" Width="420"/>
+                <GridViewColumn Header="Категория" DisplayMemberBinding="{Binding Category}" Width="120"/>
+                <GridViewColumn Header="Обязательный" DisplayMemberBinding="{Binding Required}" Width="120"/>
+                <GridViewColumn Header="Размер" DisplayMemberBinding="{Binding Size}" Width="120"/>
+                <GridViewColumn Header="Статус" DisplayMemberBinding="{Binding Status}" Width="160"/>
+              </GridView>
+            </ListView.View>
+          </ListView>
+        </Grid>
+
+        <Grid x:Name="MapPanel" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <DockPanel Margin="0,0,0,14">
+            <TextBlock Text="Карта" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
+            <Button x:Name="OpenMapButton" Content="Открыть карту в браузере" DockPanel.Dock="Right" HorizontalAlignment="Right" Click="OpenMapButton_Click"/>
+          </DockPanel>
+          <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="0">
+            <WebBrowser x:Name="MapBrowser"/>
           </Border>
         </Grid>
-      </Grid>
 
-      <Grid x:Name="NewsPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Новости" Style="{StaticResource SectionTitleStyle}"/>
-        <ListBox x:Name="NewsList" Grid.Row="1" BorderBrush="#D9E2DD"/>
-      </Grid>
+        <ScrollViewer x:Name="SettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
+          <StackPanel MaxWidth="820">
+            <TextBlock Text="Настройки" Style="{StaticResource SectionTitleStyle}"/>
 
-      <Grid x:Name="ModsPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <TextBlock Text="Моды и файлы сборки" Style="{StaticResource SectionTitleStyle}"/>
-        <ListView x:Name="FilesList" Grid.Row="1" BorderBrush="#D9E2DD">
-          <ListView.View>
-            <GridView>
-              <GridViewColumn Header="Путь" DisplayMemberBinding="{Binding Path}" Width="360"/>
-              <GridViewColumn Header="Категория" DisplayMemberBinding="{Binding Category}" Width="120"/>
-              <GridViewColumn Header="Обязательный" DisplayMemberBinding="{Binding Required}" Width="120"/>
-              <GridViewColumn Header="Размер" DisplayMemberBinding="{Binding Size}" Width="110"/>
-              <GridViewColumn Header="Статус" DisplayMemberBinding="{Binding Status}" Width="160"/>
-            </GridView>
-          </ListView.View>
-        </ListView>
-      </Grid>
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
+              <StackPanel>
+                <TextBlock Text="Сборка" FontSize="18" FontWeight="SemiBold"/>
 
-      <Grid x:Name="MapPanel" Visibility="Collapsed">
-        <Grid.RowDefinitions>
-          <RowDefinition Height="Auto"/>
-          <RowDefinition Height="*"/>
-        </Grid.RowDefinitions>
-        <DockPanel Margin="0,0,0,12">
-          <TextBlock Text="Карта" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
-          <Button x:Name="OpenMapButton" Content="Открыть карту в браузере" DockPanel.Dock="Right" HorizontalAlignment="Right" Click="OpenMapButton_Click"/>
-        </DockPanel>
-        <Border Grid.Row="1" BorderBrush="#D9E2DD" BorderThickness="1" Background="White">
-          <WebBrowser x:Name="MapBrowser"/>
+                <TextBlock Text="Ссылка на manifest.json" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="ManifestUrlBox"/>
+
+                <TextBlock Text="Папка установки игры и сборки" Style="{StaticResource LabelStyle}"/>
+                <DockPanel>
+                  <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseInstallDirectoryButton_Click"/>
+                  <TextBox x:Name="InstallDirectoryBox"/>
+                </DockPanel>
+
+                <CheckBox x:Name="ShadersCheckBox" Content="Шейдеры"/>
+
+                <TextBlock Text="RAM, МБ" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="RamBox"/>
+
+                <TextBlock Text="Имя игрока" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="PlayerNameBox"/>
+
+                <TextBlock Text="Путь к java.exe" Style="{StaticResource LabelStyle}"/>
+                <DockPanel>
+                  <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseJavaButton_Click"/>
+                  <TextBox x:Name="JavaPathBox"/>
+                </DockPanel>
+
+                <TextBlock Text="Дополнительные аргументы запуска" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="ExtraArgsBox"/>
+              </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource CardStyle}">
+              <StackPanel>
+                <TextBlock Text="Визуал" FontSize="18" FontWeight="SemiBold"/>
+
+                <TextBlock Text="Тема" Style="{StaticResource LabelStyle}"/>
+                <ComboBox x:Name="ThemeBox" SelectionChanged="VisualSetting_Changed"/>
+
+                <TextBlock Text="Акцент" Style="{StaticResource LabelStyle}"/>
+                <ComboBox x:Name="AccentBox" SelectionChanged="VisualSetting_Changed"/>
+
+                <CheckBox x:Name="DynamicBackgroundCheckBox" Content="Динамический фон" Click="VisualSetting_Changed"/>
+                <CheckBox x:Name="CompactModeCheckBox" Content="Компактный режим" Click="VisualSetting_Changed"/>
+
+                <TextBlock Text="Плотность панелей" Style="{StaticResource LabelStyle}"/>
+                <Slider x:Name="PanelOpacitySlider"
+                        Minimum="0.72"
+                        Maximum="1"
+                        TickFrequency="0.04"
+                        IsSnapToTickEnabled="True"
+                        ValueChanged="VisualSetting_Changed"/>
+              </StackPanel>
+            </Border>
+
+            <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+              <Button Content="Сохранить" Click="SaveSettingsButton_Click"/>
+              <Button Content="Открыть папку игры" Style="{StaticResource SecondaryButtonStyle}" Click="OpenInstallDirectoryButton_Click"/>
+            </StackPanel>
+          </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="8" Padding="14" Margin="0,16,0,0">
+          <StackPanel>
+            <ProgressBar x:Name="ProgressBar" Height="7" IsIndeterminate="False" Background="{DynamicResource ProgressTrackBrush}" Foreground="{DynamicResource AccentBrush}"/>
+            <TextBlock x:Name="ProgressText" Text="" Foreground="{DynamicResource MutedBrush}" Margin="0,8,0,0"/>
+          </StackPanel>
         </Border>
       </Grid>
-
-      <ScrollViewer x:Name="SettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">
-        <StackPanel MaxWidth="760">
-          <TextBlock Text="Настройки" Style="{StaticResource SectionTitleStyle}"/>
-
-          <TextBlock Text="Ссылка на manifest.json" Style="{StaticResource LabelStyle}"/>
-          <TextBox x:Name="ManifestUrlBox"/>
-
-          <TextBlock Text="Папка установки игры и сборки" Style="{StaticResource LabelStyle}"/>
-          <DockPanel>
-            <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Click="BrowseInstallDirectoryButton_Click"/>
-            <TextBox x:Name="InstallDirectoryBox"/>
-          </DockPanel>
-
-          <CheckBox x:Name="ShadersCheckBox" Content="Шейдеры" Margin="0,18,0,0"/>
-
-          <TextBlock Text="RAM, МБ" Style="{StaticResource LabelStyle}"/>
-          <TextBox x:Name="RamBox"/>
-
-          <TextBlock Text="Имя игрока" Style="{StaticResource LabelStyle}"/>
-          <TextBox x:Name="PlayerNameBox"/>
-
-          <TextBlock Text="Путь к java.exe" Style="{StaticResource LabelStyle}"/>
-          <DockPanel>
-            <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Click="BrowseJavaButton_Click"/>
-            <TextBox x:Name="JavaPathBox"/>
-          </DockPanel>
-
-          <TextBlock Text="Дополнительные аргументы запуска" Style="{StaticResource LabelStyle}"/>
-          <TextBox x:Name="ExtraArgsBox"/>
-
-          <StackPanel Orientation="Horizontal" Margin="0,20,0,0">
-            <Button Content="Сохранить" Click="SaveSettingsButton_Click"/>
-            <Button Content="Открыть папку игры" Background="#FFFFFF" Foreground="{StaticResource TextBrush}" BorderBrush="#C8D4CE" BorderThickness="1" Click="OpenInstallDirectoryButton_Click"/>
-          </StackPanel>
-        </StackPanel>
-      </ScrollViewer>
-
-      <StackPanel Grid.Row="1" Margin="0,18,0,0">
-        <ProgressBar x:Name="ProgressBar" Height="8" IsIndeterminate="False"/>
-        <TextBlock x:Name="ProgressText" Text="" Foreground="{StaticResource MutedBrush}" Margin="0,8,0,0"/>
-      </StackPanel>
     </Grid>
   </Grid>
 </Window>

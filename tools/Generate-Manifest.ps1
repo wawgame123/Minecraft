@@ -3,7 +3,7 @@ param(
     [string]$Repository = "wawgame123/Minecraft",
     [string]$Branch = "main",
     [string]$Output = "manifest.json",
-    [string]$ServerName = "WawGame Minecraft",
+    [string]$ServerName = "minivibe",
     [string]$PackVersion = "1.0.0",
     [string]$MinecraftVersion = "1.21.1",
     [string]$Loader = "neoforge",
@@ -93,7 +93,7 @@ $manifest = [ordered]@{
     requiredFiles = $requiredFiles
     optionalShaders = $optionalShaders
     news = @(
-        "WawGame Minecraft pack is ready for launcher sync.",
+        "minivibe pack is ready for launcher sync.",
         "The launcher checks only required files and does not delete user mods."
     )
     changelog = @(

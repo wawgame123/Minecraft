@@ -3,11 +3,21 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              StartupUri="MainWindow.xaml">
   <Application.Resources>
-    <SolidColorBrush x:Key="AccentBrush" Color="#2E7D5B"/>
-    <SolidColorBrush x:Key="AccentSoftBrush" Color="#DFF3EA"/>
-    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
-    <SolidColorBrush x:Key="TextBrush" Color="#17201B"/>
-    <SolidColorBrush x:Key="MutedBrush" Color="#64736C"/>
+    <SolidColorBrush x:Key="AppBackgroundBrush" Color="#090A0F"/>
+    <SolidColorBrush x:Key="SidebarBrush" Color="#11131A"/>
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#E61A1D27"/>
+    <SolidColorBrush x:Key="SurfaceAltBrush" Color="#252937"/>
+    <SolidColorBrush x:Key="BorderBrush" Color="#343A4C"/>
+    <SolidColorBrush x:Key="TextBrush" Color="#F5F7FA"/>
+    <SolidColorBrush x:Key="MutedBrush" Color="#A8AFBD"/>
+    <SolidColorBrush x:Key="AccentBrush" Color="#D84C5B"/>
+    <SolidColorBrush x:Key="AccentTextBrush" Color="#FFFFFF"/>
+    <SolidColorBrush x:Key="ProgressTrackBrush" Color="#2B3040"/>
+    <LinearGradientBrush x:Key="AtmosphereBrush" StartPoint="0,0" EndPoint="1,1">
+      <GradientStop Color="#171A25" Offset="0"/>
+      <GradientStop Color="#090A0F" Offset="0.55"/>
+      <GradientStop Color="#221017" Offset="1"/>
+    </LinearGradientBrush>
     <Style TargetType="Button">
       <Setter Property="MinHeight" Value="36"/>
       <Setter Property="Padding" Value="14,7"/>
