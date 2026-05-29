@@ -11,6 +11,11 @@ namespace ServerLauncher.Services;
 
 public sealed class LauncherUpdateService
 {
+    private readonly string _pendingPatchNotesPath = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Minivibe",
+        "pending-patch-notes.json");
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -78,8 +83,43 @@ public sealed class LauncherUpdateService
         }
 
         ZipFile.ExtractToDirectory(zipPath, extractPath);
+        await SavePendingPatchNotesAsync(update, cancellationToken);
         StartUpdaterScript(extractPath, AppContext.BaseDirectory, processPath, Environment.ProcessId);
         return true;
+    }
+
+    public async Task<LauncherUpdateManifest?> ReadPendingPatchNotesAsync(CancellationToken cancellationToken)
+    {
+        if (!File.Exists(_pendingPatchNotesPath))
+        {
+            return null;
+        }
+
+        try
+        {
+            await using var stream = File.OpenRead(_pendingPatchNotesPath);
+            var notes = await JsonSerializer.DeserializeAsync<LauncherUpdateManifest>(stream, JsonOptions, cancellationToken);
+            File.Delete(_pendingPatchNotesPath);
+            return notes;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    public async Task<LauncherUpdateManifest?> LoadPatchNotesForVersionAsync(
+        string updateManifestUrl,
+        string version,
+        CancellationToken cancellationToken)
+    {
+        var update = await LoadUpdateManifestAsync(updateManifestUrl, cancellationToken);
+        if (update is null || !string.Equals(update.Version, version, StringComparison.OrdinalIgnoreCase))
+        {
+            return null;
+        }
+
+        return update;
     }
 
     private async Task<LauncherUpdateManifest?> LoadUpdateManifestAsync(string updateUrl, CancellationToken cancellationToken)
@@ -100,6 +140,13 @@ public sealed class LauncherUpdateService
         await using var source = await _httpClient.GetStreamAsync(url, cancellationToken);
         await using var target = File.Create(destinationPath);
         await source.CopyToAsync(target, cancellationToken);
+    }
+
+    private async Task SavePendingPatchNotesAsync(LauncherUpdateManifest update, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_pendingPatchNotesPath)!);
+        await using var stream = File.Create(_pendingPatchNotesPath);
+        await JsonSerializer.SerializeAsync(stream, update, JsonOptions, cancellationToken);
     }
 
     private static void StartUpdaterScript(string sourceDirectory, string targetDirectory, string exePath, int processId)

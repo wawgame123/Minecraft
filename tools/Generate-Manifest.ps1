@@ -50,6 +50,43 @@ function Get-RelativePathCompat([string]$BasePath, [string]$FullPath) {
     [uri]::UnescapeDataString($baseUri.MakeRelativeUri($fullUri).ToString()).Replace("/", [System.IO.Path]::DirectorySeparatorChar)
 }
 
+function Convert-CrlfBytesToLf([byte[]]$Bytes) {
+    $normalized = New-Object 'System.Collections.Generic.List[byte]'
+
+    for ($index = 0; $index -lt $Bytes.Length; $index++) {
+        $isCrlf = $Bytes[$index] -eq 13 -and
+            $index + 1 -lt $Bytes.Length -and
+            $Bytes[$index + 1] -eq 10
+
+        if (-not $isCrlf) {
+            $normalized.Add($Bytes[$index])
+        }
+    }
+
+    $normalized.ToArray()
+}
+
+function Get-ManifestFileMetadata([string]$Path) {
+    $bytes = [System.IO.File]::ReadAllBytes($Path)
+
+    if ($Path.EndsWith(".json", [StringComparison]::OrdinalIgnoreCase)) {
+        $bytes = Convert-CrlfBytesToLf $bytes
+    }
+
+    $sha = [System.Security.Cryptography.SHA256]::Create()
+    try {
+        $hashBytes = $sha.ComputeHash($bytes)
+    }
+    finally {
+        $sha.Dispose()
+    }
+
+    [pscustomobject]@{
+        Hash = -join ($hashBytes | ForEach-Object { $_.ToString("x2") })
+        Size = $bytes.Length
+    }
+}
+
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $packAbsolute = (Resolve-Path -LiteralPath (Join-Path $root $PackRoot)).Path
 $outputAbsolute = Join-Path $root $Output
@@ -62,14 +99,14 @@ Get-ChildItem -LiteralPath $packAbsolute -Recurse -File |
     ForEach-Object {
         $relativeToPack = (Get-RelativePathCompat $packAbsolute $_.FullName).Replace("\", "/")
         $relativeToRepo = ($PackRoot.TrimEnd("/", "\") + "/" + $relativeToPack).Replace("\", "/")
-        $hash = (Get-FileHash -LiteralPath $_.FullName -Algorithm SHA256).Hash.ToLowerInvariant()
+        $metadata = Get-ManifestFileMetadata $_.FullName
         $category = Get-Category $relativeToPack
 
         $entry = [ordered]@{
             path = $relativeToPack
             url = Convert-ToRawUrl $relativeToRepo
-            sha256 = $hash
-            size = $_.Length
+            sha256 = $metadata.Hash
+            size = $metadata.Size
             category = $category
             required = $category -ne "shaderpack"
         }

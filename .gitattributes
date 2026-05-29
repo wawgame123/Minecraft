@@ -6,6 +6,7 @@
 *.exe binary
 *.pdb binary
 *.json text eol=crlf
+server-pack/**/*.json text eol=lf
 *.cs text eol=crlf
 *.xaml text eol=crlf
 *.md text eol=crlf

@@ -51,7 +51,8 @@ public partial class MainWindow : Window
                 return;
             }
 
-            await LoadManifestAsync(repairMissingGameFiles: true);
+            await ShowPendingPatchNotesAsync();
+            await LoadManifestAsync(repairMissingGameFiles: false);
         });
     }
 
@@ -77,7 +78,38 @@ public partial class MainWindow : Window
         return false;
     }
 
-    private async Task LoadManifestAsync(bool repairMissingGameFiles = true)
+    private async Task ShowPendingPatchNotesAsync()
+    {
+        var currentVersion = CurrentLauncherVersion();
+        var update = await _launcherUpdateService.ReadPendingPatchNotesAsync(CurrentToken());
+        if (update is null && !string.Equals(_settings.LastSeenLauncherVersion, currentVersion, StringComparison.OrdinalIgnoreCase))
+        {
+            update = await _launcherUpdateService.LoadPatchNotesForVersionAsync(
+                _settings.UpdateManifestUrl,
+                currentVersion,
+                CurrentToken());
+        }
+
+        if (update is null)
+        {
+            return;
+        }
+
+        var notes = update.Notes.Count > 0
+            ? string.Join(Environment.NewLine, update.Notes.Select(note => "- " + note))
+            : "Патч установлен без описания изменений.";
+
+        System.Windows.MessageBox.Show(
+            $"Лаунчер обновлен до версии {update.Version}.{Environment.NewLine}{Environment.NewLine}{notes}",
+            "Patch notes",
+            MessageBoxButton.OK,
+            MessageBoxImage.Information);
+
+        _settings.LastSeenLauncherVersion = currentVersion;
+        await _settingsService.SaveAsync(_settings);
+    }
+
+    private async Task LoadManifestAsync(bool repairMissingGameFiles = false)
     {
         SetBusy(true, "Загружаю manifest.json...");
         _manifest = await _manifestService.LoadAsync(_settings.ManifestUrl, CurrentToken());
@@ -138,9 +170,10 @@ public partial class MainWindow : Window
         {
             0 => "Сборка готова к запуску. Пользовательские моды не тронуты.",
             _ when downloadMissingFiles => $"После восстановления осталось проблемных файлов: {outdated}.",
-            _ => $"Не хватает файлов для запуска: {outdated}. Лаунчер докачает их автоматически."
+            _ => $"Нужно установить файлов: {outdated}. Нажмите \"Установить\"."
         };
         SidebarStatusText.Text = outdated == 0 ? "Готово" : "Есть обновления";
+        UpdatePrimaryButtonState();
         return statuses;
     }
 
@@ -264,15 +297,24 @@ public partial class MainWindow : Window
             await SaveSettingsFromUiAsync();
             if (_manifest is null)
             {
-                await LoadManifestAsync(repairMissingGameFiles: true);
+                await LoadManifestAsync(repairMissingGameFiles: false);
             }
 
-            var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
-            var outdated = CountOutdated(statuses);
-            _gameFilesReady = outdated == 0;
             if (!_gameFilesReady)
             {
-                throw new InvalidOperationException($"Minecraft не готов к запуску: {outdated} файлов отсутствуют или повреждены.");
+                await InstallGameFilesAsync();
+                return;
+            }
+
+            var readinessStatuses = await VerifyFilesAsync(downloadMissingFiles: false);
+            var readinessOutdated = CountOutdated(readinessStatuses);
+            _gameFilesReady = readinessOutdated == 0;
+            if (!_gameFilesReady)
+            {
+                MainStatusText.Text = $"Нужно установить файлов: {readinessOutdated}. Нажмите \"Установить\".";
+                SidebarStatusText.Text = "Требуется установка";
+                UpdatePrimaryButtonState();
+                return;
             }
 
             var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings);
@@ -298,8 +340,10 @@ public partial class MainWindow : Window
                 await LoadManifestAsync(repairMissingGameFiles: false);
             }
 
-            var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+            var statuses = await VerifyFilesAsync(downloadMissingFiles: false);
             _gameFilesReady = CountOutdated(statuses) == 0;
+            UpdateLaunchReadinessStatus();
+            UpdatePrimaryButtonState();
         });
     }
 
@@ -308,7 +352,7 @@ public partial class MainWindow : Window
         await RunGuardedAsync(async () =>
         {
             await SaveSettingsFromUiAsync();
-            await LoadManifestAsync(repairMissingGameFiles: true);
+            await LoadManifestAsync(repairMissingGameFiles: false);
         });
     }
 
@@ -319,7 +363,7 @@ public partial class MainWindow : Window
             await SaveSettingsFromUiAsync();
             MainStatusText.Text = "Настройки сохранены локально.";
             SidebarStatusText.Text = "Настройки сохранены";
-            await LoadManifestAsync(repairMissingGameFiles: true);
+            await LoadManifestAsync(repairMissingGameFiles: false);
         });
     }
 
@@ -526,6 +570,12 @@ public partial class MainWindow : Window
         return statuses.Count(item => item.Status != FileSyncService.StatusCurrent);
     }
 
+    private static string CurrentLauncherVersion()
+    {
+        var version = typeof(MainWindow).Assembly.GetName().Version ?? new Version(0, 0, 0);
+        return $"{version.Major}.{version.Minor}.{version.Build}";
+    }
+
     private void UpdateLaunchReadinessStatus()
     {
         if (!_gameFilesReady || _manifest is null)
@@ -545,10 +595,32 @@ public partial class MainWindow : Window
         SidebarStatusText.Text = "Нужна настройка";
     }
 
+    private async Task InstallGameFilesAsync()
+    {
+        var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+        var outdated = CountOutdated(statuses);
+        _gameFilesReady = outdated == 0;
+        UpdatePrimaryButtonState();
+
+        if (!_gameFilesReady)
+        {
+            throw new InvalidOperationException($"Не удалось установить сборку: {outdated} файлов не прошли проверку.");
+        }
+
+        UpdateLaunchReadinessStatus();
+        MainStatusText.Text = "Сборка установлена. Теперь можно нажать \"Играть\".";
+        SidebarStatusText.Text = "Установлено";
+    }
+
     private void UpdatePlayerPreview()
     {
         var playerName = PlayerNameBox.Text.Trim();
         PlayerPreviewText.Text = string.IsNullOrWhiteSpace(playerName) ? PlayerNamePlaceholder : playerName;
+    }
+
+    private void UpdatePrimaryButtonState()
+    {
+        PlayButton.Content = _gameFilesReady ? "Играть" : "Установить";
     }
 
     private void SetBusy(bool busy, string message)
@@ -558,6 +630,10 @@ public partial class MainWindow : Window
         PlayButton.IsEnabled = !busy;
         RepairButton.IsEnabled = !busy;
         RefreshManifestButton.IsEnabled = !busy;
+        if (!busy)
+        {
+            UpdatePrimaryButtonState();
+        }
     }
 }
 

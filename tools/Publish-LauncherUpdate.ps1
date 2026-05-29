@@ -72,7 +72,9 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        "Custom player names, launch readiness checks, icon, reports and self-update support."
+        "Launcher updates itself on startup and shows patch notes after restart.",
+        "Minecraft files are installed only after pressing Install; the button then becomes Play.",
+        "Manifest hashes for emote JSON files now match GitHub raw downloads."
     )
 }
 

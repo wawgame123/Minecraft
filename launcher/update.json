@@ -1,9 +1,11 @@
 ﻿{
-    "version":  "0.1.1",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.1-framework.zip",
-    "sha256":  "b2a931dd76944a4282841d59bc7e92905e0481788ea211598fd9ea70eb4cc837",
+    "version":  "0.1.2",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.2-framework.zip",
+    "sha256":  "400f1e9ac0c8eceaa295ac647187dcf35119b975c4823c37121a3965e30cfffc",
     "mandatory":  false,
     "notes":  [
-                  "Custom player names, launch readiness checks, icon, reports and self-update support."
+                  "Launcher updates itself on startup and shows patch notes after restart.",
+                  "Minecraft files are installed only after pressing Install; the button then becomes Play.",
+                  "Manifest hashes for emote JSON files now match GitHub raw downloads."
               ]
 }

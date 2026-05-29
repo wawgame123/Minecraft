@@ -1,4 +1,5 @@
 using System.IO;
+using System.Reflection;
 using System.Text.Json;
 using ServerLauncher.Models;
 
@@ -22,7 +23,10 @@ public sealed class SettingsService
     {
         if (!File.Exists(SettingsPath))
         {
-            var settings = new LauncherSettings();
+            var settings = new LauncherSettings
+            {
+                LastSeenLauncherVersion = CurrentLauncherVersion()
+            };
             await SaveAsync(settings);
             return settings;
         }
@@ -36,5 +40,11 @@ public sealed class SettingsService
         Directory.CreateDirectory(Path.GetDirectoryName(SettingsPath)!);
         await using var stream = File.Create(SettingsPath);
         await JsonSerializer.SerializeAsync(stream, settings, JsonOptions);
+    }
+
+    private static string CurrentLauncherVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return $"{version.Major}.{version.Minor}.{version.Build}";
     }
 }

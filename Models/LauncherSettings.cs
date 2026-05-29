@@ -19,6 +19,7 @@ public sealed class LauncherSettings
     public bool DynamicBackground { get; set; } = true;
     public bool CompactMode { get; set; }
     public double PanelOpacity { get; set; } = 0.92;
+    public string? LastSeenLauncherVersion { get; set; }
 
     public static string DefaultInstallDirectory()
     {
