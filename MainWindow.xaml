@@ -180,7 +180,6 @@
         <DockPanel>
           <StackPanel DockPanel.Dock="Top">
             <TextBlock Text="minivibe" FontSize="27" FontWeight="Black" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap"/>
-            <TextBlock Text="i'm Cruciffied" Foreground="{DynamicResource MutedBrush}" Margin="0,3,0,24"/>
 
             <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Click="HomeNavButton_Click"/>
             <Button x:Name="NewsNavButton" Content="Новости" Style="{StaticResource NavButtonStyle}" Click="NewsNavButton_Click"/>
@@ -222,18 +221,19 @@
               <StackPanel>
                 <TextBlock x:Name="ServerNameText" Text="minivibe" FontSize="42" FontWeight="Black" Foreground="{DynamicResource TextBrush}"/>
                 <TextBlock x:Name="ServerVersionText" Text="Manifest не загружен" FontSize="15" Foreground="{DynamicResource MutedBrush}" Margin="0,6,0,18"/>
-                <TextBlock x:Name="MainStatusText" Text="Укажите ссылку на manifest.json в настройках." FontSize="17" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" MaxWidth="640"/>
+                <TextBlock x:Name="MainStatusText" Text="Проверяю сборку..." FontSize="17" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" MaxWidth="640"/>
 
                 <StackPanel Orientation="Horizontal" Margin="0,26,0,0">
                   <Button x:Name="PlayButton" Content="Установить" MinWidth="150" Click="PlayButton_Click"/>
                   <Button x:Name="RepairButton" Content="Проверить файлы" Style="{StaticResource SecondaryButtonStyle}" Click="RepairButton_Click"/>
-                  <Button x:Name="RefreshManifestButton" Content="Обновить manifest" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
+                  <Button x:Name="RefreshManifestButton" Content="Обновить список" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
                 </StackPanel>
               </StackPanel>
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock Text="Профиль" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                <TextBlock x:Name="PlayerPreviewText" Text="Введите ник" FontSize="22" FontWeight="Bold" Foreground="{DynamicResource AccentBrush}" Margin="0,2,0,14"/>
+                <TextBox x:Name="HomePlayerNameBox" TextChanged="PlayerNameBox_TextChanged" Margin="0,5,0,6"/>
+                <TextBlock x:Name="PlayerPreviewText" Text="Ник появится в игре" FontSize="12" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
                 <TextBlock Text="Сборка" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
                 <TextBlock x:Name="PackPreviewText" Text="ожидает manifest" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
                 <TextBlock Text="Loader" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
@@ -316,9 +316,6 @@
               <StackPanel>
                 <TextBlock Text="Сборка" FontSize="18" FontWeight="SemiBold"/>
 
-                <TextBlock Text="Ссылка на manifest.json" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="ManifestUrlBox"/>
-
                 <TextBlock Text="Папка установки игры и сборки" Style="{StaticResource LabelStyle}"/>
                 <DockPanel>
                   <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseInstallDirectoryButton_Click"/>
@@ -356,9 +353,6 @@
 
                 <TextBlock Text="HTTPS endpoint для тихой отправки отчетов" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="BugReportEndpointBox"/>
-
-                <TextBlock Text="Ссылка на update.json" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="UpdateManifestUrlBox"/>
               </StackPanel>
             </Border>
 
@@ -371,6 +365,38 @@
 
                 <TextBlock Text="Акцент" Style="{StaticResource LabelStyle}"/>
                 <ComboBox x:Name="AccentBox" SelectionChanged="VisualSetting_Changed"/>
+
+                <TextBlock Text="Свои цвета HEX" Style="{StaticResource LabelStyle}"/>
+                <UniformGrid Columns="2" Margin="0,0,0,4">
+                  <StackPanel Margin="0,0,6,6">
+                    <TextBlock Text="Фон" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomBackgroundColorBox" ToolTip="#090A0F" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="6,0,0,6">
+                    <TextBlock Text="Боковая панель" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomSidebarColorBox" ToolTip="#11131A" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="0,0,6,6">
+                    <TextBlock Text="Панели" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomSurfaceColorBox" ToolTip="#1A1D27" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="6,0,0,6">
+                    <TextBlock Text="Границы" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomBorderColorBox" ToolTip="#343A4C" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="0,0,6,6">
+                    <TextBlock Text="Текст" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomTextColorBox" ToolTip="#F5F7FA" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="6,0,0,6">
+                    <TextBlock Text="Вторичный текст" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomMutedTextColorBox" ToolTip="#A8AFBD" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                  <StackPanel Margin="0,0,6,0">
+                    <TextBlock Text="Акцент" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <TextBox x:Name="CustomAccentColorBox" ToolTip="#D84C5B" TextChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                </UniformGrid>
 
                 <CheckBox x:Name="DynamicBackgroundCheckBox" Content="Динамический фон" Click="VisualSetting_Changed"/>
                 <CheckBox x:Name="CompactModeCheckBox" Content="Компактный режим" Click="VisualSetting_Changed"/>

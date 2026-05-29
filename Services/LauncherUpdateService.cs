@@ -30,13 +30,13 @@ public sealed class LauncherUpdateService
         IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
-        if (!settings.EnableAutoUpdate || string.IsNullOrWhiteSpace(settings.UpdateManifestUrl))
+        if (!settings.EnableAutoUpdate)
         {
             return false;
         }
 
         progress?.Report("Проверяю обновления лаунчера...");
-        var update = await LoadUpdateManifestAsync(settings.UpdateManifestUrl, cancellationToken);
+        var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
         if (update is null || string.IsNullOrWhiteSpace(update.Version) || string.IsNullOrWhiteSpace(update.Url))
         {
             return false;
@@ -109,11 +109,10 @@ public sealed class LauncherUpdateService
     }
 
     public async Task<LauncherUpdateManifest?> LoadPatchNotesForVersionAsync(
-        string updateManifestUrl,
         string version,
         CancellationToken cancellationToken)
     {
-        var update = await LoadUpdateManifestAsync(updateManifestUrl, cancellationToken);
+        var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
         if (update is null || !string.Equals(update.Version, version, StringComparison.OrdinalIgnoreCase))
         {
             return null;

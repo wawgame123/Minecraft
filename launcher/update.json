@@ -1,11 +1,12 @@
 ﻿{
-    "version":  "0.1.2",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.2-framework.zip",
-    "sha256":  "400f1e9ac0c8eceaa295ac647187dcf35119b975c4823c37121a3965e30cfffc",
+    "version":  "0.1.3",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.3-framework.zip",
+    "sha256":  "2f77b3415d7c766942c3f1208bc69630ce6566e93a8aaae9384d113c050178c8",
     "mandatory":  false,
     "notes":  [
-                  "Launcher updates itself on startup and shows patch notes after restart.",
-                  "Minecraft files are installed only after pressing Install; the button then becomes Play.",
-                  "Manifest hashes for emote JSON files now match GitHub raw downloads."
+                  "Ссылки manifest.json и update.json больше нельзя менять из настроек.",
+                  "Ник теперь вводится прямо на главной странице и сохраняется в настройки.",
+                  "Добавлены пользовательские HEX-цвета интерфейса.",
+                  "Карта мира подключена в раздел Карта."
               ]
 }

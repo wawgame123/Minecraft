@@ -55,7 +55,7 @@ public sealed class BugReportService
         builder.AppendLine($"App version: {typeof(BugReportService).Assembly.GetName().Version}");
         builder.AppendLine($"OS: {Environment.OSVersion}");
         builder.AppendLine($"User: {Environment.UserName}");
-        builder.AppendLine($"Manifest URL: {settings.ManifestUrl}");
+        builder.AppendLine($"Manifest URL: {LauncherEndpoints.ManifestUrl}");
         builder.AppendLine($"Install directory: {settings.InstallDirectory}");
         builder.AppendLine($"Shaders enabled: {settings.EnableShaders}");
         builder.AppendLine($"Auto update enabled: {settings.EnableAutoUpdate}");

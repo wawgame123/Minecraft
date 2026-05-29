@@ -12,7 +12,7 @@ public sealed class GameLaunchService
 
         if (string.IsNullOrWhiteSpace(settings.PlayerName))
         {
-            issues.Add("Введите ник игрока в настройках.");
+            issues.Add("Введите ник игрока.");
         }
         else if (!IsValidMinecraftName(settings.PlayerName))
         {

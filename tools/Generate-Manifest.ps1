@@ -8,7 +8,7 @@ param(
     [string]$MinecraftVersion = "1.21.1",
     [string]$Loader = "neoforge",
     [string]$LoaderVersion = "21.1.228",
-    [string]$BlueMapUrl = ""
+    [string]$BlueMapUrl = "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat"
 )
 
 Set-StrictMode -Version Latest

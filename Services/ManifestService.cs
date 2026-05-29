@@ -20,7 +20,7 @@ public sealed class ManifestService
     {
         if (string.IsNullOrWhiteSpace(manifestUrl))
         {
-            throw new InvalidOperationException("Укажите ссылку на manifest.json в настройках.");
+            throw new InvalidOperationException("Внутренняя ссылка на manifest.json не настроена.");
         }
 
         await using var stream = await OpenManifestStreamAsync(manifestUrl, cancellationToken);

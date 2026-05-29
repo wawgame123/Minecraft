@@ -65,6 +65,7 @@ if (Test-Path -LiteralPath $zipPath) {
 Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
 $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $url = "https://raw.githubusercontent.com/$Repository/$Branch/launcher/$zipName"
+$utf8 = [System.Text.Encoding]::UTF8
 
 $update = [ordered]@{
     version = $version
@@ -72,9 +73,10 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        "Launcher updates itself on startup and shows patch notes after restart.",
-        "Minecraft files are installed only after pressing Install; the button then becomes Play.",
-        "Manifest hashes for emote JSON files now match GitHub raw downloads."
+        $utf8.GetString([Convert]::FromBase64String("0KHRgdGL0LvQutC4IG1hbmlmZXN0Lmpzb24g0LggdXBkYXRlLmpzb24g0LHQvtC70YzRiNC1INC90LXQu9GM0LfRjyDQvNC10L3Rj9GC0Ywg0LjQtyDQvdCw0YHRgtGA0L7QtdC6Lg==")),
+        $utf8.GetString([Convert]::FromBase64String("0J3QuNC6INGC0LXQv9C10YDRjCDQstCy0L7QtNC40YLRgdGPINC/0YDRj9C80L4g0L3QsCDQs9C70LDQstC90L7QuSDRgdGC0YDQsNC90LjRhtC1INC4INGB0L7RhdGA0LDQvdGP0LXRgtGB0Y8g0LIg0L3QsNGB0YLRgNC+0LnQutC4Lg==")),
+        $utf8.GetString([Convert]::FromBase64String("0JTQvtCx0LDQstC70LXQvdGLINC/0L7Qu9GM0LfQvtCy0LDRgtC10LvRjNGB0LrQuNC1IEhFWC3RhtCy0LXRgtCwINC40L3RgtC10YDRhNC10LnRgdCwLg==")),
+        $utf8.GetString([Convert]::FromBase64String("0JrQsNGA0YLQsCDQvNC40YDQsCDQv9C+0LTQutC70Y7Rh9C10L3QsCDQsiDRgNCw0LfQtNC10Lsg0JrQsNGA0YLQsC4="))
     )
 }
 

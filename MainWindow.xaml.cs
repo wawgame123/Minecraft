@@ -29,6 +29,8 @@ public partial class MainWindow : Window
     private CancellationTokenSource? _operationCts;
     private bool _visualControlsReady;
     private bool _gameFilesReady;
+    private bool _bindingSettings;
+    private bool _syncingPlayerName;
 
     public MainWindow()
     {
@@ -85,7 +87,6 @@ public partial class MainWindow : Window
         if (update is null && !string.Equals(_settings.LastSeenLauncherVersion, currentVersion, StringComparison.OrdinalIgnoreCase))
         {
             update = await _launcherUpdateService.LoadPatchNotesForVersionAsync(
-                _settings.UpdateManifestUrl,
                 currentVersion,
                 CurrentToken());
         }
@@ -101,7 +102,7 @@ public partial class MainWindow : Window
 
         System.Windows.MessageBox.Show(
             $"Лаунчер обновлен до версии {update.Version}.{Environment.NewLine}{Environment.NewLine}{notes}",
-            "Patch notes",
+            "Описание обновления",
             MessageBoxButton.OK,
             MessageBoxImage.Information);
 
@@ -112,7 +113,7 @@ public partial class MainWindow : Window
     private async Task LoadManifestAsync(bool repairMissingGameFiles = false)
     {
         SetBusy(true, "Загружаю manifest.json...");
-        _manifest = await _manifestService.LoadAsync(_settings.ManifestUrl, CurrentToken());
+        _manifest = await _manifestService.LoadAsync(LauncherEndpoints.ManifestUrl, CurrentToken());
         RenderManifest();
         await EnsureGameFilesReadyAsync(repairMissingGameFiles);
     }
@@ -179,19 +180,18 @@ public partial class MainWindow : Window
 
     private async Task SaveSettingsFromUiAsync()
     {
-        _settings.ManifestUrl = ManifestUrlBox.Text.Trim();
         _settings.InstallDirectory = InstallDirectoryBox.Text.Trim();
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
         _settings.JavaPath = JavaPathBox.Text.Trim();
-        _settings.PlayerName = PlayerNameBox.Text.Trim();
+        _settings.PlayerName = CurrentPlayerName();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         _settings.BugReportEmail = BugReportEmailBox.Text.Trim();
         _settings.BugReportEndpoint = BugReportEndpointBox.Text.Trim();
         _settings.OpenEmailOnError = OpenEmailOnErrorCheckBox.IsChecked == true;
-        _settings.UpdateManifestUrl = UpdateManifestUrlBox.Text.Trim();
         _settings.VisualTheme = SelectedComboValue(ThemeBox, _settings.VisualTheme);
         _settings.AccentColor = SelectedComboValue(AccentBox, _settings.AccentColor);
+        SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
         _settings.CompactMode = CompactModeCheckBox.IsChecked == true;
         _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
@@ -207,24 +207,31 @@ public partial class MainWindow : Window
 
     private void BindSettingsToUi()
     {
-        ManifestUrlBox.Text = _settings.ManifestUrl;
-        InstallDirectoryBox.Text = _settings.InstallDirectory;
-        ShadersCheckBox.IsChecked = _settings.EnableShaders;
-        RamBox.Text = _settings.RamMb.ToString();
-        JavaPathBox.Text = _settings.JavaPath;
-        PlayerNameBox.Text = _settings.PlayerName;
-        ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
-        AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
-        BugReportEmailBox.Text = _settings.BugReportEmail;
-        BugReportEndpointBox.Text = _settings.BugReportEndpoint;
-        OpenEmailOnErrorCheckBox.IsChecked = _settings.OpenEmailOnError;
-        UpdateManifestUrlBox.Text = _settings.UpdateManifestUrl;
-        SelectComboValue(ThemeBox, _settings.VisualTheme);
-        SelectComboValue(AccentBox, _settings.AccentColor);
-        DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
-        CompactModeCheckBox.IsChecked = _settings.CompactMode;
-        PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
-        UpdatePlayerPreview();
+        _bindingSettings = true;
+        try
+        {
+            InstallDirectoryBox.Text = _settings.InstallDirectory;
+            ShadersCheckBox.IsChecked = _settings.EnableShaders;
+            RamBox.Text = _settings.RamMb.ToString();
+            JavaPathBox.Text = _settings.JavaPath;
+            SyncPlayerNameText(_settings.PlayerName);
+            ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
+            AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
+            BugReportEmailBox.Text = _settings.BugReportEmail;
+            BugReportEndpointBox.Text = _settings.BugReportEndpoint;
+            OpenEmailOnErrorCheckBox.IsChecked = _settings.OpenEmailOnError;
+            SelectComboValue(ThemeBox, _settings.VisualTheme);
+            SelectComboValue(AccentBox, _settings.AccentColor);
+            BindCustomColorBoxes();
+            DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
+            CompactModeCheckBox.IsChecked = _settings.CompactMode;
+            PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
+            UpdatePlayerPreview();
+        }
+        finally
+        {
+            _bindingSettings = false;
+        }
     }
 
     private void RenderManifest()
@@ -398,6 +405,16 @@ public partial class MainWindow : Window
 
     private void PlayerNameBox_TextChanged(object sender, TextChangedEventArgs e)
     {
+        if (_syncingPlayerName)
+        {
+            return;
+        }
+
+        if (sender is System.Windows.Controls.TextBox textBox)
+        {
+            SyncPlayerNameText(textBox.Text);
+        }
+
         UpdatePlayerPreview();
     }
 
@@ -457,7 +474,7 @@ public partial class MainWindow : Window
 
     private async void VisualSetting_Changed(object sender, RoutedEventArgs e)
     {
-        if (!_visualControlsReady)
+        if (!_visualControlsReady || _bindingSettings)
         {
             return;
         }
@@ -469,6 +486,7 @@ public partial class MainWindow : Window
     {
         _settings.VisualTheme = SelectedComboValue(ThemeBox, _settings.VisualTheme);
         _settings.AccentColor = SelectedComboValue(AccentBox, _settings.AccentColor);
+        SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
         _settings.CompactMode = CompactModeCheckBox.IsChecked == true;
         _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
@@ -479,28 +497,35 @@ public partial class MainWindow : Window
     private void ApplyVisualSettings()
     {
         var palette = ThemePalette.From(_settings.VisualTheme, _settings.PanelOpacity);
-        var accent = AccentPalette.From(_settings.AccentColor);
+        var background = ReadColor(_settings.CustomBackgroundColor, palette.Background);
+        var sidebar = ReadColor(_settings.CustomSidebarColor, palette.Sidebar);
+        var surface = ReadColor(_settings.CustomSurfaceColor, palette.Surface);
+        var surfaceAlt = ReadColor(_settings.CustomSurfaceColor, palette.SurfaceAlt);
+        var border = ReadColor(_settings.CustomBorderColor, palette.Border);
+        var text = ReadColor(_settings.CustomTextColor, palette.Text);
+        var muted = ReadColor(_settings.CustomMutedTextColor, palette.Muted);
+        var accent = ReadColor(_settings.CustomAccentColor, AccentPalette.From(_settings.AccentColor));
         var resources = Resources;
 
-        resources["AppBackgroundBrush"] = new SolidColorBrush(palette.Background);
-        resources["SidebarBrush"] = new SolidColorBrush(palette.Sidebar);
-        resources["SurfaceBrush"] = new SolidColorBrush(ColorWithOpacity(palette.Surface, _settings.PanelOpacity));
-        resources["SurfaceAltBrush"] = new SolidColorBrush(palette.SurfaceAlt);
-        resources["BorderBrush"] = new SolidColorBrush(palette.Border);
-        resources["TextBrush"] = new SolidColorBrush(palette.Text);
-        resources["MutedBrush"] = new SolidColorBrush(palette.Muted);
+        resources["AppBackgroundBrush"] = new SolidColorBrush(background);
+        resources["SidebarBrush"] = new SolidColorBrush(sidebar);
+        resources["SurfaceBrush"] = new SolidColorBrush(ColorWithOpacity(surface, _settings.PanelOpacity));
+        resources["SurfaceAltBrush"] = new SolidColorBrush(surfaceAlt);
+        resources["BorderBrush"] = new SolidColorBrush(border);
+        resources["TextBrush"] = new SolidColorBrush(text);
+        resources["MutedBrush"] = new SolidColorBrush(muted);
         resources["AccentBrush"] = new SolidColorBrush(accent);
         resources["AccentTextBrush"] = new SolidColorBrush(System.Windows.Media.Colors.White);
-        resources["ProgressTrackBrush"] = new SolidColorBrush(palette.ProgressTrack);
+        resources["ProgressTrackBrush"] = new SolidColorBrush(surfaceAlt);
         resources["AtmosphereBrush"] = new LinearGradientBrush
         {
             StartPoint = new System.Windows.Point(0, 0),
             EndPoint = new System.Windows.Point(1, 1),
             GradientStops = new GradientStopCollection
             {
-                new(palette.GlowA, 0),
-                new(palette.Background, 0.55),
-                new(palette.GlowB, 1)
+                new(accent, 0),
+                new(background, 0.55),
+                new(surface, 1)
             }
         };
 
@@ -523,6 +548,61 @@ public partial class MainWindow : Window
     {
         comboBox.SelectedItem = comboBox.Items.Cast<object>().FirstOrDefault(item => item.ToString() == value)
             ?? comboBox.Items.Cast<object>().FirstOrDefault();
+    }
+
+    private void BindCustomColorBoxes()
+    {
+        CustomBackgroundColorBox.Text = _settings.CustomBackgroundColor;
+        CustomSidebarColorBox.Text = _settings.CustomSidebarColor;
+        CustomSurfaceColorBox.Text = _settings.CustomSurfaceColor;
+        CustomBorderColorBox.Text = _settings.CustomBorderColor;
+        CustomTextColorBox.Text = _settings.CustomTextColor;
+        CustomMutedTextColorBox.Text = _settings.CustomMutedTextColor;
+        CustomAccentColorBox.Text = _settings.CustomAccentColor;
+    }
+
+    private void SaveCustomColorsFromUi()
+    {
+        _settings.CustomBackgroundColor = NormalizeHexColor(CustomBackgroundColorBox.Text);
+        _settings.CustomSidebarColor = NormalizeHexColor(CustomSidebarColorBox.Text);
+        _settings.CustomSurfaceColor = NormalizeHexColor(CustomSurfaceColorBox.Text);
+        _settings.CustomBorderColor = NormalizeHexColor(CustomBorderColorBox.Text);
+        _settings.CustomTextColor = NormalizeHexColor(CustomTextColorBox.Text);
+        _settings.CustomMutedTextColor = NormalizeHexColor(CustomMutedTextColorBox.Text);
+        _settings.CustomAccentColor = NormalizeHexColor(CustomAccentColorBox.Text);
+    }
+
+    private static string NormalizeHexColor(string value)
+    {
+        var color = value.Trim();
+        if (string.IsNullOrWhiteSpace(color))
+        {
+            return "";
+        }
+
+        if (!color.StartsWith('#'))
+        {
+            color = "#" + color;
+        }
+
+        return color.Length is 4 or 7 or 9 ? color.ToUpperInvariant() : "";
+    }
+
+    private static MediaColor ReadColor(string value, MediaColor fallback)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+        {
+            return fallback;
+        }
+
+        try
+        {
+            return (MediaColor)System.Windows.Media.ColorConverter.ConvertFromString(value)!;
+        }
+        catch
+        {
+            return fallback;
+        }
     }
 
     private async Task RunGuardedAsync(Func<Task> action)
@@ -614,8 +694,36 @@ public partial class MainWindow : Window
 
     private void UpdatePlayerPreview()
     {
-        var playerName = PlayerNameBox.Text.Trim();
-        PlayerPreviewText.Text = string.IsNullOrWhiteSpace(playerName) ? PlayerNamePlaceholder : playerName;
+        var playerName = CurrentPlayerName();
+        PlayerPreviewText.Text = string.IsNullOrWhiteSpace(playerName)
+            ? PlayerNamePlaceholder
+            : $"В игре будет: {playerName}";
+    }
+
+    private string CurrentPlayerName()
+    {
+        return HomePlayerNameBox.Text.Trim();
+    }
+
+    private void SyncPlayerNameText(string playerName)
+    {
+        _syncingPlayerName = true;
+        try
+        {
+            if (HomePlayerNameBox.Text != playerName)
+            {
+                HomePlayerNameBox.Text = playerName;
+            }
+
+            if (PlayerNameBox.Text != playerName)
+            {
+                PlayerNameBox.Text = playerName;
+            }
+        }
+        finally
+        {
+            _syncingPlayerName = false;
+        }
     }
 
     private void UpdatePrimaryButtonState()
