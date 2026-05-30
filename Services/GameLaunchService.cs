@@ -1,13 +1,22 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 using ServerLauncher.Models;
 
 namespace ServerLauncher.Services;
 
 public sealed class GameLaunchService
 {
+    private const int RequiredJavaMajorVersion = 21;
+    private const string PortableJavaFolderName = "java-21";
+    private const string JavaDownloadUrl = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse";
+
+    private readonly HttpClient _httpClient = new();
+
     public IReadOnlyList<string> ValidateReady(LauncherManifest manifest, LauncherSettings settings)
     {
         var issues = new List<string>();
@@ -23,7 +32,7 @@ public sealed class GameLaunchService
 
         if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
         {
-            issues.Add("Java не найдена. Установите Java 21 или положите runtime\\bin\\java.exe рядом с лаунчером/сборкой.");
+            issues.Add(JavaValidationMessage(settings));
         }
 
         if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
@@ -131,6 +140,24 @@ public sealed class GameLaunchService
         return process;
     }
 
+    public async Task<string> EnsureCompatibleJavaAsync(
+        LauncherSettings settings,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        var javaPath = TryResolveJava(settings);
+        if (!string.IsNullOrWhiteSpace(javaPath))
+        {
+            progress?.Report($"Java {RequiredJavaMajorVersion}+ найдена.");
+            return javaPath;
+        }
+
+        progress?.Report($"Java {RequiredJavaMajorVersion} не найдена, скачиваю runtime...");
+        javaPath = await DownloadPortableJavaAsync(settings, progress, cancellationToken);
+        progress?.Report($"Java {RequiredJavaMajorVersion} готова.");
+        return javaPath;
+    }
+
     private static bool IsValidMinecraftName(string playerName)
     {
         var trimmed = playerName.Trim();
@@ -140,45 +167,74 @@ public sealed class GameLaunchService
 
     private static string? TryResolveJava(LauncherSettings settings)
     {
-        if (!string.IsNullOrWhiteSpace(settings.JavaPath) && File.Exists(settings.JavaPath))
+        return JavaCandidates(settings)
+            .FirstOrDefault(candidate => JavaMajorVersion(candidate) >= RequiredJavaMajorVersion);
+    }
+
+    private static IEnumerable<string> LocalJavaCandidates(LauncherSettings settings)
+    {
+        yield return Path.Combine(settings.InstallDirectory, "runtime", PortableJavaFolderName, "bin", "java.exe");
+        yield return Path.Combine(settings.InstallDirectory, "runtime", "bin", "java.exe");
+        yield return Path.Combine(AppContext.BaseDirectory, "runtime", "bin", "java.exe");
+        yield return Path.Combine(AppContext.BaseDirectory, "runtime", PortableJavaFolderName, "bin", "java.exe");
+        yield return Path.Combine(AppContext.BaseDirectory, "java", "bin", "java.exe");
+
+        var installRuntime = Path.Combine(settings.InstallDirectory, "runtime");
+        foreach (var candidate in FindJavaUnderDirectory(installRuntime))
         {
-            return settings.JavaPath;
+            yield return candidate;
         }
+
+        var appRuntime = Path.Combine(AppContext.BaseDirectory, "runtime");
+        foreach (var candidate in FindJavaUnderDirectory(appRuntime))
+        {
+            yield return candidate;
+        }
+    }
+
+    private static IEnumerable<string> JavaCandidates(LauncherSettings settings)
+    {
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var candidate in LocalJavaCandidates(settings))
         {
-            if (File.Exists(candidate))
+            if (File.Exists(candidate) && seen.Add(Path.GetFullPath(candidate)))
             {
-                return candidate;
+                yield return candidate;
             }
+        }
+
+        if (!string.IsNullOrWhiteSpace(settings.JavaPath) && File.Exists(settings.JavaPath) && seen.Add(Path.GetFullPath(settings.JavaPath)))
+        {
+            yield return settings.JavaPath;
         }
 
         var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
         if (!string.IsNullOrWhiteSpace(javaHome))
         {
             var javaFromHome = Path.Combine(javaHome, "bin", "java.exe");
-            if (File.Exists(javaFromHome))
+            if (File.Exists(javaFromHome) && seen.Add(Path.GetFullPath(javaFromHome)))
             {
-                return javaFromHome;
+                yield return javaFromHome;
             }
         }
 
-        return FindOnPath("java.exe") ?? FindOnPath("java") ?? FindInstalledJava();
+        foreach (var candidate in FindOnPath("java.exe").Concat(FindOnPath("java")).Concat(FindInstalledJava()))
+        {
+            if (File.Exists(candidate) && seen.Add(Path.GetFullPath(candidate)))
+            {
+                yield return candidate;
+            }
+        }
     }
 
-    private static IEnumerable<string> LocalJavaCandidates(LauncherSettings settings)
+    private static IEnumerable<string> FindOnPath(string fileName)
     {
-        yield return Path.Combine(settings.InstallDirectory, "runtime", "bin", "java.exe");
-        yield return Path.Combine(AppContext.BaseDirectory, "runtime", "bin", "java.exe");
-        yield return Path.Combine(AppContext.BaseDirectory, "java", "bin", "java.exe");
-    }
-
-    private static string? FindOnPath(string fileName)
-    {
+        var candidates = new List<string>();
         var pathVariable = Environment.GetEnvironmentVariable("PATH");
         if (string.IsNullOrWhiteSpace(pathVariable))
         {
-            return null;
+            return candidates;
         }
 
         foreach (var directory in pathVariable.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
@@ -188,7 +244,7 @@ public sealed class GameLaunchService
                 var candidate = Path.Combine(directory.Trim('"'), fileName);
                 if (File.Exists(candidate))
                 {
-                    return candidate;
+                    candidates.Add(candidate);
                 }
             }
             catch
@@ -197,10 +253,10 @@ public sealed class GameLaunchService
             }
         }
 
-        return null;
+        return candidates;
     }
 
-    private static string? FindInstalledJava()
+    private static IEnumerable<string> FindInstalledJava()
     {
         var roots = new[]
         {
@@ -212,15 +268,12 @@ public sealed class GameLaunchService
         {
             foreach (var vendorRoot in JavaVendorRoots(root))
             {
-                var java = FindJavaUnderDirectory(vendorRoot);
-                if (!string.IsNullOrWhiteSpace(java))
+                foreach (var java in FindJavaUnderDirectory(vendorRoot))
                 {
-                    return java;
+                    yield return java;
                 }
             }
         }
-
-        return null;
     }
 
     private static IEnumerable<string> JavaVendorRoots(string programFiles)
@@ -233,36 +286,235 @@ public sealed class GameLaunchService
         yield return Path.Combine(programFiles, "Amazon Corretto");
     }
 
-    private static string? FindJavaUnderDirectory(string directory)
+    private static IEnumerable<string> FindJavaUnderDirectory(string directory)
     {
         if (!Directory.Exists(directory))
         {
-            return null;
+            yield break;
         }
+
+        var candidates = new List<string>();
 
         try
         {
-            var direct = Path.Combine(directory, "bin", "java.exe");
-            if (File.Exists(direct))
+            candidates.Add(Path.Combine(directory, "bin", "java.exe"));
+            foreach (var child in Directory.EnumerateDirectories(directory).OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
             {
-                return direct;
+                candidates.Add(Path.Combine(child, "bin", "java.exe"));
+            }
+        }
+        catch
+        {
+            yield break;
+        }
+
+        foreach (var candidate in candidates.Where(File.Exists))
+        {
+            yield return candidate;
+        }
+    }
+
+    private static int? JavaMajorVersion(string javaPath)
+    {
+        try
+        {
+            using var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = javaPath,
+                    Arguments = "-version",
+                    UseShellExecute = false,
+                    RedirectStandardError = true,
+                    RedirectStandardOutput = true,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            var output = process.StandardOutput.ReadToEnd() + Environment.NewLine + process.StandardError.ReadToEnd();
+            if (!process.WaitForExit(5000))
+            {
+                process.Kill(true);
+                return null;
             }
 
-            foreach (var child in Directory.EnumerateDirectories(directory))
-            {
-                var candidate = Path.Combine(child, "bin", "java.exe");
-                if (File.Exists(candidate))
-                {
-                    return candidate;
-                }
-            }
+            return ParseJavaMajorVersion(output);
         }
         catch
         {
             return null;
         }
+    }
 
-        return null;
+    private static int? ParseJavaMajorVersion(string output)
+    {
+        var match = Regex.Match(output, "version\\s+\"(?<major>\\d+)(?:\\.(?<minor>\\d+))?");
+        if (!match.Success)
+        {
+            match = Regex.Match(output, "openjdk\\s+(?<major>\\d+)(?:\\.(?<minor>\\d+))?", RegexOptions.IgnoreCase);
+        }
+
+        if (!match.Success || !int.TryParse(match.Groups["major"].Value, out var major))
+        {
+            return null;
+        }
+
+        if (major == 1 && int.TryParse(match.Groups["minor"].Value, out var legacyMajor))
+        {
+            return legacyMajor;
+        }
+
+        return major;
+    }
+
+    private static string JavaValidationMessage(LauncherSettings settings)
+    {
+        var detected = JavaCandidates(settings)
+            .Select(candidate => new
+            {
+                Path = candidate,
+                Version = JavaMajorVersion(candidate)
+            })
+            .Where(candidate => candidate.Version is not null)
+            .OrderByDescending(candidate => candidate.Version)
+            .FirstOrDefault();
+
+        if (detected is not null)
+        {
+            return $"Найдена Java {detected.Version}, но для Minecraft 1.21.1 нужна Java {RequiredJavaMajorVersion}+.";
+        }
+
+        return $"Java {RequiredJavaMajorVersion}+ не найдена. Лаунчер скачает runtime автоматически при запуске игры.";
+    }
+
+    private async Task<string> DownloadPortableJavaAsync(
+        LauncherSettings settings,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        var runtimeRoot = Path.Combine(settings.InstallDirectory, "runtime");
+        var finalRoot = Path.Combine(runtimeRoot, PortableJavaFolderName);
+        var finalJava = Path.Combine(finalRoot, "bin", "java.exe");
+
+        if (File.Exists(finalJava) && JavaMajorVersion(finalJava) >= RequiredJavaMajorVersion)
+        {
+            return finalJava;
+        }
+
+        var workRoot = Path.Combine(runtimeRoot, ".java-download");
+        var zipPath = Path.Combine(workRoot, "java21.zip");
+        var extractRoot = Path.Combine(workRoot, "extract");
+
+        EnsureInside(settings.InstallDirectory, runtimeRoot);
+        EnsureInside(settings.InstallDirectory, finalRoot);
+        EnsureInside(settings.InstallDirectory, workRoot);
+
+        if (Directory.Exists(workRoot))
+        {
+            Directory.Delete(workRoot, true);
+        }
+
+        Directory.CreateDirectory(workRoot);
+        Directory.CreateDirectory(extractRoot);
+
+        try
+        {
+            await DownloadFileWithProgressAsync(JavaDownloadUrl, zipPath, progress, cancellationToken);
+            progress?.Report("Распаковываю Java 21...");
+            ZipFile.ExtractToDirectory(zipPath, extractRoot, true);
+
+            var extractedJava = Directory.EnumerateFiles(extractRoot, "java.exe", SearchOption.AllDirectories)
+                .FirstOrDefault(path => path.Contains($"{Path.DirectorySeparatorChar}bin{Path.DirectorySeparatorChar}", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrWhiteSpace(extractedJava))
+            {
+                throw new InvalidOperationException("В скачанном runtime Java не найден bin\\java.exe.");
+            }
+
+            var extractedHome = Directory.GetParent(Path.GetDirectoryName(extractedJava)!)!.FullName;
+            if (Directory.Exists(finalRoot))
+            {
+                Directory.Delete(finalRoot, true);
+            }
+
+            Directory.Move(extractedHome, finalRoot);
+
+            if (!File.Exists(finalJava) || JavaMajorVersion(finalJava) < RequiredJavaMajorVersion)
+            {
+                throw new InvalidOperationException($"Скачанная Java не подходит. Нужна Java {RequiredJavaMajorVersion}+.");
+            }
+
+            return finalJava;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            throw new InvalidOperationException($"Не удалось автоматически скачать Java {RequiredJavaMajorVersion}. Установите Java {RequiredJavaMajorVersion} вручную или положите runtime\\bin\\java.exe рядом со сборкой. {ex.Message}", ex);
+        }
+        finally
+        {
+            try
+            {
+                if (Directory.Exists(workRoot))
+                {
+                    Directory.Delete(workRoot, true);
+                }
+            }
+            catch
+            {
+                // Temporary files can be cleaned on the next run.
+            }
+        }
+    }
+
+    private async Task DownloadFileWithProgressAsync(
+        string url,
+        string destinationPath,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        using var response = await _httpClient.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+        response.EnsureSuccessStatusCode();
+
+        var totalBytes = response.Content.Headers.ContentLength;
+        var completedBytes = 0L;
+        var buffer = new byte[1024 * 128];
+
+        await using var source = await response.Content.ReadAsStreamAsync(cancellationToken);
+        await using var destination = File.Create(destinationPath);
+
+        while (true)
+        {
+            var read = await source.ReadAsync(buffer, cancellationToken);
+            if (read == 0)
+            {
+                break;
+            }
+
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken);
+            completedBytes += read;
+
+            if (totalBytes is > 0)
+            {
+                var percent = (int)Math.Round(completedBytes * 100d / totalBytes.Value);
+                progress?.Report($"Скачивание Java 21 {Math.Clamp(percent, 0, 100)}%");
+            }
+            else
+            {
+                progress?.Report($"Скачивание Java 21 {completedBytes / 1024 / 1024} МБ");
+            }
+        }
+    }
+
+    private static void EnsureInside(string root, string path)
+    {
+        var fullRoot = Path.GetFullPath(root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        var fullPath = Path.GetFullPath(path);
+
+        if (!fullPath.StartsWith(fullRoot, StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException($"Недопустимый путь runtime: {path}");
+        }
     }
 
     private static string BuildArguments(LauncherManifest manifest, LauncherSettings settings)

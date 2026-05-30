@@ -293,6 +293,10 @@ public partial class MainWindow : Window
                 return;
             }
 
+            SetBusy(true, "Проверяю Java 21...");
+            var javaProgress = new Progress<string>(message => ProgressText.Text = message);
+            await _gameLaunchService.EnsureCompatibleJavaAsync(_settings, javaProgress, CurrentToken());
+
             var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings);
             if (launchIssues.Count > 0)
             {
