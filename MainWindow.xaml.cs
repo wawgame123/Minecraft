@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly ManifestService _manifestService = new();
     private readonly FileSyncService _fileSyncService = new();
     private readonly GameLaunchService _gameLaunchService = new();
+    private readonly MinecraftRuntimeService _minecraftRuntimeService = new();
     private readonly BugReportService _bugReportService = new();
     private readonly LauncherUpdateService _launcherUpdateService = new();
     private LauncherSettings _settings = new();
@@ -297,7 +298,11 @@ public partial class MainWindow : Window
             var javaProgress = new Progress<string>(message => ProgressText.Text = message);
             await _gameLaunchService.EnsureCompatibleJavaAsync(_settings, javaProgress, CurrentToken());
 
-            var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings);
+            SetBusy(true, "Проверяю библиотеки Minecraft...");
+            var runtimeProgress = new Progress<string>(message => ProgressText.Text = message);
+            var minecraftRuntime = await _minecraftRuntimeService.EnsureAsync(_manifest!, _settings, runtimeProgress, CurrentToken());
+
+            var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings, minecraftRuntime);
             if (launchIssues.Count > 0)
             {
                 throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", launchIssues.Take(4)));
@@ -314,6 +319,7 @@ public partial class MainWindow : Window
             var process = _gameLaunchService.Start(
                 _manifest!,
                 _settings,
+                minecraftRuntime,
                 outputReceived: logWindow.AppendLine,
                 errorReceived: line => logWindow.AppendLine("[ERR] " + line),
                 processExited: exitCode =>

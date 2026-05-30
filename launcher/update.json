@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.7",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.7-framework.zip",
-    "sha256":  "23be52914b334d2cf076c57d9ee8f507145f7d87ac0a06d7fb8d8007a1748c06",
+    "version":  "0.1.8",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.8-framework.zip",
+    "sha256":  "1a1eda3c4b35e428741e08986a5512fa81a1c2a94ede61a201496342df802327",
     "mandatory":  false,
     "notes":  [
-                  "Лаунчер теперь проверяет версию Java и игнорирует Java 8/17 для Minecraft 1.21.1.",
-                  "Если Java 21+ не найдена, лаунчер скачивает портативную Temurin JRE 21 в папку сборки.",
-                  "После скачивания Minecraft запускается через локальную Java без ручного указания пути."
+                  "Лаунчер теперь скачивает стандартные библиотеки Minecraft 1.21.1 из metadata Mojang.",
+                  "В classpath автоматически добавляются libraries, client.jar и natives, что исправляет ошибку joptsimple/OptionSpec.",
+                  "Добавлена загрузка asset index и ресурсов Minecraft перед запуском игры."
               ]
 }

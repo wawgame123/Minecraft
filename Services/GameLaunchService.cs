@@ -17,7 +17,10 @@ public sealed class GameLaunchService
 
     private readonly HttpClient _httpClient = new();
 
-    public IReadOnlyList<string> ValidateReady(LauncherManifest manifest, LauncherSettings settings)
+    public IReadOnlyList<string> ValidateReady(
+        LauncherManifest manifest,
+        LauncherSettings settings,
+        MinecraftRuntime? runtime = null)
     {
         var issues = new List<string>();
 
@@ -49,24 +52,36 @@ public sealed class GameLaunchService
             }
         }
 
+        if (runtime is not null)
+        {
+            foreach (var runtimeFile in runtime.ClasspathFiles.Append(runtime.ClientJarPath))
+            {
+                if (!File.Exists(runtimeFile))
+                {
+                    issues.Add($"Не найдена библиотека Minecraft: {Path.GetFileName(runtimeFile)}");
+                }
+            }
+        }
+
         return issues;
     }
 
     public Process Start(
         LauncherManifest manifest,
         LauncherSettings settings,
+        MinecraftRuntime runtime,
         Action<string>? outputReceived = null,
         Action<string>? errorReceived = null,
         Action<int>? processExited = null)
     {
-        var issues = ValidateReady(manifest, settings);
+        var issues = ValidateReady(manifest, settings, runtime);
         if (issues.Count > 0)
         {
             throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", issues.Take(4)));
         }
 
         var javaPath = TryResolveJava(settings);
-        var args = BuildArguments(manifest, settings);
+        var args = BuildArguments(manifest, settings, runtime);
         var captureOutput = outputReceived is not null || errorReceived is not null;
         var startInfo = new ProcessStartInfo
         {
@@ -517,27 +532,46 @@ public sealed class GameLaunchService
         }
     }
 
-    private static string BuildArguments(LauncherManifest manifest, LauncherSettings settings)
+    private static string BuildArguments(
+        LauncherManifest manifest,
+        LauncherSettings settings,
+        MinecraftRuntime runtime)
     {
-        var classpath = manifest.Launch.Classpath
+        var manifestClasspath = manifest.Launch.Classpath
             .Select(path => Path.Combine(settings.InstallDirectory, path.Replace('/', Path.DirectorySeparatorChar)))
+            .ToList();
+        var classpath = runtime.ClasspathFiles
+            .Concat(manifestClasspath.Count > 0 ? manifestClasspath : [runtime.ClientJarPath])
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(Quote);
 
         var args = new List<string>
         {
-            $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M"
+            $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
+            "-Djava.library.path=" + Quote(runtime.NativesDirectory),
+            "-Dminecraft.launcher.brand=minivibe",
+            "-Dminecraft.launcher.version=0.1"
         };
 
-        args.AddRange(manifest.Launch.JvmArgs.Select(arg => ExpandToken(arg, manifest, settings)));
+        args.AddRange(manifest.Launch.JvmArgs.Select(arg => ExpandToken(arg, manifest, settings, runtime)));
 
-        if (manifest.Launch.Classpath.Count > 0)
+        if (classpath.Any())
         {
             args.Add("-cp");
             args.Add(Quote(string.Join(Path.PathSeparator, classpath.Select(Unquote))));
         }
 
         args.Add(manifest.Launch.MainClass);
-        args.AddRange(manifest.Launch.GameArgs.Select(arg => ExpandToken(arg, manifest, settings)));
+        var gameArgs = manifest.Launch.GameArgs
+            .Select(arg => ExpandToken(arg, manifest, settings, runtime))
+            .ToList();
+        AddMissingGameArg(gameArgs, "--assetsDir", runtime.AssetsDirectory);
+        AddMissingGameArg(gameArgs, "--assetIndex", runtime.AssetIndex);
+        AddMissingGameArg(gameArgs, "--uuid", OfflinePlayerUuid(settings.PlayerName));
+        AddMissingGameArg(gameArgs, "--accessToken", "0");
+        AddMissingGameArg(gameArgs, "--userType", "legacy");
+        AddMissingGameArg(gameArgs, "--versionType", manifest.Loader);
+        args.AddRange(gameArgs.Select(QuoteIfNeededArgument));
 
         if (!string.IsNullOrWhiteSpace(settings.ExtraLaunchArguments))
         {
@@ -547,12 +581,30 @@ public sealed class GameLaunchService
         return string.Join(" ", args);
     }
 
-    private static string ExpandToken(string value, LauncherManifest manifest, LauncherSettings settings)
+    private static void AddMissingGameArg(List<string> args, string key, string value)
+    {
+        if (args.Any(arg => string.Equals(arg, key, StringComparison.OrdinalIgnoreCase)))
+        {
+            return;
+        }
+
+        args.Add(key);
+        args.Add(value);
+    }
+
+    private static string ExpandToken(
+        string value,
+        LauncherManifest manifest,
+        LauncherSettings settings,
+        MinecraftRuntime runtime)
     {
         return value
             .Replace("${game_directory}", settings.InstallDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_name}", settings.PlayerName, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_uuid}", OfflinePlayerUuid(settings.PlayerName), StringComparison.OrdinalIgnoreCase)
+            .Replace("${assets_root}", runtime.AssetsDirectory, StringComparison.OrdinalIgnoreCase)
+            .Replace("${assets_index_name}", runtime.AssetIndex, StringComparison.OrdinalIgnoreCase)
+            .Replace("${natives_directory}", runtime.NativesDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${version_name}", manifest.MinecraftVersion, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader}", manifest.Loader, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
@@ -571,6 +623,11 @@ public sealed class GameLaunchService
     private static string Quote(string value)
     {
         return value.Contains(' ') ? $"\"{value}\"" : value;
+    }
+
+    private static string QuoteIfNeededArgument(string value)
+    {
+        return value.Contains(' ') || value.Contains('\\') ? Quote(value) : value;
     }
 
     private static string Unquote(string value)
