@@ -330,12 +330,6 @@
                 <TextBlock Text="Имя игрока" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="PlayerNameBox" TextChanged="PlayerNameBox_TextChanged"/>
 
-                <TextBlock Text="Путь к java.exe" Style="{StaticResource LabelStyle}"/>
-                <DockPanel>
-                  <Button Content="Выбрать" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseJavaButton_Click"/>
-                  <TextBox x:Name="JavaPathBox"/>
-                </DockPanel>
-
                 <TextBlock Text="Дополнительные аргументы запуска" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="ExtraArgsBox"/>
               </StackPanel>
@@ -370,31 +364,52 @@
                 <UniformGrid Columns="2" Margin="0,0,0,4">
                   <StackPanel Margin="0,0,6,6">
                     <TextBlock Text="Фон" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomBackgroundColorBox" ToolTip="#090A0F" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomBackgroundColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomBackgroundColorBox" ToolTip="#090A0F" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="6,0,0,6">
                     <TextBlock Text="Боковая панель" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomSidebarColorBox" ToolTip="#11131A" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomSidebarColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomSidebarColorBox" ToolTip="#11131A" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="0,0,6,6">
                     <TextBlock Text="Панели" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomSurfaceColorBox" ToolTip="#1A1D27" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomSurfaceColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomSurfaceColorBox" ToolTip="#1A1D27" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="6,0,0,6">
                     <TextBlock Text="Границы" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomBorderColorBox" ToolTip="#343A4C" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomBorderColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomBorderColorBox" ToolTip="#343A4C" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="0,0,6,6">
                     <TextBlock Text="Текст" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomTextColorBox" ToolTip="#F5F7FA" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomTextColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomTextColorBox" ToolTip="#F5F7FA" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="6,0,0,6">
                     <TextBlock Text="Вторичный текст" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomMutedTextColorBox" ToolTip="#A8AFBD" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomMutedTextColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomMutedTextColorBox" ToolTip="#A8AFBD" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                   <StackPanel Margin="0,0,6,0">
                     <TextBlock Text="Акцент" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                    <TextBox x:Name="CustomAccentColorBox" ToolTip="#D84C5B" TextChanged="VisualSetting_Changed"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomAccentColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomAccentColorBox" ToolTip="#D84C5B" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
                   </StackPanel>
                 </UniformGrid>
 

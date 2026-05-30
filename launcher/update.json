@@ -1,12 +1,12 @@
 ﻿{
-    "version":  "0.1.3",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.3-framework.zip",
-    "sha256":  "2f77b3415d7c766942c3f1208bc69630ce6566e93a8aaae9384d113c050178c8",
+    "version":  "0.1.4",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.4-framework.zip",
+    "sha256":  "7ffd76cc99084737fc6498bc0cef2af3fabd3d4e7f80ae3a8fd025e32c63f0ac",
     "mandatory":  false,
     "notes":  [
-                  "Ссылки manifest.json и update.json больше нельзя менять из настроек.",
-                  "Ник теперь вводится прямо на главной странице и сохраняется в настройки.",
-                  "Добавлены пользовательские HEX-цвета интерфейса.",
-                  "Карта мира подключена в раздел Карта."
+                  "Добавлено окно выбора цвета с палитрой для пользовательских цветов.",
+                  "Текст автоматически получает контрастный цвет, если выбранный цвет сливается с фоном.",
+                  "Скачивание файлов ускорено параллельной загрузкой и показывает проценты без имен файлов.",
+                  "Java ищется автоматически: PATH, JAVA_HOME, runtime рядом с лаунчером или сборкой, типовые установки Java."
               ]
 }

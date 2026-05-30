@@ -11,6 +11,7 @@ public sealed class FileSyncService
     public const string StatusMissing = "Отсутствует";
     public const string StatusWrongSize = "Неверный размер";
     public const string StatusCorrupt = "Поврежден";
+    private const int MaxParallelDownloads = 6;
 
     private readonly HttpClient _httpClient = new();
 
@@ -23,31 +24,54 @@ public sealed class FileSyncService
     {
         Directory.CreateDirectory(settings.InstallDirectory);
         var files = GetManagedFiles(manifest, settings.EnableShaders).ToList();
-        var statuses = new List<FileStatusItem>();
+        var statuses = new FileStatusItem[files.Count];
+        var repairQueue = new List<(int Index, ManifestFile File, string FullPath)>();
 
         for (var index = 0; index < files.Count; index++)
         {
             cancellationToken.ThrowIfCancellationRequested();
             var file = files[index];
-            progress?.Report($"Проверка {index + 1}/{files.Count}: {file.Path}");
+            ReportPercent(progress, "Проверка", index, files.Count);
 
             var fullPath = ResolveInsideInstallDirectory(settings.InstallDirectory, file.Path);
             var status = await CheckFileAsync(fullPath, file, cancellationToken);
-
-            if (status != StatusCurrent && downloadMissingFiles)
-            {
-                await DownloadFileAsync(file, fullPath, progress, cancellationToken);
-                status = await CheckFileAsync(fullPath, file, cancellationToken);
-            }
-
-            statuses.Add(new FileStatusItem
+            statuses[index] = new FileStatusItem
             {
                 Path = file.Path,
                 Category = file.Category,
                 Required = file.Required,
                 Size = file.Size,
                 Status = status
-            });
+            };
+
+            if (status != StatusCurrent)
+            {
+                repairQueue.Add((index, file, fullPath));
+            }
+        }
+
+        ReportPercent(progress, "Проверка", files.Count, files.Count);
+
+        if (downloadMissingFiles && repairQueue.Count > 0)
+        {
+            var completed = 0;
+            ReportPercent(progress, "Скачивание", completed, repairQueue.Count);
+            await Parallel.ForEachAsync(
+                repairQueue,
+                new ParallelOptions
+                {
+                    MaxDegreeOfParallelism = MaxParallelDownloads,
+                    CancellationToken = cancellationToken
+                },
+                async (item, token) =>
+                {
+                    await DownloadFileAsync(item.File, item.FullPath, token);
+                    var status = await CheckFileAsync(item.FullPath, item.File, token);
+                    statuses[item.Index].Status = status;
+
+                    var done = Interlocked.Increment(ref completed);
+                    ReportPercent(progress, "Скачивание", done, repairQueue.Count);
+                });
         }
 
         progress?.Report("Проверка завершена");
@@ -100,7 +124,6 @@ public sealed class FileSyncService
     private async Task DownloadFileAsync(
         ManifestFile file,
         string destinationPath,
-        IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
         if (string.IsNullOrWhiteSpace(file.Url))
@@ -110,7 +133,6 @@ public sealed class FileSyncService
 
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         var tempPath = destinationPath + ".download";
-        progress?.Report($"Скачивание: {file.Path}");
 
         try
         {
@@ -176,5 +198,16 @@ public sealed class FileSyncService
         return !string.IsNullOrWhiteSpace(hash)
             && !hash.Equals("HASH_HERE", StringComparison.OrdinalIgnoreCase)
             && hash.Length >= 32;
+    }
+
+    private static void ReportPercent(IProgress<string>? progress, string label, int completed, int total)
+    {
+        if (progress is null)
+        {
+            return;
+        }
+
+        var percent = total <= 0 ? 100 : (int)Math.Round(completed * 100d / total);
+        progress.Report($"{label} {Math.Clamp(percent, 0, 100)}%");
     }
 }

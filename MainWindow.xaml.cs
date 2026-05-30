@@ -182,7 +182,6 @@ public partial class MainWindow : Window
     {
         _settings.InstallDirectory = InstallDirectoryBox.Text.Trim();
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
-        _settings.JavaPath = JavaPathBox.Text.Trim();
         _settings.PlayerName = CurrentPlayerName();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
@@ -213,7 +212,6 @@ public partial class MainWindow : Window
             InstallDirectoryBox.Text = _settings.InstallDirectory;
             ShadersCheckBox.IsChecked = _settings.EnableShaders;
             RamBox.Text = _settings.RamMb.ToString();
-            JavaPathBox.Text = _settings.JavaPath;
             SyncPlayerNameText(_settings.PlayerName);
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
@@ -389,17 +387,28 @@ public partial class MainWindow : Window
         }
     }
 
-    private void BrowseJavaButton_Click(object sender, RoutedEventArgs e)
+    private void ChooseColorButton_Click(object sender, RoutedEventArgs e)
     {
-        var dialog = new Microsoft.Win32.OpenFileDialog
+        if (sender is not System.Windows.Controls.Button { Tag: string textBoxName }
+            || FindName(textBoxName) is not System.Windows.Controls.TextBox targetBox)
         {
-            Title = "Выберите java.exe",
-            Filter = "Java executable|java.exe|Executable files|*.exe|All files|*.*"
+            return;
+        }
+
+        using var dialog = new WinForms.ColorDialog
+        {
+            FullOpen = true,
+            AnyColor = true
         };
 
-        if (dialog.ShowDialog() == true)
+        if (TryReadColor(targetBox.Text, out var currentColor))
         {
-            JavaPathBox.Text = dialog.FileName;
+            dialog.Color = System.Drawing.Color.FromArgb(currentColor.A, currentColor.R, currentColor.G, currentColor.B);
+        }
+
+        if (dialog.ShowDialog() == WinForms.DialogResult.OK)
+        {
+            targetBox.Text = $"#{dialog.Color.R:X2}{dialog.Color.G:X2}{dialog.Color.B:X2}";
         }
     }
 
@@ -505,6 +514,9 @@ public partial class MainWindow : Window
         var text = ReadColor(_settings.CustomTextColor, palette.Text);
         var muted = ReadColor(_settings.CustomMutedTextColor, palette.Muted);
         var accent = ReadColor(_settings.CustomAccentColor, AccentPalette.From(_settings.AccentColor));
+        text = EnsureReadable(text, 4.5, background, sidebar, surface, surfaceAlt);
+        muted = EnsureReadable(muted, 3.0, background, sidebar, surface, surfaceAlt);
+        var accentText = BestReadableText(accent);
         var resources = Resources;
 
         resources["AppBackgroundBrush"] = new SolidColorBrush(background);
@@ -515,7 +527,7 @@ public partial class MainWindow : Window
         resources["TextBrush"] = new SolidColorBrush(text);
         resources["MutedBrush"] = new SolidColorBrush(muted);
         resources["AccentBrush"] = new SolidColorBrush(accent);
-        resources["AccentTextBrush"] = new SolidColorBrush(System.Windows.Media.Colors.White);
+        resources["AccentTextBrush"] = new SolidColorBrush(accentText);
         resources["ProgressTrackBrush"] = new SolidColorBrush(surfaceAlt);
         resources["AtmosphereBrush"] = new LinearGradientBrush
         {
@@ -590,19 +602,67 @@ public partial class MainWindow : Window
 
     private static MediaColor ReadColor(string value, MediaColor fallback)
     {
+        return TryReadColor(value, out var color) ? color : fallback;
+    }
+
+    private static bool TryReadColor(string value, out MediaColor color)
+    {
+        color = default;
         if (string.IsNullOrWhiteSpace(value))
         {
-            return fallback;
+            return false;
         }
 
         try
         {
-            return (MediaColor)System.Windows.Media.ColorConverter.ConvertFromString(value)!;
+            color = (MediaColor)System.Windows.Media.ColorConverter.ConvertFromString(value)!;
+            return true;
         }
         catch
         {
-            return fallback;
+            return false;
         }
+    }
+
+    private static MediaColor EnsureReadable(MediaColor requested, double minimumContrast, params MediaColor[] backgrounds)
+    {
+        if (backgrounds.All(background => ContrastRatio(requested, background) >= minimumContrast))
+        {
+            return requested;
+        }
+
+        var white = System.Windows.Media.Colors.White;
+        var black = System.Windows.Media.Colors.Black;
+        var whiteScore = backgrounds.Min(background => ContrastRatio(white, background));
+        var blackScore = backgrounds.Min(background => ContrastRatio(black, background));
+        return whiteScore >= blackScore ? white : black;
+    }
+
+    private static MediaColor BestReadableText(MediaColor background)
+    {
+        return ContrastRatio(System.Windows.Media.Colors.White, background) >= ContrastRatio(System.Windows.Media.Colors.Black, background)
+            ? System.Windows.Media.Colors.White
+            : System.Windows.Media.Colors.Black;
+    }
+
+    private static double ContrastRatio(MediaColor first, MediaColor second)
+    {
+        var lighter = Math.Max(RelativeLuminance(first), RelativeLuminance(second));
+        var darker = Math.Min(RelativeLuminance(first), RelativeLuminance(second));
+        return (lighter + 0.05) / (darker + 0.05);
+    }
+
+    private static double RelativeLuminance(MediaColor color)
+    {
+        static double Channel(byte value)
+        {
+            var normalized = value / 255d;
+            return normalized <= 0.03928
+                ? normalized / 12.92
+                : Math.Pow((normalized + 0.055) / 1.055, 2.4);
+        }
+
+        return 0.2126 * Channel(color.R) + 0.7152 * Channel(color.G) + 0.0722 * Channel(color.B);
     }
 
     private async Task RunGuardedAsync(Func<Task> action)

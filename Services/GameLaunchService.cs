@@ -21,7 +21,7 @@ public sealed class GameLaunchService
 
         if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
         {
-            issues.Add("Java не найдена. Укажите java.exe в настройках или добавьте Java в PATH.");
+            issues.Add("Java не найдена. Установите Java 21 или положите runtime\\bin\\java.exe рядом с лаунчером/сборкой.");
         }
 
         if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
@@ -77,6 +77,14 @@ public sealed class GameLaunchService
             return settings.JavaPath;
         }
 
+        foreach (var candidate in LocalJavaCandidates(settings))
+        {
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+        }
+
         var javaHome = Environment.GetEnvironmentVariable("JAVA_HOME");
         if (!string.IsNullOrWhiteSpace(javaHome))
         {
@@ -87,7 +95,14 @@ public sealed class GameLaunchService
             }
         }
 
-        return FindOnPath("java.exe") ?? FindOnPath("java");
+        return FindOnPath("java.exe") ?? FindOnPath("java") ?? FindInstalledJava();
+    }
+
+    private static IEnumerable<string> LocalJavaCandidates(LauncherSettings settings)
+    {
+        yield return Path.Combine(settings.InstallDirectory, "runtime", "bin", "java.exe");
+        yield return Path.Combine(AppContext.BaseDirectory, "runtime", "bin", "java.exe");
+        yield return Path.Combine(AppContext.BaseDirectory, "java", "bin", "java.exe");
     }
 
     private static string? FindOnPath(string fileName)
@@ -112,6 +127,71 @@ public sealed class GameLaunchService
             {
                 // Ignore malformed PATH entries.
             }
+        }
+
+        return null;
+    }
+
+    private static string? FindInstalledJava()
+    {
+        var roots = new[]
+        {
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+        }.Where(path => !string.IsNullOrWhiteSpace(path));
+
+        foreach (var root in roots)
+        {
+            foreach (var vendorRoot in JavaVendorRoots(root))
+            {
+                var java = FindJavaUnderDirectory(vendorRoot);
+                if (!string.IsNullOrWhiteSpace(java))
+                {
+                    return java;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    private static IEnumerable<string> JavaVendorRoots(string programFiles)
+    {
+        yield return Path.Combine(programFiles, "Java");
+        yield return Path.Combine(programFiles, "Eclipse Adoptium");
+        yield return Path.Combine(programFiles, "Microsoft");
+        yield return Path.Combine(programFiles, "BellSoft");
+        yield return Path.Combine(programFiles, "Zulu");
+        yield return Path.Combine(programFiles, "Amazon Corretto");
+    }
+
+    private static string? FindJavaUnderDirectory(string directory)
+    {
+        if (!Directory.Exists(directory))
+        {
+            return null;
+        }
+
+        try
+        {
+            var direct = Path.Combine(directory, "bin", "java.exe");
+            if (File.Exists(direct))
+            {
+                return direct;
+            }
+
+            foreach (var child in Directory.EnumerateDirectories(directory))
+            {
+                var candidate = Path.Combine(child, "bin", "java.exe");
+                if (File.Exists(candidate))
+                {
+                    return candidate;
+                }
+            }
+        }
+        catch
+        {
+            return null;
         }
 
         return null;
