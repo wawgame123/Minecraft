@@ -107,6 +107,36 @@
       <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
     </Style>
 
+    <Style TargetType="ComboBoxItem">
+      <Setter Property="MinHeight" Value="32"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+      <Setter Property="Background" Value="{DynamicResource ComboItemBackgroundBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource ComboItemTextBrush}"/>
+      <Setter Property="Template">
+        <Setter.Value>
+          <ControlTemplate TargetType="ComboBoxItem">
+            <Border x:Name="ItemRoot"
+                    Background="{TemplateBinding Background}"
+                    Padding="{TemplateBinding Padding}">
+              <ContentPresenter HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="Center"/>
+            </Border>
+            <ControlTemplate.Triggers>
+              <Trigger Property="IsHighlighted" Value="True">
+                <Setter TargetName="ItemRoot" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+              </Trigger>
+              <Trigger Property="IsSelected" Value="True">
+                <Setter TargetName="ItemRoot" Property="Background" Value="{DynamicResource AccentBrush}"/>
+                <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
+              </Trigger>
+            </ControlTemplate.Triggers>
+          </ControlTemplate>
+        </Setter.Value>
+      </Setter>
+    </Style>
+
     <Style TargetType="CheckBox">
       <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
       <Setter Property="Margin" Value="0,14,0,0"/>
@@ -183,7 +213,6 @@
 
             <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Click="HomeNavButton_Click"/>
             <Button x:Name="NewsNavButton" Content="Новости" Style="{StaticResource NavButtonStyle}" Click="NewsNavButton_Click"/>
-            <Button x:Name="ModsNavButton" Content="Моды" Style="{StaticResource NavButtonStyle}" Click="ModsNavButton_Click"/>
             <Button x:Name="MapNavButton" Content="Карта" Style="{StaticResource NavButtonStyle}" Click="MapNavButton_Click"/>
             <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click"/>
           </StackPanel>
@@ -275,25 +304,6 @@
           <ListBox x:Name="NewsList" Grid.Row="1"/>
         </Grid>
 
-        <Grid x:Name="ModsPanel" Visibility="Collapsed">
-          <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
-          </Grid.RowDefinitions>
-          <TextBlock Text="Моды и файлы сборки" Style="{StaticResource SectionTitleStyle}"/>
-          <ListView x:Name="FilesList" Grid.Row="1">
-            <ListView.View>
-              <GridView>
-                <GridViewColumn Header="Путь" DisplayMemberBinding="{Binding Path}" Width="420"/>
-                <GridViewColumn Header="Категория" DisplayMemberBinding="{Binding Category}" Width="120"/>
-                <GridViewColumn Header="Обязательный" DisplayMemberBinding="{Binding Required}" Width="120"/>
-                <GridViewColumn Header="Размер" DisplayMemberBinding="{Binding Size}" Width="120"/>
-                <GridViewColumn Header="Статус" DisplayMemberBinding="{Binding Status}" Width="160"/>
-              </GridView>
-            </ListView.View>
-          </ListView>
-        </Grid>
-
         <Grid x:Name="MapPanel" Visibility="Collapsed">
           <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -303,8 +313,33 @@
             <TextBlock Text="Карта" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
             <Button x:Name="OpenMapButton" Content="Открыть карту в браузере" DockPanel.Dock="Right" HorizontalAlignment="Right" Click="OpenMapButton_Click"/>
           </DockPanel>
-          <Border Grid.Row="1" Style="{StaticResource CardStyle}" Padding="0">
-            <WebBrowser x:Name="MapBrowser"/>
+          <Border Grid.Row="1" Style="{StaticResource CardStyle}">
+            <Grid>
+              <Grid.RowDefinitions>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+              </Grid.RowDefinitions>
+              <StackPanel VerticalAlignment="Center" MaxWidth="620">
+                <TextBlock Text="BlueMap открывается во внешнем браузере"
+                           FontSize="24"
+                           FontWeight="SemiBold"
+                           Foreground="{DynamicResource TextBrush}"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Встроенный браузер Windows не всегда поддерживает современную карту, поэтому ссылка открывается стабильным системным браузером."
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="0,10,0,0"
+                           TextWrapping="Wrap"/>
+                <TextBlock x:Name="MapUrlText"
+                           Foreground="{DynamicResource TextBrush}"
+                           Margin="0,18,0,0"
+                           TextWrapping="Wrap"/>
+              </StackPanel>
+              <Button Grid.Row="1"
+                      Content="Открыть карту"
+                      HorizontalAlignment="Left"
+                      Margin="0,18,0,0"
+                      Click="OpenMapButton_Click"/>
+            </Grid>
           </Border>
         </Grid>
 

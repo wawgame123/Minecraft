@@ -43,8 +43,10 @@
     "Добавлена поддержка BlueMap"
   ],
   "launch": {
-    "mainClass": "",
-    "classpath": [],
+    "mainClass": "net.minecraft.client.main.Main",
+    "classpath": [
+      "neoforge-21.1.228.jar"
+    ],
     "jvmArgs": [],
     "gameArgs": [
       "--username",
@@ -52,7 +54,13 @@
       "--version",
       "${version_name}",
       "--gameDir",
-      "${game_directory}"
+      "${game_directory}",
+      "--uuid",
+      "${player_uuid}",
+      "--accessToken",
+      "0",
+      "--userType",
+      "legacy"
     ]
   }
 }

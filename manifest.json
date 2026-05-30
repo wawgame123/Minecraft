@@ -12178,18 +12178,18 @@
                             }
                         ],
     "news":  [
-                 "minivibe pack is ready for launcher sync.",
-                 "The launcher checks only required files and does not delete user mods."
+                 "Сборка minivibe готова к синхронизации через лаунчер.",
+                 "Лаунчер проверяет только обязательные файлы и не удаляет пользовательские моды."
              ],
     "changelog":  [
-                      "Added NeoForge 21.1.228 server pack for Minecraft 1.21.1.",
-                      "EMI, Forgematica/Litematica, Light Overlay and Replay/Reforged PlayMod are excluded from required sync.",
-                      "Shaderpacks are listed as optionalShaders and download only when shaders are enabled."
+                      "Добавлена сборка NeoForge 21.1.228 для Minecraft 1.21.1.",
+                      "EMI, Forgematica/Litematica, Light Overlay и Replay/Reforged PlayMod исключены из обязательной синхронизации.",
+                      "Шейдеры вынесены в optionalShaders и скачиваются только при включенной настройке."
                   ],
     "launch":  {
-                   "mainClass":  "",
+                   "mainClass":  "net.minecraft.client.main.Main",
                    "classpath":  [
-
+                                     "neoforge-21.1.228.jar"
                                  ],
                    "jvmArgs":  [
 
@@ -12200,7 +12200,13 @@
                                     "--version",
                                     "${version_name}",
                                     "--gameDir",
-                                    "${game_directory}"
+                                    "${game_directory}",
+                                    "--uuid",
+                                    "${player_uuid}",
+                                    "--accessToken",
+                                    "0",
+                                    "--userType",
+                                    "legacy"
                                 ]
                }
 }

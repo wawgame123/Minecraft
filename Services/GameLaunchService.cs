@@ -1,5 +1,7 @@
 using System.Diagnostics;
 using System.IO;
+using System.Security.Cryptography;
+using System.Text;
 using ServerLauncher.Models;
 
 namespace ServerLauncher.Services;
@@ -232,9 +234,20 @@ public sealed class GameLaunchService
         return value
             .Replace("${game_directory}", settings.InstallDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_name}", settings.PlayerName, StringComparison.OrdinalIgnoreCase)
+            .Replace("${player_uuid}", OfflinePlayerUuid(settings.PlayerName), StringComparison.OrdinalIgnoreCase)
             .Replace("${version_name}", manifest.MinecraftVersion, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader}", manifest.Loader, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string OfflinePlayerUuid(string playerName)
+    {
+        var hash = MD5.HashData(Encoding.UTF8.GetBytes("OfflinePlayer:" + playerName));
+        hash[6] = (byte)((hash[6] & 0x0F) | 0x30);
+        hash[8] = (byte)((hash[8] & 0x3F) | 0x80);
+
+        var hex = Convert.ToHexString(hash).ToLowerInvariant();
+        return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
     }
 
     private static string Quote(string value)

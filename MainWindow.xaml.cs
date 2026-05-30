@@ -1,4 +1,3 @@
-using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Windows;
@@ -22,8 +21,6 @@ public partial class MainWindow : Window
     private readonly GameLaunchService _gameLaunchService = new();
     private readonly BugReportService _bugReportService = new();
     private readonly LauncherUpdateService _launcherUpdateService = new();
-    private readonly ObservableCollection<FileStatusItem> _fileStatuses = [];
-
     private LauncherSettings _settings = new();
     private LauncherManifest? _manifest;
     private CancellationTokenSource? _operationCts;
@@ -35,7 +32,6 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
-        FilesList.ItemsSource = _fileStatuses;
         InitializeVisualControls();
         ApplyVisualSettings();
         Loaded += MainWindow_Loaded;
@@ -159,12 +155,6 @@ public partial class MainWindow : Window
         SetBusy(true, downloadMissingFiles ? "Проверяю и восстанавливаю файлы..." : "Проверяю файлы...");
         var progress = new Progress<string>(message => ProgressText.Text = message);
         var statuses = await _fileSyncService.VerifyAndRepairAsync(_manifest, _settings, downloadMissingFiles, progress, CurrentToken());
-        _fileStatuses.Clear();
-
-        foreach (var item in statuses)
-        {
-            _fileStatuses.Add(item);
-        }
 
         var outdated = CountOutdated(statuses);
         MainStatusText.Text = outdated switch
@@ -260,39 +250,20 @@ public partial class MainWindow : Window
             : _manifest.Changelog.Count > 0 ? _manifest.Changelog : ["Новостей пока нет."];
         NewsList.ItemsSource = news;
 
-        var managedFiles = FileSyncService.GetManagedFiles(_manifest, _settings.EnableShaders)
-            .Select(file => new FileStatusItem
-            {
-                Path = file.Path,
-                Category = file.Category,
-                Required = file.Required,
-                Size = file.Size,
-                Status = "Не проверен"
-            });
-        _fileStatuses.Clear();
-        foreach (var item in managedFiles)
-        {
-            _fileStatuses.Add(item);
-        }
-
-        NavigateMap();
+        RenderMapLink();
     }
 
-    private void NavigateMap()
+    private void RenderMapLink()
     {
         if (_manifest is null || string.IsNullOrWhiteSpace(_manifest.BlueMapUrl))
         {
+            MapUrlText.Text = "Ссылка на карту не указана.";
+            OpenMapButton.IsEnabled = false;
             return;
         }
 
-        try
-        {
-            MapBrowser.Navigate(_manifest.BlueMapUrl);
-        }
-        catch
-        {
-            ProgressText.Text = "BlueMap не удалось встроить. Используйте кнопку открытия в браузере.";
-        }
+        MapUrlText.Text = _manifest.BlueMapUrl;
+        OpenMapButton.IsEnabled = true;
     }
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -447,7 +418,6 @@ public partial class MainWindow : Window
 
     private void HomeNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(HomePanel);
     private void NewsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(NewsPanel);
-    private void ModsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(ModsPanel);
     private void MapNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(MapPanel);
     private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(SettingsPanel);
 
@@ -455,7 +425,6 @@ public partial class MainWindow : Window
     {
         HomePanel.Visibility = Visibility.Collapsed;
         NewsPanel.Visibility = Visibility.Collapsed;
-        ModsPanel.Visibility = Visibility.Collapsed;
         MapPanel.Visibility = Visibility.Collapsed;
         SettingsPanel.Visibility = Visibility.Collapsed;
         panel.Visibility = Visibility.Visible;
@@ -517,6 +486,7 @@ public partial class MainWindow : Window
         text = EnsureReadable(text, 4.5, background, sidebar, surface, surfaceAlt);
         muted = EnsureReadable(muted, 3.0, background, sidebar, surface, surfaceAlt);
         var accentText = BestReadableText(accent);
+        var comboItemText = EnsureReadable(text, 4.5, surfaceAlt);
         var resources = Resources;
 
         resources["AppBackgroundBrush"] = new SolidColorBrush(background);
@@ -528,6 +498,8 @@ public partial class MainWindow : Window
         resources["MutedBrush"] = new SolidColorBrush(muted);
         resources["AccentBrush"] = new SolidColorBrush(accent);
         resources["AccentTextBrush"] = new SolidColorBrush(accentText);
+        resources["ComboItemBackgroundBrush"] = new SolidColorBrush(surfaceAlt);
+        resources["ComboItemTextBrush"] = new SolidColorBrush(comboItemText);
         resources["ProgressTrackBrush"] = new SolidColorBrush(surfaceAlt);
         resources["AtmosphereBrush"] = new LinearGradientBrush
         {

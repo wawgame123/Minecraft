@@ -1,12 +1,12 @@
 ﻿{
-    "version":  "0.1.4",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.4-framework.zip",
-    "sha256":  "7ffd76cc99084737fc6498bc0cef2af3fabd3d4e7f80ae3a8fd025e32c63f0ac",
+    "version":  "0.1.5",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.5-framework.zip",
+    "sha256":  "5468ca310335d9799649ba0c9e837adf246cab977bf8f04b9ab07cc39dda871b",
     "mandatory":  false,
     "notes":  [
-                  "Добавлено окно выбора цвета с палитрой для пользовательских цветов.",
-                  "Текст автоматически получает контрастный цвет, если выбранный цвет сливается с фоном.",
-                  "Скачивание файлов ускорено параллельной загрузкой и показывает проценты без имен файлов.",
-                  "Java ищется автоматически: PATH, JAVA_HOME, runtime рядом с лаунчером или сборкой, типовые установки Java."
+                  "Удален раздел «Моды» из навигации лаунчера.",
+                  "Карта BlueMap теперь открывается во внешнем браузере вместо нестабильного встроенного WebBrowser.",
+                  "Выпадающие списки темы и акцента получили контрастные цвета, чтобы текст не пропадал на белом фоне.",
+                  "В manifest.json заполнен launch.mainClass и classpath для запуска сборки."
               ]
 }

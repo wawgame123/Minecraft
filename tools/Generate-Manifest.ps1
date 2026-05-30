@@ -8,11 +8,17 @@ param(
     [string]$MinecraftVersion = "1.21.1",
     [string]$Loader = "neoforge",
     [string]$LoaderVersion = "21.1.228",
-    [string]$BlueMapUrl = "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat"
+    [string]$BlueMapUrl = "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat",
+    [string]$LaunchMainClass = "net.minecraft.client.main.Main",
+    [string[]]$LaunchClasspath = @()
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
+
+function ConvertFrom-Utf8Base64([string]$Value) {
+    [System.Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Value))
+}
 
 function Convert-ToRawUrl([string]$RelativePath) {
     $segments = $RelativePath -split '[\\/]'
@@ -91,6 +97,10 @@ $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $packAbsolute = (Resolve-Path -LiteralPath (Join-Path $root $PackRoot)).Path
 $outputAbsolute = Join-Path $root $Output
 
+if ($LaunchClasspath.Count -eq 0) {
+    $LaunchClasspath = @("$Loader-$LoaderVersion.jar")
+}
+
 $requiredFiles = New-Object System.Collections.Generic.List[object]
 $optionalShaders = New-Object System.Collections.Generic.List[object]
 
@@ -130,17 +140,17 @@ $manifest = [ordered]@{
     requiredFiles = $requiredFiles
     optionalShaders = $optionalShaders
     news = @(
-        "minivibe pack is ready for launcher sync.",
-        "The launcher checks only required files and does not delete user mods."
+        (ConvertFrom-Utf8Base64 "0KHQsdC+0YDQutCwIG1pbml2aWJlINCz0L7RgtC+0LLQsCDQuiDRgdC40L3RhdGA0L7QvdC40LfQsNGG0LjQuCDRh9C10YDQtdC3INC70LDRg9C90YfQtdGALg=="),
+        (ConvertFrom-Utf8Base64 "0JvQsNGD0L3Rh9C10YAg0L/RgNC+0LLQtdGA0Y/QtdGCINGC0L7Qu9GM0LrQviDQvtCx0Y/Qt9Cw0YLQtdC70YzQvdGL0LUg0YTQsNC50LvRiyDQuCDQvdC1INGD0LTQsNC70Y/QtdGCINC/0L7Qu9GM0LfQvtCy0LDRgtC10LvRjNGB0LrQuNC1INC80L7QtNGLLg==")
     )
     changelog = @(
-        "Added NeoForge $LoaderVersion server pack for Minecraft $MinecraftVersion.",
-        "EMI, Forgematica/Litematica, Light Overlay and Replay/Reforged PlayMod are excluded from required sync.",
-        "Shaderpacks are listed as optionalShaders and download only when shaders are enabled."
+        ((ConvertFrom-Utf8Base64 "0JTQvtCx0LDQstC70LXQvdCwINGB0LHQvtGA0LrQsCBOZW9Gb3JnZSB7MH0g0LTQu9GPIE1pbmVjcmFmdCB7MX0u") -f $LoaderVersion, $MinecraftVersion),
+        (ConvertFrom-Utf8Base64 "RU1JLCBGb3JnZW1hdGljYS9MaXRlbWF0aWNhLCBMaWdodCBPdmVybGF5INC4IFJlcGxheS9SZWZvcmdlZCBQbGF5TW9kINC40YHQutC70Y7Rh9C10L3RiyDQuNC3INC+0LHRj9C30LDRgtC10LvRjNC90L7QuSDRgdC40L3RhdGA0L7QvdC40LfQsNGG0LjQuC4="),
+        (ConvertFrom-Utf8Base64 "0KjQtdC50LTQtdGA0Ysg0LLRi9C90LXRgdC10L3RiyDQsiBvcHRpb25hbFNoYWRlcnMg0Lgg0YHQutCw0YfQuNCy0LDRjtGC0YHRjyDRgtC+0LvRjNC60L4g0L/RgNC4INCy0LrQu9GO0YfQtdC90L3QvtC5INC90LDRgdGC0YDQvtC50LrQtS4=")
     )
     launch = [ordered]@{
-        mainClass = ""
-        classpath = @()
+        mainClass = $LaunchMainClass
+        classpath = $LaunchClasspath
         jvmArgs = @()
         gameArgs = @(
             "--username",
@@ -148,7 +158,13 @@ $manifest = [ordered]@{
             "--version",
             '${version_name}',
             "--gameDir",
-            '${game_directory}'
+            '${game_directory}',
+            "--uuid",
+            '${player_uuid}',
+            "--accessToken",
+            "0",
+            "--userType",
+            "legacy"
         )
     }
 }
