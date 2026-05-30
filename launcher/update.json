@@ -1,12 +1,11 @@
 ﻿{
-    "version":  "0.1.5",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.5-framework.zip",
-    "sha256":  "5468ca310335d9799649ba0c9e837adf246cab977bf8f04b9ab07cc39dda871b",
+    "version":  "0.1.6",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.6-framework.zip",
+    "sha256":  "ed5081e0e9aa2b0865da4af8155ec45127501d32b2686eaa79c5b1b14c48b582",
     "mandatory":  false,
     "notes":  [
-                  "Удален раздел «Моды» из навигации лаунчера.",
-                  "Карта BlueMap теперь открывается во внешнем браузере вместо нестабильного встроенного WebBrowser.",
-                  "Выпадающие списки темы и акцента получили контрастные цвета, чтобы текст не пропадал на белом фоне.",
-                  "В manifest.json заполнен launch.mainClass и classpath для запуска сборки."
+                  "Добавлена консоль Minecraft при запуске игры.",
+                  "Логи stdout и stderr Java выводятся в отдельное окно в реальном времени.",
+                  "Консоль можно очистить, скопировать или скрыть, игра продолжит работать."
               ]
 }

@@ -300,7 +300,34 @@ public partial class MainWindow : Window
             }
 
             SetBusy(true, "Запускаю Minecraft...");
-            _gameLaunchService.Start(_manifest!, _settings);
+            var logWindow = new GameLogWindow
+            {
+                Owner = this
+            };
+            logWindow.AppendLine("Запускаю Minecraft...");
+            logWindow.Show();
+
+            var process = _gameLaunchService.Start(
+                _manifest!,
+                _settings,
+                outputReceived: logWindow.AppendLine,
+                errorReceived: line => logWindow.AppendLine("[ERR] " + line),
+                processExited: exitCode =>
+                {
+                    logWindow.MarkProcessExited(exitCode);
+                    if (!Dispatcher.HasShutdownStarted)
+                    {
+                        Dispatcher.Invoke(() =>
+                        {
+                            MainStatusText.Text = exitCode == 0
+                                ? "Minecraft закрыт."
+                                : $"Minecraft завершился с кодом {exitCode}. Подробности в консоли.";
+                            SidebarStatusText.Text = exitCode == 0 ? "Игра закрыта" : "Ошибка игры";
+                        });
+                    }
+                });
+
+            logWindow.SetProcessStarted(process.Id);
             MainStatusText.Text = "Minecraft запущен.";
             SidebarStatusText.Text = "Игра запущена";
         });

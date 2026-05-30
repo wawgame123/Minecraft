@@ -43,7 +43,12 @@ public sealed class GameLaunchService
         return issues;
     }
 
-    public Process Start(LauncherManifest manifest, LauncherSettings settings)
+    public Process Start(
+        LauncherManifest manifest,
+        LauncherSettings settings,
+        Action<string>? outputReceived = null,
+        Action<string>? errorReceived = null,
+        Action<int>? processExited = null)
     {
         var issues = ValidateReady(manifest, settings);
         if (issues.Count > 0)
@@ -53,16 +58,77 @@ public sealed class GameLaunchService
 
         var javaPath = TryResolveJava(settings);
         var args = BuildArguments(manifest, settings);
+        var captureOutput = outputReceived is not null || errorReceived is not null;
         var startInfo = new ProcessStartInfo
         {
             FileName = javaPath!,
             Arguments = args,
             WorkingDirectory = settings.InstallDirectory,
-            UseShellExecute = false
+            UseShellExecute = false,
+            RedirectStandardOutput = outputReceived is not null,
+            RedirectStandardError = errorReceived is not null,
+            CreateNoWindow = captureOutput
         };
 
-        return Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Не удалось запустить процесс Minecraft.");
+        if (outputReceived is not null)
+        {
+            startInfo.StandardOutputEncoding = Encoding.UTF8;
+        }
+
+        if (errorReceived is not null)
+        {
+            startInfo.StandardErrorEncoding = Encoding.UTF8;
+        }
+
+        var process = new Process
+        {
+            StartInfo = startInfo,
+            EnableRaisingEvents = processExited is not null
+        };
+
+        if (outputReceived is not null)
+        {
+            process.OutputDataReceived += (_, eventArgs) =>
+            {
+                if (eventArgs.Data is not null)
+                {
+                    outputReceived(eventArgs.Data);
+                }
+            };
+        }
+
+        if (errorReceived is not null)
+        {
+            process.ErrorDataReceived += (_, eventArgs) =>
+            {
+                if (eventArgs.Data is not null)
+                {
+                    errorReceived(eventArgs.Data);
+                }
+            };
+        }
+
+        if (processExited is not null)
+        {
+            process.Exited += (_, _) => processExited(process.ExitCode);
+        }
+
+        if (!process.Start())
+        {
+            throw new InvalidOperationException("Не удалось запустить процесс Minecraft.");
+        }
+
+        if (outputReceived is not null)
+        {
+            process.BeginOutputReadLine();
+        }
+
+        if (errorReceived is not null)
+        {
+            process.BeginErrorReadLine();
+        }
+
+        return process;
     }
 
     private static bool IsValidMinecraftName(string playerName)
