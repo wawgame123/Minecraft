@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
+using Microsoft.Win32;
 using ServerLauncher.Models;
 
 namespace ServerLauncher.Services;
@@ -163,11 +164,23 @@ public sealed class GameLaunchService
         var javaPath = TryResolveJava(settings);
         if (!string.IsNullOrWhiteSpace(javaPath))
         {
-            progress?.Report($"Java {RequiredJavaMajorVersion}+ найдена.");
+            var version = JavaMajorVersion(javaPath);
+            progress?.Report(version is null
+                ? $"Java {RequiredJavaMajorVersion}+ найдена: {javaPath}"
+                : $"Java {version} найдена: {javaPath}");
             return javaPath;
         }
 
-        progress?.Report($"Java {RequiredJavaMajorVersion} не найдена, скачиваю runtime...");
+        var detectedJava = BestDetectedJava(settings);
+        if (detectedJava is not null)
+        {
+            progress?.Report($"Найдена Java {detectedJava.Value.Version}, но нужна Java {RequiredJavaMajorVersion}+. Скачиваю runtime...");
+        }
+        else
+        {
+            progress?.Report($"Java {RequiredJavaMajorVersion} не найдена, скачиваю runtime...");
+        }
+
         javaPath = await DownloadPortableJavaAsync(settings, progress, cancellationToken);
         progress?.Report($"Java {RequiredJavaMajorVersion} готова.");
         return javaPath;
@@ -276,18 +289,33 @@ public sealed class GameLaunchService
         var roots = new[]
         {
             Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles),
-            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86)
+            Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86),
+            Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Programs")
         }.Where(path => !string.IsNullOrWhiteSpace(path));
 
         foreach (var root in roots)
         {
             foreach (var vendorRoot in JavaVendorRoots(root))
             {
-                foreach (var java in FindJavaUnderDirectory(vendorRoot))
+                foreach (var java in FindJavaUnderDirectoryRecursive(vendorRoot, maxDepth: 4))
                 {
                     yield return java;
                 }
             }
+        }
+
+        var minecraftRuntime = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+            ".minecraft",
+            "runtime");
+        foreach (var java in FindJavaUnderDirectoryRecursive(minecraftRuntime, maxDepth: 7))
+        {
+            yield return java;
+        }
+
+        foreach (var java in FindRegistryJava())
+        {
+            yield return java;
         }
     }
 
@@ -299,6 +327,8 @@ public sealed class GameLaunchService
         yield return Path.Combine(programFiles, "BellSoft");
         yield return Path.Combine(programFiles, "Zulu");
         yield return Path.Combine(programFiles, "Amazon Corretto");
+        yield return Path.Combine(programFiles, "Oracle");
+        yield return Path.Combine(programFiles, "Android");
     }
 
     private static IEnumerable<string> FindJavaUnderDirectory(string directory)
@@ -327,6 +357,130 @@ public sealed class GameLaunchService
         {
             yield return candidate;
         }
+    }
+
+    private static IEnumerable<string> FindJavaUnderDirectoryRecursive(string directory, int maxDepth)
+    {
+        var results = new List<string>();
+        if (!Directory.Exists(directory))
+        {
+            return results;
+        }
+
+        var pending = new Stack<(string Directory, int Depth)>();
+        pending.Push((directory, maxDepth));
+
+        while (pending.Count > 0)
+        {
+            var current = pending.Pop();
+            var directJava = Path.Combine(current.Directory, "bin", "java.exe");
+            if (File.Exists(directJava))
+            {
+                results.Add(directJava);
+            }
+
+            if (current.Depth <= 0)
+            {
+                continue;
+            }
+
+            try
+            {
+                foreach (var child in Directory.EnumerateDirectories(current.Directory).OrderByDescending(Path.GetFileName, StringComparer.OrdinalIgnoreCase))
+                {
+                    pending.Push((child, current.Depth - 1));
+                }
+            }
+            catch
+            {
+                // Ignore inaccessible directories.
+            }
+        }
+
+        return results;
+    }
+
+    private static IEnumerable<string> FindRegistryJava()
+    {
+        var results = new List<string>();
+        foreach (var hive in new[] { RegistryHive.CurrentUser, RegistryHive.LocalMachine })
+        {
+            foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
+            {
+                try
+                {
+                    using var baseKey = RegistryKey.OpenBaseKey(hive, view);
+                    foreach (var subKeyName in JavaRegistrySubKeys())
+                    {
+                        using var key = baseKey.OpenSubKey(subKeyName);
+                        if (key is null)
+                        {
+                            continue;
+                        }
+
+                        AddJavaHome(results, key);
+                        if (key.GetValue("CurrentVersion") is string currentVersion)
+                        {
+                            using var currentKey = key.OpenSubKey(currentVersion);
+                            AddJavaHome(results, currentKey);
+                        }
+
+                        foreach (var versionName in key.GetSubKeyNames())
+                        {
+                            using var versionKey = key.OpenSubKey(versionName);
+                            AddJavaHome(results, versionKey);
+                        }
+                    }
+                }
+                catch
+                {
+                    // Registry layout differs between vendors; skip unreadable views.
+                }
+            }
+        }
+
+        return results.Where(File.Exists);
+    }
+
+    private static IEnumerable<string> JavaRegistrySubKeys()
+    {
+        yield return @"SOFTWARE\JavaSoft\JDK";
+        yield return @"SOFTWARE\JavaSoft\JRE";
+        yield return @"SOFTWARE\JavaSoft\Java Development Kit";
+        yield return @"SOFTWARE\JavaSoft\Java Runtime Environment";
+        yield return @"SOFTWARE\Eclipse Adoptium\JDK";
+        yield return @"SOFTWARE\Eclipse Adoptium\JRE";
+        yield return @"SOFTWARE\Adoptium\JDK";
+        yield return @"SOFTWARE\Adoptium\JRE";
+    }
+
+    private static void AddJavaHome(List<string> results, RegistryKey? key)
+    {
+        if (key?.GetValue("JavaHome") is string javaHome && !string.IsNullOrWhiteSpace(javaHome))
+        {
+            results.Add(ToJavaExecutablePath(javaHome));
+        }
+
+        if (key?.GetValue("Path") is string javaPath && !string.IsNullOrWhiteSpace(javaPath))
+        {
+            results.Add(ToJavaExecutablePath(javaPath));
+        }
+    }
+
+    private static string ToJavaExecutablePath(string path)
+    {
+        if (path.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
+        {
+            return path;
+        }
+
+        var directCandidate = Path.Combine(path, "java.exe");
+        if (File.Exists(directCandidate))
+        {
+            return directCandidate;
+        }
+
+        return Path.Combine(path, "bin", "java.exe");
     }
 
     private static int? JavaMajorVersion(string javaPath)
@@ -385,6 +539,18 @@ public sealed class GameLaunchService
 
     private static string JavaValidationMessage(LauncherSettings settings)
     {
+        var detected = BestDetectedJava(settings);
+
+        if (detected is not null)
+        {
+            return $"Найдена Java {detected.Value.Version}, но для Minecraft 1.21.1 нужна Java {RequiredJavaMajorVersion}+.";
+        }
+
+        return $"Java {RequiredJavaMajorVersion}+ не найдена. Лаунчер скачает runtime автоматически при запуске игры.";
+    }
+
+    private static (string Path, int Version)? BestDetectedJava(LauncherSettings settings)
+    {
         var detected = JavaCandidates(settings)
             .Select(candidate => new
             {
@@ -395,12 +561,7 @@ public sealed class GameLaunchService
             .OrderByDescending(candidate => candidate.Version)
             .FirstOrDefault();
 
-        if (detected is not null)
-        {
-            return $"Найдена Java {detected.Version}, но для Minecraft 1.21.1 нужна Java {RequiredJavaMajorVersion}+.";
-        }
-
-        return $"Java {RequiredJavaMajorVersion}+ не найдена. Лаунчер скачает runtime автоматически при запуске игры.";
+        return detected is null ? null : (detected.Path, detected.Version!.Value);
     }
 
     private async Task<string> DownloadPortableJavaAsync(

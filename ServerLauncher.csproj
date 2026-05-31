@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Minivibe</AssemblyName>
     <Product>minivibe</Product>
-    <Version>0.1.8</Version>
+    <Version>0.1.9</Version>
     <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <ApplicationIcon>Assets\launcher-icon.ico</ApplicationIcon>

@@ -215,9 +215,11 @@ public sealed class MinecraftRuntimeService
 
         try
         {
-            await using var source = await _httpClient.GetStreamAsync(url, cancellationToken);
-            await using var target = File.Create(tempPath);
-            await source.CopyToAsync(target, cancellationToken);
+            await using (var source = await _httpClient.GetStreamAsync(url, cancellationToken))
+            await using (var target = File.Create(tempPath))
+            {
+                await source.CopyToAsync(target, cancellationToken);
+            }
 
             if (expectedSize > 0 && new FileInfo(tempPath).Length != expectedSize)
             {

@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.8",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.8-framework.zip",
-    "sha256":  "1a1eda3c4b35e428741e08986a5512fa81a1c2a94ede61a201496342df802327",
+    "version":  "0.1.9",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.9-framework.zip",
+    "sha256":  "970990b4e70634130ca2fdbf61785d983d2c151d2446982630fc9d5d937a6504",
     "mandatory":  false,
     "notes":  [
-                  "Лаунчер теперь скачивает стандартные библиотеки Minecraft 1.21.1 из metadata Mojang.",
-                  "В classpath автоматически добавляются libraries, client.jar и natives, что исправляет ошибку joptsimple/OptionSpec.",
-                  "Добавлена загрузка asset index и ресурсов Minecraft перед запуском игры."
+                  "Исправлен краш при проверке SHA-1: временный .download файл теперь закрывается перед проверкой.",
+                  "Поиск Java 21 расширен: PATH, JAVA_HOME, Program Files, LocalAppData, runtime официального Minecraft Launcher и реестр Windows.",
+                  "В статусе запуска теперь видно, какая Java найдена и почему лаунчер скачивает runtime."
               ]
 }
