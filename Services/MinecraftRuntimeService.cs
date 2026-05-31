@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
@@ -13,6 +14,8 @@ public sealed class MinecraftRuntimeService
     private const string VersionManifestUrl = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     private const string AssetBaseUrl = "https://resources.download.minecraft.net";
     private const string NeoForgeMavenBaseUrl = "https://maven.neoforged.net/releases/net/neoforged/neoforge";
+    private const string NeoForgeMavenRootUrl = "https://maven.neoforged.net/releases";
+    private const string MinecraftLibrariesUrl = "https://libraries.minecraft.net";
     private const int MaxParallelLibraryDownloads = 12;
     private const int MaxParallelAssetDownloads = 16;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
@@ -22,6 +25,7 @@ public sealed class MinecraftRuntimeService
     public async Task<MinecraftRuntime> EnsureAsync(
         LauncherManifest manifest,
         LauncherSettings settings,
+        string javaPath,
         IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
@@ -39,7 +43,8 @@ public sealed class MinecraftRuntimeService
 
         progress?.Report("Библиотеки Minecraft 0%");
         var versionJson = await LoadVersionJsonAsync(manifest.MinecraftVersion, versionsRoot, progress, cancellationToken);
-        var loaderJson = await LoadLoaderVersionJsonAsync(manifest, runtimeRoot, progress, cancellationToken);
+        var loaderInstall = await EnsureLoaderInstallAsync(manifest, settings, javaPath, runtimeRoot, progress, cancellationToken);
+        var loaderJson = loaderInstall?.VersionJson;
 
         var clientJarPath = Path.Combine(versionsRoot, manifest.MinecraftVersion + ".jar");
         if (versionJson.Downloads.Client is not null)
@@ -76,7 +81,7 @@ public sealed class MinecraftRuntimeService
 
         return new MinecraftRuntime(
             loaderJson?.Id ?? manifest.MinecraftVersion,
-            clientJarPath,
+            loaderInstall?.VersionJarPath ?? clientJarPath,
             classpath,
             nativesRoot,
             assetsRoot,
@@ -124,8 +129,10 @@ public sealed class MinecraftRuntimeService
             ?? throw new InvalidOperationException($"Не удалось прочитать metadata Minecraft {minecraftVersion}.");
     }
 
-    private async Task<MinecraftVersionJson?> LoadLoaderVersionJsonAsync(
+    private async Task<LoaderInstall?> EnsureLoaderInstallAsync(
         LauncherManifest manifest,
+        LauncherSettings settings,
+        string javaPath,
         string runtimeRoot,
         IProgress<string>? progress,
         CancellationToken cancellationToken)
@@ -139,7 +146,55 @@ public sealed class MinecraftRuntimeService
         var loaderRoot = Path.Combine(runtimeRoot, "loaders", "neoforge", manifest.LoaderVersion);
         Directory.CreateDirectory(loaderRoot);
         var versionJsonPath = Path.Combine(loaderRoot, "version.json");
+        var installerVersionJson = await LoadInstallerVersionJsonAsync(manifest, loaderRoot, versionJsonPath, progress, cancellationToken);
+        var loaderVersionId = string.IsNullOrWhiteSpace(installerVersionJson.Id)
+            ? $"neoforge-{manifest.LoaderVersion}"
+            : installerVersionJson.Id;
+        var installedVersionRoot = Path.Combine(settings.InstallDirectory, "versions", loaderVersionId);
+        var installedVersionJsonPath = Path.Combine(installedVersionRoot, loaderVersionId + ".json");
+        var neoforgeClientJarPath = Path.Combine(
+            settings.InstallDirectory,
+            "libraries",
+            "net",
+            "neoforged",
+            "neoforge",
+            manifest.LoaderVersion,
+            $"neoforge-{manifest.LoaderVersion}-client.jar");
 
+        if (!File.Exists(installedVersionJsonPath) || !File.Exists(neoforgeClientJarPath))
+        {
+            await RunNeoForgeInstallerAsync(javaPath, loaderRoot, manifest.LoaderVersion, settings.InstallDirectory, progress, cancellationToken);
+        }
+
+        if (!File.Exists(neoforgeClientJarPath))
+        {
+            throw new InvalidOperationException($"NeoForge установлен не полностью: не найден {neoforgeClientJarPath}");
+        }
+
+        if (File.Exists(installedVersionJsonPath))
+        {
+            await using var installedStream = File.OpenRead(installedVersionJsonPath);
+            var installedVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(installedStream, JsonOptions, cancellationToken);
+            if (installedVersion is not null && installedVersion.Libraries.Count > 0 && !string.IsNullOrWhiteSpace(installedVersion.MainClass))
+            {
+                return new LoaderInstall(
+                    installedVersion,
+                    VersionJarPath: null);
+            }
+        }
+
+        return new LoaderInstall(
+            installerVersionJson,
+            VersionJarPath: null);
+    }
+
+    private async Task<MinecraftVersionJson> LoadInstallerVersionJsonAsync(
+        LauncherManifest manifest,
+        string loaderRoot,
+        string versionJsonPath,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
         if (File.Exists(versionJsonPath))
         {
             await using var localStream = File.OpenRead(versionJsonPath);
@@ -169,6 +224,66 @@ public sealed class MinecraftRuntimeService
             ?? throw new InvalidOperationException($"Не удалось прочитать version.json NeoForge {manifest.LoaderVersion}.");
     }
 
+    private async Task RunNeoForgeInstallerAsync(
+        string javaPath,
+        string loaderRoot,
+        string loaderVersion,
+        string installDirectory,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        var installerPath = Path.Combine(loaderRoot, $"neoforge-{loaderVersion}-installer.jar");
+        if (!File.Exists(installerPath))
+        {
+            var installerUrl = $"{NeoForgeMavenBaseUrl}/{loaderVersion}/neoforge-{loaderVersion}-installer.jar";
+            await DownloadFileAsync(installerUrl, installerPath, expectedSize: 0, expectedSha1: "", cancellationToken);
+        }
+
+        progress?.Report("Установка NeoForge 0%");
+        Directory.CreateDirectory(installDirectory);
+        EnsureLauncherProfilesFile(installDirectory);
+
+        using var process = new Process
+        {
+            StartInfo = new ProcessStartInfo
+            {
+                FileName = javaPath,
+                Arguments = $"-jar {QuoteArgument(installerPath)} --installClient {QuoteArgument(installDirectory)}",
+                WorkingDirectory = installDirectory,
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                CreateNoWindow = true
+            }
+        };
+
+        process.Start();
+        var outputTask = process.StandardOutput.ReadToEndAsync(cancellationToken);
+        var errorTask = process.StandardError.ReadToEndAsync(cancellationToken);
+        await process.WaitForExitAsync(cancellationToken);
+
+        var output = await outputTask;
+        var error = await errorTask;
+        if (process.ExitCode != 0)
+        {
+            var details = string.Join(Environment.NewLine, new[] { output, error }.Where(text => !string.IsNullOrWhiteSpace(text)));
+            throw new InvalidOperationException($"NeoForge installer завершился с кодом {process.ExitCode}. {Tail(details, 1600)}");
+        }
+
+        progress?.Report("Установка NeoForge 100%");
+    }
+
+    private static void EnsureLauncherProfilesFile(string installDirectory)
+    {
+        var profilesPath = Path.Combine(installDirectory, "launcher_profiles.json");
+        if (File.Exists(profilesPath))
+        {
+            return;
+        }
+
+        File.WriteAllText(profilesPath, "{\"profiles\":{},\"version\":3}");
+    }
+
     private static void AddLibraryDownloads(
         IEnumerable<MinecraftLibrary> libraries,
         string librariesRoot,
@@ -176,10 +291,17 @@ public sealed class MinecraftRuntimeService
     {
         foreach (var library in libraries.Where(IsAllowedOnWindows))
         {
-            if (library.Downloads.Artifact is not null)
+            var artifact = library.Downloads.Artifact;
+
+            if (artifact is null && TryCreateArtifactFromName(library.Name, out var generatedArtifact))
             {
-                var libraryPath = Path.Combine(librariesRoot, library.Downloads.Artifact.Path.Replace('/', Path.DirectorySeparatorChar));
-                workItems.Add(new RuntimeDownloadItem(library.Downloads.Artifact, libraryPath, AddToClasspath: true, IsNative: false));
+                artifact = generatedArtifact;
+            }
+
+            if (artifact is not null)
+            {
+                var libraryPath = Path.Combine(librariesRoot, artifact.Path.Replace('/', Path.DirectorySeparatorChar));
+                workItems.Add(new RuntimeDownloadItem(artifact, libraryPath, AddToClasspath: true, IsNative: false));
             }
 
             var nativeDownload = NativeDownloadForWindows(library);
@@ -189,6 +311,37 @@ public sealed class MinecraftRuntimeService
                 workItems.Add(new RuntimeDownloadItem(nativeDownload, nativeJarPath, AddToClasspath: false, IsNative: true));
             }
         }
+    }
+
+    private static bool TryCreateArtifactFromName(string name, out MinecraftDownload download)
+    {
+        download = new MinecraftDownload();
+
+        var parts = name.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        if (parts.Length < 3)
+        {
+            return false;
+        }
+
+        var group = parts[0];
+        var artifact = parts[1];
+        var version = parts[2];
+        var classifier = parts.Length >= 4 ? "-" + parts[3] : "";
+
+        var groupPath = group.Replace('.', '/');
+        var fileName = $"{artifact}-{version}{classifier}.jar";
+        var path = $"{groupPath}/{artifact}/{version}/{fileName}";
+
+        var baseUrl = group.StartsWith("net.neoforged", StringComparison.OrdinalIgnoreCase)
+            ? NeoForgeMavenRootUrl
+            : MinecraftLibrariesUrl;
+
+        download.Path = path;
+        download.Url = $"{baseUrl}/{path}";
+        download.Sha1 = "";
+        download.Size = 0;
+
+        return true;
     }
 
     private async Task EnsureLibraryDownloadsAsync(
@@ -308,7 +461,7 @@ public sealed class MinecraftRuntimeService
         string expectedSha1,
         CancellationToken cancellationToken)
     {
-        var tempPath = destinationPath + ".download";
+        var tempPath = $"{destinationPath}.{Guid.NewGuid():N}.download";
 
         try
         {
@@ -431,7 +584,26 @@ public sealed class MinecraftRuntimeService
     {
         return total <= 0 ? 100 : Math.Clamp((int)Math.Round(completed * 100d / total), 0, 100);
     }
+
+    private static string QuoteArgument(string value)
+    {
+        return "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
+    }
+
+    private static string Tail(string value, int maxLength)
+    {
+        if (string.IsNullOrWhiteSpace(value) || value.Length <= maxLength)
+        {
+            return value;
+        }
+
+        return value[^maxLength..];
+    }
 }
+
+internal sealed record LoaderInstall(
+    MinecraftVersionJson VersionJson,
+    string? VersionJarPath);
 
 internal sealed record RuntimeDownloadItem(
     MinecraftDownload Download,

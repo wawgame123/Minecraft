@@ -12182,15 +12182,15 @@
                  "Лаунчер проверяет только обязательные файлы и не удаляет пользовательские моды."
              ],
     "changelog":  [
+                      "Лаунчер готовит официальный NeoForge runtime перед запуском, чтобы моды видели minecraft и neoforge.",
+                      "Можно выбрать существующую папку игры; пользовательские versions, mods, config и saves не удаляются.",
                       "Добавлена сборка NeoForge 21.1.228 для Minecraft 1.21.1.",
                       "EMI, Forgematica/Litematica, Light Overlay и Replay/Reforged PlayMod исключены из обязательной синхронизации.",
                       "Шейдеры вынесены в optionalShaders и скачиваются только при включенной настройке."
                   ],
     "launch":  {
                    "mainClass":  "net.minecraft.client.main.Main",
-                   "classpath":  [
-                                     "neoforge-21.1.228.jar"
-                                 ],
+                   "classpath":  [],
                    "jvmArgs":  [
 
                                ],

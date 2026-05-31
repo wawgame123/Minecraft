@@ -263,6 +263,7 @@
                   <Button x:Name="PlayButton" Content="Установить" MinWidth="150" Click="PlayButton_Click"/>
                   <Button x:Name="RepairButton" Content="Проверить файлы" Style="{StaticResource SecondaryButtonStyle}" Click="RepairButton_Click"/>
                   <Button x:Name="RefreshManifestButton" Content="Обновить список" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
+                  <Button x:Name="ChooseInstallDirectoryButton" Content="Папка игры" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseInstallDirectoryButton_Click"/>
                 </StackPanel>
               </StackPanel>
 

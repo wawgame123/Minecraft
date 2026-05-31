@@ -186,7 +186,18 @@ public partial class MainWindow : Window
 
     private async Task SaveSettingsFromUiAsync()
     {
-        _settings.InstallDirectory = InstallDirectoryBox.Text.Trim();
+        var selectedInstallDirectory = InstallDirectoryBox.Text.Trim();
+        if (string.IsNullOrWhiteSpace(selectedInstallDirectory))
+        {
+            selectedInstallDirectory = LauncherSettings.DefaultInstallDirectory();
+        }
+
+        if (!string.Equals(_settings.InstallDirectory, selectedInstallDirectory, StringComparison.OrdinalIgnoreCase))
+        {
+            _gameFilesReady = false;
+        }
+
+        _settings.InstallDirectory = selectedInstallDirectory;
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
@@ -317,11 +328,11 @@ public partial class MainWindow : Window
 
             SetBusy(true, "Проверяю Java 21...");
             var javaProgress = new Progress<string>(message => ProgressText.Text = message);
-            await _gameLaunchService.EnsureCompatibleJavaAsync(_settings, javaProgress, CurrentToken());
+            var javaPath = await _gameLaunchService.EnsureCompatibleJavaAsync(_settings, javaProgress, CurrentToken());
 
             SetBusy(true, "Проверяю библиотеки Minecraft...");
             var runtimeProgress = new Progress<string>(message => ProgressText.Text = message);
-            var minecraftRuntime = await _minecraftRuntimeService.EnsureAsync(_manifest!, _settings, runtimeProgress, CurrentToken());
+            var minecraftRuntime = await _minecraftRuntimeService.EnsureAsync(_manifest!, _settings, javaPath, runtimeProgress, CurrentToken());
 
             var launchIssues = _gameLaunchService.ValidateReady(_manifest!, _settings, minecraftRuntime);
             if (launchIssues.Count > 0)
@@ -401,7 +412,7 @@ public partial class MainWindow : Window
         });
     }
 
-    private void BrowseInstallDirectoryButton_Click(object sender, RoutedEventArgs e)
+    private async void BrowseInstallDirectoryButton_Click(object sender, RoutedEventArgs e)
     {
         using var dialog = new WinForms.FolderBrowserDialog
         {
@@ -412,8 +423,26 @@ public partial class MainWindow : Window
 
         if (dialog.ShowDialog() == WinForms.DialogResult.OK)
         {
-            InstallDirectoryBox.Text = dialog.SelectedPath;
+            await ApplyInstallDirectoryAsync(dialog.SelectedPath);
         }
+    }
+
+    private async Task ApplyInstallDirectoryAsync(string selectedPath)
+    {
+        var path = selectedPath.Trim();
+        if (string.IsNullOrWhiteSpace(path))
+        {
+            return;
+        }
+
+        _settings.InstallDirectory = path;
+        InstallDirectoryBox.Text = path;
+        _gameFilesReady = false;
+        RenderManifest();
+        UpdatePrimaryButtonState();
+        MainStatusText.Text = "Папка игры выбрана. Пользовательские configs, saves и лишние моды не удаляются.";
+        SidebarStatusText.Text = "Папка выбрана";
+        await _settingsService.SaveAsync(_settings);
     }
 
     private void ChooseColorButton_Click(object sender, RoutedEventArgs e)
@@ -854,6 +883,14 @@ public partial class MainWindow : Window
             throw new InvalidOperationException($"Не удалось установить сборку: {outdated} файлов не прошли проверку.");
         }
 
+        SetBusy(true, "Проверяю Java 21...");
+        var javaProgress = new Progress<string>(message => ProgressText.Text = message);
+        var javaPath = await _gameLaunchService.EnsureCompatibleJavaAsync(_settings, javaProgress, CurrentToken());
+
+        SetBusy(true, "Готовлю Minecraft runtime...");
+        var runtimeProgress = new Progress<string>(message => ProgressText.Text = message);
+        await _minecraftRuntimeService.EnsureAsync(_manifest!, _settings, javaPath, runtimeProgress, CurrentToken());
+
         UpdateLaunchReadinessStatus();
         MainStatusText.Text = "Сборка установлена. Теперь можно нажать \"Играть\".";
         SidebarStatusText.Text = "Установлено";
@@ -930,6 +967,7 @@ public partial class MainWindow : Window
         PlayButton.IsEnabled = !busy;
         RepairButton.IsEnabled = !busy;
         RefreshManifestButton.IsEnabled = !busy;
+        ChooseInstallDirectoryButton.IsEnabled = !busy;
         if (!busy)
         {
             UpdatePrimaryButtonState();
