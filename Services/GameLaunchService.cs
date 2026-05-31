@@ -39,12 +39,16 @@ public sealed class GameLaunchService
             issues.Add(JavaValidationMessage(settings));
         }
 
-        if (string.IsNullOrWhiteSpace(manifest.Launch.MainClass))
+        var mainClass = !string.IsNullOrWhiteSpace(runtime?.MainClass)
+            ? runtime.MainClass
+            : manifest.Launch.MainClass;
+        if (string.IsNullOrWhiteSpace(mainClass))
         {
             issues.Add("В manifest.json не заполнен launch.mainClass.");
         }
 
-        foreach (var relativePath in manifest.Launch.Classpath.Where(path => !string.IsNullOrWhiteSpace(path)))
+        var shouldValidateManifestClasspath = runtime is null || string.IsNullOrWhiteSpace(runtime.MainClass);
+        foreach (var relativePath in manifest.Launch.Classpath.Where(path => shouldValidateManifestClasspath && !string.IsNullOrWhiteSpace(path)))
         {
             var fullPath = Path.Combine(settings.InstallDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
             if (!File.Exists(fullPath))
@@ -698,11 +702,15 @@ public sealed class GameLaunchService
         LauncherSettings settings,
         MinecraftRuntime runtime)
     {
-        var manifestClasspath = manifest.Launch.Classpath
-            .Select(path => Path.Combine(settings.InstallDirectory, path.Replace('/', Path.DirectorySeparatorChar)))
-            .ToList();
+        var useRuntimeLaunch = !string.IsNullOrWhiteSpace(runtime.MainClass);
+        List<string> manifestClasspath = useRuntimeLaunch
+            ? []
+            : manifest.Launch.Classpath
+                .Select(path => Path.Combine(settings.InstallDirectory, path.Replace('/', Path.DirectorySeparatorChar)))
+                .ToList();
         var classpath = runtime.ClasspathFiles
-            .Concat(manifestClasspath.Count > 0 ? manifestClasspath : [runtime.ClientJarPath])
+            .Concat([runtime.ClientJarPath])
+            .Concat(manifestClasspath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(Quote);
 
@@ -714,7 +722,9 @@ public sealed class GameLaunchService
             "-Dminecraft.launcher.version=0.1"
         };
 
-        args.AddRange(manifest.Launch.JvmArgs.Select(arg => ExpandToken(arg, manifest, settings, runtime)));
+        args.AddRange(runtime.JvmArgs
+            .Concat(manifest.Launch.JvmArgs)
+            .Select(arg => QuoteIfNeededArgument(ExpandToken(arg, manifest, settings, runtime))));
 
         if (classpath.Any())
         {
@@ -722,8 +732,9 @@ public sealed class GameLaunchService
             args.Add(Quote(string.Join(Path.PathSeparator, classpath.Select(Unquote))));
         }
 
-        args.Add(manifest.Launch.MainClass);
+        args.Add(useRuntimeLaunch ? runtime.MainClass : manifest.Launch.MainClass);
         var gameArgs = manifest.Launch.GameArgs
+            .Concat(runtime.GameArgs)
             .Select(arg => ExpandToken(arg, manifest, settings, runtime))
             .ToList();
         AddMissingGameArg(gameArgs, "--assetsDir", runtime.AssetsDirectory);
@@ -766,7 +777,9 @@ public sealed class GameLaunchService
             .Replace("${assets_root}", runtime.AssetsDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${assets_index_name}", runtime.AssetIndex, StringComparison.OrdinalIgnoreCase)
             .Replace("${natives_directory}", runtime.NativesDirectory, StringComparison.OrdinalIgnoreCase)
-            .Replace("${version_name}", manifest.MinecraftVersion, StringComparison.OrdinalIgnoreCase)
+            .Replace("${library_directory}", runtime.LibrariesDirectory, StringComparison.OrdinalIgnoreCase)
+            .Replace("${classpath_separator}", Path.PathSeparator.ToString(), StringComparison.OrdinalIgnoreCase)
+            .Replace("${version_name}", runtime.VersionId, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader}", manifest.Loader, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
     }

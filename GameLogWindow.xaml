@@ -7,6 +7,7 @@
         Height="560"
         MinWidth="720"
         MinHeight="420"
+        WindowStartupLocation="CenterOwner"
         Background="#090A0F"
         Foreground="#F5F7FA"
         FontFamily="Segoe UI">

@@ -29,11 +29,20 @@ public partial class MainWindow : Window
     private bool _gameFilesReady;
     private bool _bindingSettings;
     private bool _syncingPlayerName;
+    private bool _mapInitialized;
 
     public MainWindow()
     {
         InitializeComponent();
         InitializeVisualControls();
+        MapWebView.NavigationCompleted += (_, args) =>
+        {
+            MapFallbackPanel.Visibility = args.IsSuccess ? Visibility.Collapsed : Visibility.Visible;
+            if (!args.IsSuccess)
+            {
+                MapStatusText.Text = "Не удалось загрузить карту внутри лаунчера. Можно открыть ее во внешнем браузере.";
+            }
+        };
         ApplyVisualSettings();
         Loaded += MainWindow_Loaded;
     }
@@ -117,7 +126,7 @@ public partial class MainWindow : Window
 
     private async Task EnsureGameFilesReadyAsync(bool repairMissingFiles)
     {
-        var statuses = await VerifyFilesAsync(downloadMissingFiles: false);
+        var statuses = await VerifyFilesAsync(downloadMissingFiles: false, verifyHashes: false);
         var outdated = CountOutdated(statuses);
         if (outdated == 0)
         {
@@ -134,7 +143,7 @@ public partial class MainWindow : Window
 
         MainStatusText.Text = $"Не хватает файлов для запуска: {outdated}. Докачиваю сборку...";
         SidebarStatusText.Text = "Докачиваю сборку";
-        statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+        statuses = await VerifyFilesAsync(downloadMissingFiles: true, verifyHashes: true);
         outdated = CountOutdated(statuses);
         _gameFilesReady = outdated == 0;
 
@@ -146,7 +155,7 @@ public partial class MainWindow : Window
         UpdateLaunchReadinessStatus();
     }
 
-    private async Task<IReadOnlyList<FileStatusItem>> VerifyFilesAsync(bool downloadMissingFiles)
+    private async Task<IReadOnlyList<FileStatusItem>> VerifyFilesAsync(bool downloadMissingFiles, bool verifyHashes)
     {
         if (_manifest is null)
         {
@@ -155,7 +164,13 @@ public partial class MainWindow : Window
 
         SetBusy(true, downloadMissingFiles ? "Проверяю и восстанавливаю файлы..." : "Проверяю файлы...");
         var progress = new Progress<string>(message => ProgressText.Text = message);
-        var statuses = await _fileSyncService.VerifyAndRepairAsync(_manifest, _settings, downloadMissingFiles, progress, CurrentToken());
+        var statuses = await _fileSyncService.VerifyAndRepairAsync(
+            _manifest,
+            _settings,
+            downloadMissingFiles,
+            verifyHashes || downloadMissingFiles,
+            progress,
+            CurrentToken());
 
         var outdated = CountOutdated(statuses);
         MainStatusText.Text = outdated switch
@@ -173,7 +188,7 @@ public partial class MainWindow : Window
     {
         _settings.InstallDirectory = InstallDirectoryBox.Text.Trim();
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
-        _settings.PlayerName = CurrentPlayerName();
+        _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         _settings.BugReportEmail = BugReportEmailBox.Text.Trim();
@@ -192,6 +207,7 @@ public partial class MainWindow : Window
         }
 
         await _settingsService.SaveAsync(_settings);
+        UpdatePlayerNameMode();
         RenderManifest();
     }
 
@@ -216,6 +232,7 @@ public partial class MainWindow : Window
             CompactModeCheckBox.IsChecked = _settings.CompactMode;
             PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
             UpdatePlayerPreview();
+            UpdatePlayerNameMode();
         }
         finally
         {
@@ -260,11 +277,15 @@ public partial class MainWindow : Window
         {
             MapUrlText.Text = "Ссылка на карту не указана.";
             OpenMapButton.IsEnabled = false;
+            ReloadMapButton.IsEnabled = false;
+            MapFallbackPanel.Visibility = Visibility.Visible;
+            MapStatusText.Text = "Ссылка на карту не указана.";
             return;
         }
 
-        MapUrlText.Text = _manifest.BlueMapUrl;
+        MapUrlText.Text = Preferred3DMapUrl(_manifest.BlueMapUrl);
         OpenMapButton.IsEnabled = true;
+        ReloadMapButton.IsEnabled = true;
     }
 
     private async void PlayButton_Click(object sender, RoutedEventArgs e)
@@ -283,7 +304,7 @@ public partial class MainWindow : Window
                 return;
             }
 
-            var readinessStatuses = await VerifyFilesAsync(downloadMissingFiles: false);
+            var readinessStatuses = await VerifyFilesAsync(downloadMissingFiles: false, verifyHashes: false);
             var readinessOutdated = CountOutdated(readinessStatuses);
             _gameFilesReady = readinessOutdated == 0;
             if (!_gameFilesReady)
@@ -353,7 +374,7 @@ public partial class MainWindow : Window
                 await LoadManifestAsync(repairMissingGameFiles: false);
             }
 
-            var statuses = await VerifyFilesAsync(downloadMissingFiles: false);
+            var statuses = await VerifyFilesAsync(downloadMissingFiles: false, verifyHashes: true);
             _gameFilesReady = CountOutdated(statuses) == 0;
             UpdateLaunchReadinessStatus();
             UpdatePrimaryButtonState();
@@ -429,10 +450,38 @@ public partial class MainWindow : Window
 
         if (sender is System.Windows.Controls.TextBox textBox)
         {
+            if (ReferenceEquals(textBox, HomePlayerNameBox))
+            {
+                UpdatePlayerPreview();
+                ConfirmPlayerNameButton.IsEnabled = !string.IsNullOrWhiteSpace(HomePlayerNameBox.Text);
+                return;
+            }
+
             SyncPlayerNameText(textBox.Text);
         }
 
         UpdatePlayerPreview();
+        UpdatePlayerNameMode();
+    }
+
+    private async void ConfirmPlayerNameButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            var playerName = HomePlayerNameBox.Text.Trim();
+            if (!IsValidMinecraftName(playerName))
+            {
+                throw new InvalidOperationException("Ник должен быть от 3 до 16 символов: латиница, цифры или _.");
+            }
+
+            SyncPlayerNameText(playerName);
+            _settings.PlayerName = playerName;
+            await _settingsService.SaveAsync(_settings);
+            UpdatePlayerNameMode();
+            UpdatePlayerPreview();
+            MainStatusText.Text = $"Ник подтвержден: {playerName}";
+            SidebarStatusText.Text = "Ник подтвержден";
+        });
     }
 
     private void OpenInstallDirectoryButton_Click(object sender, RoutedEventArgs e)
@@ -450,12 +499,61 @@ public partial class MainWindow : Window
             return;
         }
 
-        Process.Start(new ProcessStartInfo(_manifest.BlueMapUrl) { UseShellExecute = true });
+        Process.Start(new ProcessStartInfo(Preferred3DMapUrl(_manifest.BlueMapUrl)) { UseShellExecute = true });
+    }
+
+    private async void ReloadMapButton_Click(object sender, RoutedEventArgs e)
+    {
+        await LoadMapAsync(forceReload: true);
+    }
+
+    private async Task LoadMapAsync(bool forceReload)
+    {
+        if (_manifest is null || string.IsNullOrWhiteSpace(_manifest.BlueMapUrl))
+        {
+            RenderMapLink();
+            return;
+        }
+
+        var mapUrl = Preferred3DMapUrl(_manifest.BlueMapUrl);
+        MapUrlText.Text = mapUrl;
+
+        if (_mapInitialized && !forceReload && MapWebView.Source?.ToString() == mapUrl)
+        {
+            return;
+        }
+
+        try
+        {
+            MapFallbackPanel.Visibility = Visibility.Visible;
+            MapStatusText.Text = "Загружаю 3D-карту...";
+            await MapWebView.EnsureCoreWebView2Async();
+            MapWebView.CoreWebView2.Settings.AreDefaultContextMenusEnabled = true;
+            MapWebView.CoreWebView2.Settings.IsZoomControlEnabled = true;
+            MapWebView.Source = new Uri(mapUrl);
+            _mapInitialized = true;
+        }
+        catch (Exception ex)
+        {
+            MapFallbackPanel.Visibility = Visibility.Visible;
+            MapStatusText.Text = $"Не удалось открыть встроенную карту: {ex.Message}";
+        }
+    }
+
+    private static string Preferred3DMapUrl(string mapUrl)
+    {
+        return mapUrl.EndsWith(":flat", StringComparison.OrdinalIgnoreCase)
+            ? mapUrl[..^":flat".Length] + ":perspective"
+            : mapUrl;
     }
 
     private void HomeNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(HomePanel);
     private void NewsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(NewsPanel);
-    private void MapNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(MapPanel);
+    private async void MapNavButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowPanel(MapPanel);
+        await LoadMapAsync(forceReload: false);
+    }
     private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(SettingsPanel);
 
     private void ShowPanel(UIElement panel)
@@ -746,7 +844,7 @@ public partial class MainWindow : Window
 
     private async Task InstallGameFilesAsync()
     {
-        var statuses = await VerifyFilesAsync(downloadMissingFiles: true);
+        var statuses = await VerifyFilesAsync(downloadMissingFiles: true, verifyHashes: true);
         var outdated = CountOutdated(statuses);
         _gameFilesReady = outdated == 0;
         UpdatePrimaryButtonState();
@@ -771,7 +869,32 @@ public partial class MainWindow : Window
 
     private string CurrentPlayerName()
     {
-        return HomePlayerNameBox.Text.Trim();
+        return HomeNameInputPanel.Visibility == Visibility.Visible
+            ? HomePlayerNameBox.Text.Trim()
+            : PlayerNameBox.Text.Trim();
+    }
+
+    private void UpdatePlayerNameMode()
+    {
+        var playerName = PlayerNameBox.Text.Trim();
+        var confirmed = IsValidMinecraftName(playerName);
+
+        HomeNameInputPanel.Visibility = confirmed ? Visibility.Collapsed : Visibility.Visible;
+        HomeNameLockedPanel.Visibility = confirmed ? Visibility.Visible : Visibility.Collapsed;
+        LockedPlayerNameText.Text = playerName;
+        ConfirmPlayerNameButton.IsEnabled = !string.IsNullOrWhiteSpace(HomePlayerNameBox.Text);
+
+        if (confirmed && HomePlayerNameBox.Text != playerName)
+        {
+            HomePlayerNameBox.Text = playerName;
+        }
+    }
+
+    private static bool IsValidMinecraftName(string playerName)
+    {
+        var trimmed = playerName.Trim();
+        return trimmed.Length is >= 3 and <= 16
+            && trimmed.All(character => char.IsAsciiLetterOrDigit(character) || character == '_');
     }
 
     private void SyncPlayerNameText(string playerName)

@@ -28,6 +28,20 @@ function Assert-UnderRoot {
     }
 }
 
+function Invoke-Checked {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$FilePath,
+        [Parameter(Mandatory = $true)]
+        [string[]]$Arguments
+    )
+
+    & $FilePath @Arguments
+    if ($LASTEXITCODE -ne 0) {
+        throw "$FilePath $($Arguments -join ' ') failed with exit code $LASTEXITCODE"
+    }
+}
+
 [xml]$projectXml = Get-Content -Raw -LiteralPath $project
 $version = $projectXml.Project.PropertyGroup.Version
 if ([string]::IsNullOrWhiteSpace($version)) {
@@ -45,13 +59,13 @@ New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 if ([string]::IsNullOrWhiteSpace($Runtime)) {
-    dotnet restore $project --ignore-failed-sources
-    dotnet publish $project -c $Configuration --self-contained false --no-restore -o $publishDir
+    Invoke-Checked dotnet @("restore", $project, "--ignore-failed-sources")
+    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-o", $publishDir)
     $packageSuffix = "framework"
 }
 else {
-    dotnet restore $project -r $Runtime --ignore-failed-sources
-    dotnet publish $project -c $Configuration -r $Runtime --self-contained false --no-restore -o $publishDir
+    Invoke-Checked dotnet @("restore", $project, "-r", $Runtime, "--ignore-failed-sources")
+    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-o", $publishDir)
     $packageSuffix = $Runtime
 }
 
@@ -73,9 +87,9 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        $utf8.GetString([Convert]::FromBase64String("0JjRgdC/0YDQsNCy0LvQtdC9INC60YDQsNGIINC/0YDQuCDQv9GA0L7QstC10YDQutC1IFNIQS0xOiDQstGA0LXQvNC10L3QvdGL0LkgLmRvd25sb2FkINGE0LDQudC7INGC0LXQv9C10YDRjCDQt9Cw0LrRgNGL0LLQsNC10YLRgdGPINC/0LXRgNC10LQg0L/RgNC+0LLQtdGA0LrQvtC5Lg==")),
-        $utf8.GetString([Convert]::FromBase64String("0J/QvtC40YHQuiBKYXZhIDIxINGA0LDRgdGI0LjRgNC10L06IFBBVEgsIEpBVkFfSE9NRSwgUHJvZ3JhbSBGaWxlcywgTG9jYWxBcHBEYXRhLCBydW50aW1lINC+0YTQuNGG0LjQsNC70YzQvdC+0LPQviBNaW5lY3JhZnQgTGF1bmNoZXIg0Lgg0YDQtdC10YHRgtGAIFdpbmRvd3Mu")),
-        $utf8.GetString([Convert]::FromBase64String("0JIg0YHRgtCw0YLRg9GB0LUg0LfQsNC/0YPRgdC60LAg0YLQtdC/0LXRgNGMINCy0LjQtNC90L4sINC60LDQutCw0Y8gSmF2YSDQvdCw0LnQtNC10L3QsCDQuCDQv9C+0YfQtdC80YMg0LvQsNGD0L3Rh9C10YAg0YHQutCw0YfQuNCy0LDQtdGCIHJ1bnRpbWUu"))
+        $utf8.GetString([Convert]::FromBase64String("0JjRgdC/0YDQsNCy0LvQtdC9INC30LDQv9GD0YHQuiBOZW9Gb3JnZTog0LvQsNGD0L3Rh9C10YAg0YHQutCw0YfQuNCy0LDQtdGCINCx0LjQsdC70LjQvtGC0LXQutC4IGxvYWRlcifQsCDQuCDRgdGC0LDRgNGC0YPQtdGCINGH0LXRgNC10LcgQm9vdHN0cmFwTGF1bmNoZXIsINC/0L7RjdGC0L7QvNGDINC80L7QtNGLINC40Lcg0L/QsNC/0LrQuCBtb2RzINC/0L7QtNGF0LLQsNGC0YvQstCw0Y7RgtGB0Y8u")),
+        $utf8.GetString([Convert]::FromBase64String("0J/RgNC+0LLQtdGA0LrQsCDRhNCw0LnQu9C+0LIg0YPRgdC60L7RgNC10L3QsDog0LHRi9GB0YLRgNGL0Lkg0YHRgtCw0YDRgiDQv9GA0L7QstC10YDRj9C10YIg0YDQsNC30LzQtdGAINC/0LDRgNCw0LvQu9C10LvRjNC90L4sINGD0YHRgtCw0L3QvtCy0LrQsCDQuCDRgNC10LzQvtC90YIg0YHQutCw0YfQuNCy0LDRjtGCINC00L4gMTYg0YTQsNC50LvQvtCyINC+0LTQvdC+0LLRgNC10LzQtdC90L3Qvi4=")),
+        $utf8.GetString([Convert]::FromBase64String("0JTQvtCx0LDQstC70LXQvdGLINC/0L7QtNGC0LLQtdGA0LbQtNC10L3QuNC1INC90LjQutCwLCDRhtC10L3RgtGA0LjRgNC+0LLQsNC90LjQtSDQvtC60L7QvSDQuCDQstGB0YLRgNC+0LXQvdC90LDRjyAzRC3QutCw0YDRgtCwIEJsdWVNYXAg0LIg0YDQsNC30LTQtdC70LUg0JrQsNGA0YLQsC4="))
     )
 }
 

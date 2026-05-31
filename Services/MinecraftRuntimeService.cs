@@ -12,6 +12,9 @@ public sealed class MinecraftRuntimeService
 {
     private const string VersionManifestUrl = "https://piston-meta.mojang.com/mc/game/version_manifest_v2.json";
     private const string AssetBaseUrl = "https://resources.download.minecraft.net";
+    private const string NeoForgeMavenBaseUrl = "https://maven.neoforged.net/releases/net/neoforged/neoforge";
+    private const int MaxParallelLibraryDownloads = 12;
+    private const int MaxParallelAssetDownloads = 16;
     private static readonly JsonSerializerOptions JsonOptions = new() { PropertyNameCaseInsensitive = true };
 
     private readonly HttpClient _httpClient = new();
@@ -34,53 +37,54 @@ public sealed class MinecraftRuntimeService
         Directory.CreateDirectory(assetsRoot);
         Directory.CreateDirectory(nativesRoot);
 
-        progress?.Report("Проверяю библиотеки Minecraft...");
+        progress?.Report("Библиотеки Minecraft 0%");
         var versionJson = await LoadVersionJsonAsync(manifest.MinecraftVersion, versionsRoot, progress, cancellationToken);
+        var loaderJson = await LoadLoaderVersionJsonAsync(manifest, runtimeRoot, progress, cancellationToken);
 
         var clientJarPath = Path.Combine(versionsRoot, manifest.MinecraftVersion + ".jar");
         if (versionJson.Downloads.Client is not null)
         {
-            await EnsureDownloadAsync(versionJson.Downloads.Client, clientJarPath, "Minecraft client.jar", progress, cancellationToken);
+            await EnsureDownloadAsync(versionJson.Downloads.Client, clientJarPath, progress, cancellationToken);
         }
 
-        var classpath = new List<string>();
-        var libraries = versionJson.Libraries
-            .Where(IsAllowedOnWindows)
-            .ToList();
-
-        for (var index = 0; index < libraries.Count; index++)
+        var workItems = new List<RuntimeDownloadItem>();
+        AddLibraryDownloads(versionJson.Libraries, librariesRoot, workItems);
+        if (loaderJson is not null)
         {
-            cancellationToken.ThrowIfCancellationRequested();
-            var library = libraries[index];
-            progress?.Report($"Библиотеки Minecraft {Percent(index, libraries.Count)}%");
+            AddLibraryDownloads(loaderJson.Libraries, librariesRoot, workItems);
+        }
 
-            if (library.Downloads.Artifact is not null)
-            {
-                var libraryPath = Path.Combine(librariesRoot, library.Downloads.Artifact.Path.Replace('/', Path.DirectorySeparatorChar));
-                await EnsureDownloadAsync(library.Downloads.Artifact, libraryPath, library.Name, progress, cancellationToken);
-                classpath.Add(libraryPath);
-            }
+        await EnsureLibraryDownloadsAsync(workItems, progress, cancellationToken);
 
-            var nativeDownload = NativeDownloadForWindows(library);
-            if (nativeDownload is not null)
-            {
-                var nativeJarPath = Path.Combine(librariesRoot, nativeDownload.Path.Replace('/', Path.DirectorySeparatorChar));
-                await EnsureDownloadAsync(nativeDownload, nativeJarPath, library.Name + " natives", progress, cancellationToken);
-                ExtractNatives(nativeJarPath, nativesRoot);
-            }
+        foreach (var nativeJarPath in workItems
+            .Where(item => item.IsNative)
+            .Select(item => item.DestinationPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase))
+        {
+            ExtractNatives(nativeJarPath, nativesRoot);
         }
 
         progress?.Report("Библиотеки Minecraft 100%");
         var assetIndexId = versionJson.AssetIndex.Id;
         await EnsureAssetsAsync(versionJson.AssetIndex, assetsRoot, progress, cancellationToken);
 
+        var classpath = workItems
+            .Where(item => item.AddToClasspath)
+            .Select(item => item.DestinationPath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
+
         return new MinecraftRuntime(
-            manifest.MinecraftVersion,
+            loaderJson?.Id ?? manifest.MinecraftVersion,
             clientJarPath,
             classpath,
             nativesRoot,
             assetsRoot,
-            assetIndexId);
+            assetIndexId,
+            librariesRoot,
+            loaderJson?.MainClass ?? "",
+            ExtractStringArguments(loaderJson?.Arguments.Jvm),
+            ExtractStringArguments(loaderJson?.Arguments.Game));
     }
 
     private async Task<MinecraftVersionJson> LoadVersionJsonAsync(
@@ -103,7 +107,7 @@ public sealed class MinecraftRuntimeService
             return localVersion;
         }
 
-        progress?.Report("Загружаю metadata Minecraft...");
+        progress?.Report("Metadata Minecraft 0%");
         await using var manifestStream = await _httpClient.GetStreamAsync(VersionManifestUrl, cancellationToken);
         var versionManifest = await JsonSerializer.DeserializeAsync<MinecraftVersionManifest>(manifestStream, JsonOptions, cancellationToken)
             ?? throw new InvalidOperationException("Не удалось прочитать version_manifest_v2.json Minecraft.");
@@ -120,6 +124,100 @@ public sealed class MinecraftRuntimeService
             ?? throw new InvalidOperationException($"Не удалось прочитать metadata Minecraft {minecraftVersion}.");
     }
 
+    private async Task<MinecraftVersionJson?> LoadLoaderVersionJsonAsync(
+        LauncherManifest manifest,
+        string runtimeRoot,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        if (!string.Equals(manifest.Loader, "neoforge", StringComparison.OrdinalIgnoreCase)
+            || string.IsNullOrWhiteSpace(manifest.LoaderVersion))
+        {
+            return null;
+        }
+
+        var loaderRoot = Path.Combine(runtimeRoot, "loaders", "neoforge", manifest.LoaderVersion);
+        Directory.CreateDirectory(loaderRoot);
+        var versionJsonPath = Path.Combine(loaderRoot, "version.json");
+
+        if (File.Exists(versionJsonPath))
+        {
+            await using var localStream = File.OpenRead(versionJsonPath);
+            var localVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(localStream, JsonOptions, cancellationToken);
+            if (localVersion is not null && localVersion.Libraries.Count > 0 && !string.IsNullOrWhiteSpace(localVersion.MainClass))
+            {
+                return localVersion;
+            }
+        }
+
+        progress?.Report("Metadata NeoForge 0%");
+        var installerPath = Path.Combine(loaderRoot, $"neoforge-{manifest.LoaderVersion}-installer.jar");
+        var installerUrl = $"{NeoForgeMavenBaseUrl}/{manifest.LoaderVersion}/neoforge-{manifest.LoaderVersion}-installer.jar";
+        await DownloadFileAsync(installerUrl, installerPath, expectedSize: 0, expectedSha1: "", cancellationToken);
+
+        using var archive = ZipFile.OpenRead(installerPath);
+        var entry = archive.GetEntry("version.json")
+            ?? throw new InvalidOperationException($"В NeoForge installer {manifest.LoaderVersion} не найден version.json.");
+
+        await using var entryStream = entry.Open();
+        using var memory = new MemoryStream();
+        await entryStream.CopyToAsync(memory, cancellationToken);
+        var bytes = memory.ToArray();
+        await File.WriteAllBytesAsync(versionJsonPath, bytes, cancellationToken);
+
+        return JsonSerializer.Deserialize<MinecraftVersionJson>(bytes, JsonOptions)
+            ?? throw new InvalidOperationException($"Не удалось прочитать version.json NeoForge {manifest.LoaderVersion}.");
+    }
+
+    private static void AddLibraryDownloads(
+        IEnumerable<MinecraftLibrary> libraries,
+        string librariesRoot,
+        ICollection<RuntimeDownloadItem> workItems)
+    {
+        foreach (var library in libraries.Where(IsAllowedOnWindows))
+        {
+            if (library.Downloads.Artifact is not null)
+            {
+                var libraryPath = Path.Combine(librariesRoot, library.Downloads.Artifact.Path.Replace('/', Path.DirectorySeparatorChar));
+                workItems.Add(new RuntimeDownloadItem(library.Downloads.Artifact, libraryPath, AddToClasspath: true, IsNative: false));
+            }
+
+            var nativeDownload = NativeDownloadForWindows(library);
+            if (nativeDownload is not null)
+            {
+                var nativeJarPath = Path.Combine(librariesRoot, nativeDownload.Path.Replace('/', Path.DirectorySeparatorChar));
+                workItems.Add(new RuntimeDownloadItem(nativeDownload, nativeJarPath, AddToClasspath: false, IsNative: true));
+            }
+        }
+    }
+
+    private async Task EnsureLibraryDownloadsAsync(
+        IReadOnlyCollection<RuntimeDownloadItem> workItems,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        var downloads = workItems
+            .GroupBy(item => item.DestinationPath, StringComparer.OrdinalIgnoreCase)
+            .Select(group => group.First())
+            .ToList();
+
+        var completed = 0;
+        progress?.Report($"Библиотеки Minecraft {Percent(completed, downloads.Count)}%");
+        await Parallel.ForEachAsync(
+            downloads,
+            new ParallelOptions
+            {
+                MaxDegreeOfParallelism = MaxParallelLibraryDownloads,
+                CancellationToken = cancellationToken
+            },
+            async (item, token) =>
+            {
+                await EnsureDownloadAsync(item.Download, item.DestinationPath, progress: null, token);
+                var done = Interlocked.Increment(ref completed);
+                progress?.Report($"Библиотеки Minecraft {Percent(done, downloads.Count)}%");
+            });
+    }
+
     private async Task EnsureAssetsAsync(
         MinecraftAssetIndex assetIndex,
         string assetsRoot,
@@ -130,7 +228,7 @@ public sealed class MinecraftRuntimeService
         Directory.CreateDirectory(indexesRoot);
         var indexPath = Path.Combine(indexesRoot, assetIndex.Id + ".json");
 
-        await EnsureDownloadAsync(assetIndex, indexPath, "asset index", progress, cancellationToken);
+        await EnsureDownloadAsync(assetIndex, indexPath, progress, cancellationToken);
 
         await using var stream = File.OpenRead(indexPath);
         var index = await JsonSerializer.DeserializeAsync<MinecraftAssetsDocument>(stream, JsonOptions, cancellationToken)
@@ -163,7 +261,7 @@ public sealed class MinecraftRuntimeService
             missingAssets,
             new ParallelOptions
             {
-                MaxDegreeOfParallelism = 8,
+                MaxDegreeOfParallelism = MaxParallelAssetDownloads,
                 CancellationToken = cancellationToken
             },
             async (item, token) =>
@@ -183,7 +281,6 @@ public sealed class MinecraftRuntimeService
     private async Task EnsureDownloadAsync(
         MinecraftDownload download,
         string destinationPath,
-        string label,
         IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
@@ -196,10 +293,10 @@ public sealed class MinecraftRuntimeService
 
         if (string.IsNullOrWhiteSpace(download.Url))
         {
-            throw new InvalidOperationException($"Для {label} не указан url.");
+            throw new InvalidOperationException("Для runtime-файла не указан url.");
         }
 
-        progress?.Report($"Скачиваю {label}...");
+        progress?.Report("Скачивание runtime 0%");
         Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
         await DownloadFileAsync(download.Url, destinationPath, download.Size, download.Sha1, cancellationToken);
     }
@@ -300,6 +397,29 @@ public sealed class MinecraftRuntimeService
         return library.Downloads.Classifiers.TryGetValue(classifier, out var download) ? download : null;
     }
 
+    private static IReadOnlyList<string> ExtractStringArguments(IReadOnlyList<JsonElement>? arguments)
+    {
+        if (arguments is null || arguments.Count == 0)
+        {
+            return [];
+        }
+
+        var result = new List<string>();
+        foreach (var argument in arguments)
+        {
+            if (argument.ValueKind == JsonValueKind.String)
+            {
+                var value = argument.GetString();
+                if (!string.IsNullOrWhiteSpace(value))
+                {
+                    result.Add(value);
+                }
+            }
+        }
+
+        return result;
+    }
+
     private static async Task<string> Sha1Async(string path, CancellationToken cancellationToken)
     {
         await using var stream = File.OpenRead(path);
@@ -313,13 +433,23 @@ public sealed class MinecraftRuntimeService
     }
 }
 
+internal sealed record RuntimeDownloadItem(
+    MinecraftDownload Download,
+    string DestinationPath,
+    bool AddToClasspath,
+    bool IsNative);
+
 public sealed record MinecraftRuntime(
     string VersionId,
     string ClientJarPath,
     IReadOnlyList<string> ClasspathFiles,
     string NativesDirectory,
     string AssetsDirectory,
-    string AssetIndex);
+    string AssetIndex,
+    string LibrariesDirectory,
+    string MainClass,
+    IReadOnlyList<string> JvmArgs,
+    IReadOnlyList<string> GameArgs);
 
 internal sealed class MinecraftVersionManifest
 {
@@ -341,6 +471,12 @@ internal sealed class MinecraftVersionJson
     [JsonPropertyName("id")]
     public string Id { get; set; } = "";
 
+    [JsonPropertyName("mainClass")]
+    public string MainClass { get; set; } = "";
+
+    [JsonPropertyName("arguments")]
+    public MinecraftLaunchArguments Arguments { get; set; } = new();
+
     [JsonPropertyName("downloads")]
     public MinecraftVersionDownloads Downloads { get; set; } = new();
 
@@ -349,6 +485,15 @@ internal sealed class MinecraftVersionJson
 
     [JsonPropertyName("libraries")]
     public List<MinecraftLibrary> Libraries { get; set; } = [];
+}
+
+internal sealed class MinecraftLaunchArguments
+{
+    [JsonPropertyName("game")]
+    public List<JsonElement> Game { get; set; } = [];
+
+    [JsonPropertyName("jvm")]
+    public List<JsonElement> Jvm { get; set; } = [];
 }
 
 internal sealed class MinecraftVersionDownloads

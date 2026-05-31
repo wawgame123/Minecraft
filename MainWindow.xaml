@@ -1,12 +1,14 @@
 <Window x:Class="ServerLauncher.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:wv2="clr-namespace:Microsoft.Web.WebView2.Wpf;assembly=Microsoft.Web.WebView2.Wpf"
         Title="minivibe"
         Icon="Assets/launcher-icon.ico"
         Width="1180"
         Height="760"
         MinWidth="980"
         MinHeight="640"
+        WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI"
         Background="{DynamicResource AppBackgroundBrush}"
         Foreground="{DynamicResource TextBrush}">
@@ -75,6 +77,11 @@
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="Padding" Value="18"/>
+      <Setter Property="Effect">
+        <Setter.Value>
+          <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.18" Color="#000000"/>
+        </Setter.Value>
+      </Setter>
     </Style>
 
     <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
@@ -261,7 +268,29 @@
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center">
                 <TextBlock Text="Профиль" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                <TextBox x:Name="HomePlayerNameBox" TextChanged="PlayerNameBox_TextChanged" Margin="0,5,0,6"/>
+                <DockPanel x:Name="HomeNameInputPanel" Margin="0,5,0,6">
+                  <Button x:Name="ConfirmPlayerNameButton"
+                          Content="Подтвердить"
+                          DockPanel.Dock="Right"
+                          Margin="8,0,0,0"
+                          MinWidth="112"
+                          Click="ConfirmPlayerNameButton_Click"/>
+                  <TextBox x:Name="HomePlayerNameBox" TextChanged="PlayerNameBox_TextChanged"/>
+                </DockPanel>
+                <Border x:Name="HomeNameLockedPanel"
+                        Visibility="Collapsed"
+                        Background="{DynamicResource SurfaceAltBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        Padding="12"
+                        Margin="0,5,0,6">
+                  <TextBlock x:Name="LockedPlayerNameText"
+                             FontSize="18"
+                             FontWeight="SemiBold"
+                             Foreground="{DynamicResource TextBrush}"
+                             TextWrapping="Wrap"/>
+                </Border>
                 <TextBlock x:Name="PlayerPreviewText" Text="Ник появится в игре" FontSize="12" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,14"/>
                 <TextBlock Text="Сборка" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
                 <TextBlock x:Name="PackPreviewText" Text="ожидает manifest" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
@@ -311,7 +340,10 @@
           </Grid.RowDefinitions>
           <DockPanel Margin="0,0,0,14">
             <TextBlock Text="Карта" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
-            <Button x:Name="OpenMapButton" Content="Открыть карту в браузере" DockPanel.Dock="Right" HorizontalAlignment="Right" Click="OpenMapButton_Click"/>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" HorizontalAlignment="Right">
+              <Button x:Name="ReloadMapButton" Content="Обновить" Style="{StaticResource SecondaryButtonStyle}" Click="ReloadMapButton_Click"/>
+              <Button x:Name="OpenMapButton" Content="В браузере" HorizontalAlignment="Right" Click="OpenMapButton_Click"/>
+            </StackPanel>
           </DockPanel>
           <Border Grid.Row="1" Style="{StaticResource CardStyle}">
             <Grid>
@@ -319,26 +351,32 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="Auto"/>
               </Grid.RowDefinitions>
-              <StackPanel VerticalAlignment="Center" MaxWidth="620">
-                <TextBlock Text="BlueMap открывается во внешнем браузере"
-                           FontSize="24"
-                           FontWeight="SemiBold"
-                           Foreground="{DynamicResource TextBrush}"
-                           TextWrapping="Wrap"/>
-                <TextBlock Text="Встроенный браузер Windows не всегда поддерживает современную карту, поэтому ссылка открывается стабильным системным браузером."
-                           Foreground="{DynamicResource MutedBrush}"
-                           Margin="0,10,0,0"
-                           TextWrapping="Wrap"/>
-                <TextBlock x:Name="MapUrlText"
-                           Foreground="{DynamicResource TextBrush}"
-                           Margin="0,18,0,0"
-                           TextWrapping="Wrap"/>
-              </StackPanel>
-              <Button Grid.Row="1"
-                      Content="Открыть карту"
-                      HorizontalAlignment="Left"
-                      Margin="0,18,0,0"
-                      Click="OpenMapButton_Click"/>
+              <Grid ClipToBounds="True">
+                <wv2:WebView2 x:Name="MapWebView"
+                              DefaultBackgroundColor="#090A0F"/>
+                <Border x:Name="MapFallbackPanel"
+                        Background="{DynamicResource SurfaceAltBrush}"
+                        CornerRadius="8"
+                        Padding="22">
+                  <StackPanel VerticalAlignment="Center" MaxWidth="620">
+                    <TextBlock Text="3D-карта загружается"
+                               FontSize="24"
+                               FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextBrush}"
+                               TextWrapping="Wrap"/>
+                    <TextBlock x:Name="MapStatusText"
+                               Text="BlueMap будет открыта внутри лаунчера."
+                               Foreground="{DynamicResource MutedBrush}"
+                               Margin="0,10,0,0"
+                               TextWrapping="Wrap"/>
+                  </StackPanel>
+                </Border>
+              </Grid>
+              <TextBlock x:Name="MapUrlText"
+                         Grid.Row="1"
+                         Foreground="{DynamicResource MutedBrush}"
+                         Margin="0,12,0,0"
+                         TextWrapping="Wrap"/>
             </Grid>
           </Border>
         </Grid>

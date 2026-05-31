@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.9",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.9-framework.zip",
-    "sha256":  "970990b4e70634130ca2fdbf61785d983d2c151d2446982630fc9d5d937a6504",
+    "version":  "0.1.10",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.10-framework.zip",
+    "sha256":  "9aac91d62c3b9fef5f10b10147463c114d6a0b1484540051f0524b4fdab62bee",
     "mandatory":  false,
     "notes":  [
-                  "Исправлен краш при проверке SHA-1: временный .download файл теперь закрывается перед проверкой.",
-                  "Поиск Java 21 расширен: PATH, JAVA_HOME, Program Files, LocalAppData, runtime официального Minecraft Launcher и реестр Windows.",
-                  "В статусе запуска теперь видно, какая Java найдена и почему лаунчер скачивает runtime."
+                  "Исправлен запуск NeoForge: лаунчер скачивает библиотеки loader\u0027а и стартует через BootstrapLauncher, поэтому моды из папки mods подхватываются.",
+                  "Проверка файлов ускорена: быстрый старт проверяет размер параллельно, установка и ремонт скачивают до 16 файлов одновременно.",
+                  "Добавлены подтверждение ника, центрирование окон и встроенная 3D-карта BlueMap в разделе Карта."
               ]
 }

@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.IO;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -11,7 +12,8 @@ public sealed class FileSyncService
     public const string StatusMissing = "Отсутствует";
     public const string StatusWrongSize = "Неверный размер";
     public const string StatusCorrupt = "Поврежден";
-    private const int MaxParallelDownloads = 6;
+    private const int MaxParallelChecks = 8;
+    private const int MaxParallelDownloads = 16;
 
     private readonly HttpClient _httpClient = new();
 
@@ -19,43 +21,52 @@ public sealed class FileSyncService
         LauncherManifest manifest,
         LauncherSettings settings,
         bool downloadMissingFiles,
+        bool verifyHashes,
         IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(settings.InstallDirectory);
         var files = GetManagedFiles(manifest, settings.EnableShaders).ToList();
         var statuses = new FileStatusItem[files.Count];
-        var repairQueue = new List<(int Index, ManifestFile File, string FullPath)>();
+        var repairQueue = new ConcurrentBag<(int Index, ManifestFile File, string FullPath)>();
+        var checkedCount = 0;
 
-        for (var index = 0; index < files.Count; index++)
-        {
-            cancellationToken.ThrowIfCancellationRequested();
-            var file = files[index];
-            ReportPercent(progress, "Проверка", index, files.Count);
-
-            var fullPath = ResolveInsideInstallDirectory(settings.InstallDirectory, file.Path);
-            var status = await CheckFileAsync(fullPath, file, cancellationToken);
-            statuses[index] = new FileStatusItem
+        ReportPercent(progress, "Проверка", 0, files.Count);
+        await Parallel.ForEachAsync(
+            Enumerable.Range(0, files.Count),
+            new ParallelOptions
             {
-                Path = file.Path,
-                Category = file.Category,
-                Required = file.Required,
-                Size = file.Size,
-                Status = status
-            };
-
-            if (status != StatusCurrent)
+                MaxDegreeOfParallelism = MaxParallelChecks,
+                CancellationToken = cancellationToken
+            },
+            async (index, token) =>
             {
-                repairQueue.Add((index, file, fullPath));
-            }
-        }
+                var file = files[index];
+                var fullPath = ResolveInsideInstallDirectory(settings.InstallDirectory, file.Path);
+                var status = await CheckFileAsync(fullPath, file, verifyHashes, token);
+                statuses[index] = new FileStatusItem
+                {
+                    Path = file.Path,
+                    Category = file.Category,
+                    Required = file.Required,
+                    Size = file.Size,
+                    Status = status
+                };
 
-        ReportPercent(progress, "Проверка", files.Count, files.Count);
+                if (status != StatusCurrent)
+                {
+                    repairQueue.Add((index, file, fullPath));
+                }
+
+                var done = Interlocked.Increment(ref checkedCount);
+                ReportPercent(progress, "Проверка", done, files.Count);
+            });
 
         if (downloadMissingFiles && repairQueue.Count > 0)
         {
             var completed = 0;
-            ReportPercent(progress, "Скачивание", completed, repairQueue.Count);
+            var repairCount = repairQueue.Count;
+            ReportPercent(progress, "Скачивание", completed, repairCount);
             await Parallel.ForEachAsync(
                 repairQueue,
                 new ParallelOptions
@@ -66,11 +77,11 @@ public sealed class FileSyncService
                 async (item, token) =>
                 {
                     await DownloadFileAsync(item.File, item.FullPath, token);
-                    var status = await CheckFileAsync(item.FullPath, item.File, token);
+                    var status = await CheckFileAsync(item.FullPath, item.File, verifyHashes: true, token);
                     statuses[item.Index].Status = status;
 
                     var done = Interlocked.Increment(ref completed);
-                    ReportPercent(progress, "Скачивание", done, repairQueue.Count);
+                    ReportPercent(progress, "Скачивание", done, repairCount);
                 });
         }
 
@@ -96,7 +107,11 @@ public sealed class FileSyncService
         }
     }
 
-    private static async Task<string> CheckFileAsync(string fullPath, ManifestFile file, CancellationToken cancellationToken)
+    private static async Task<string> CheckFileAsync(
+        string fullPath,
+        ManifestFile file,
+        bool verifyHashes,
+        CancellationToken cancellationToken)
     {
         if (!File.Exists(fullPath))
         {
@@ -109,7 +124,7 @@ public sealed class FileSyncService
             return StatusWrongSize;
         }
 
-        if (HasRealHash(file.Sha256))
+        if (verifyHashes && HasRealHash(file.Sha256))
         {
             var actualHash = await ComputeSha256Async(fullPath, cancellationToken);
             if (!string.Equals(actualHash, file.Sha256, StringComparison.OrdinalIgnoreCase))
@@ -136,9 +151,11 @@ public sealed class FileSyncService
 
         try
         {
-            await using var source = await _httpClient.GetStreamAsync(file.Url, cancellationToken);
-            await using var target = File.Create(tempPath);
-            await source.CopyToAsync(target, cancellationToken);
+            await using (var source = await _httpClient.GetStreamAsync(file.Url, cancellationToken))
+            await using (var target = File.Create(tempPath))
+            {
+                await source.CopyToAsync(target, cancellationToken);
+            }
         }
         catch (OperationCanceledException)
         {
