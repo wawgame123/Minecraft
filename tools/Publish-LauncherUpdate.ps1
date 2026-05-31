@@ -59,12 +59,10 @@ New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 if ([string]::IsNullOrWhiteSpace($Runtime)) {
-    Invoke-Checked dotnet @("restore", $project, "--ignore-failed-sources")
     Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-o", $publishDir)
     $packageSuffix = "framework"
 }
 else {
-    Invoke-Checked dotnet @("restore", $project, "-r", $Runtime, "--ignore-failed-sources")
     Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-o", $publishDir)
     $packageSuffix = $Runtime
 }
@@ -87,9 +85,10 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        $utf8.GetString([Convert]::FromBase64String("0JjRgdC/0YDQsNCy0LvQtdC9INC30LDQv9GD0YHQuiBOZW9Gb3JnZTogdmFuaWxsYSAxLjIxLjEuamFyINCx0L7Qu9GM0YjQtSDQvdC1INC00L7QsdCw0LLQu9GP0LXRgtGB0Y8g0LIgY2xhc3NwYXRoIE5lb0ZvcmdlLCDQuNC3LdC30LAg0YfQtdCz0L4g0L/RgNC+0L/QsNC00LDQtdGCINC60L7QvdGE0LvQuNC60YIg0LzQvtC00YPQu9C10LkgbWluZWNyYWZ0INC4IF8xLl8yMS5fMS4=")),
-        $utf8.GetString([Convert]::FromBase64String("0J7QsdC90L7QstC70LXQvSDQstC40LfRg9Cw0Lsg0L3QsNGB0YLRgNC+0LXQujog0YPQsdGA0LDQvdCwINC70LjRiNC90Y/RjyDQutC90L7Qv9C60LAg0L/QsNC/0LrQuCDQuNCz0YDRiyDRgSDQs9C70LDQstC90L7Qs9C+INGN0LrRgNCw0L3QsCwg0YPQtNCw0LvQtdC90Ysg0YLQtdC80LAv0LDQutGG0LXQvdGCINC4INC60L7QvNC/0LDQutGC0L3Ri9C5INGA0LXQttC40LwsINC00L7QsdCw0LLQu9C10L3RiyDRhtCy0LXRgtCwINCz0YDQsNC00LjQtdC90YLQsC4=")),
-        $utf8.GetString([Convert]::FromBase64String("0KPQsdGA0LDQvdGLINC/0L7Rh9GC0LAsIGVuZHBvaW50INC4INCw0LLRgtC+0L7RgtC60YDRi9GC0LjQtSDQv9C40YHRjNC80LAg0LTQu9GPINC+0YLRh9C10YLQvtCyOyDQvtGI0LjQsdC60Lgg0YLQtdC/0LXRgNGMINGB0L7RhdGA0LDQvdGP0Y7RgtGB0Y8g0YLQvtC70YzQutC+INC70L7QutCw0LvRjNC90L4g0Lgg0LrQvtC/0LjRgNGD0Y7RgtGB0Y8g0LIg0LHRg9GE0LXRgC4="))
+        $utf8.GetString([Convert]::FromBase64String("0JLQtdGA0YHQuNGPINC70LDRg9C90YfQtdGA0LAg0YLQtdC/0LXRgNGMINC/0L7QutCw0LfRi9Cy0LDQtdGC0YHRjyDQvtGC0LTQtdC70YzQvdC+INC+0YIg0LLQtdGA0YHQuNC4INGB0LHQvtGA0LrQuCBNaW5lY3JhZnQu")),
+        $utf8.GetString([Convert]::FromBase64String("0JTQvtCx0LDQstC70LXQvSDRgNCw0LfQtNC10Lsg0YHQutC40L3QvtCyOiDQstGL0LHQvtGAIFBORywg0YPRgdGC0LDQvdC+0LLQutCwINC70L7QutCw0LvRjNC90L7Qs9C+IE9mZmxpbmVTa2lucy3QutC10YjQsCDQuCAzRC3Qv9GA0LXQtNC/0YDQvtGB0LzQvtGC0YAu")),
+        $utf8.GetString([Convert]::FromBase64String("0JTQvtCx0LDQstC70LXQvdCwINC90LDRgdGC0YDQvtC50LrQsCDQvtCx0YnQtdCz0L4g0YHQtdGA0LLQtdGA0LAg0YHQutC40L3QvtCyINGE0L7RgNC80LDRgtCwIHNraW5zL9Cd0LjQui5wbmcg0LTQu9GPINC40LPRgNC+0LrQvtCyINC/0LjRgNCw0YLRgdC60L7Qs9C+INGB0LXRgNCy0LXRgNCwLg==")),
+        $utf8.GetString([Convert]::FromBase64String("0J3QtdC80L3QvtCz0L4g0L7RgtC/0L7Qu9C40YDQvtCy0LDQvSDQstC40LfRg9Cw0Lsg0Lgg0YDQtdC90LTQtdGA0LjQvdCzINGC0LXQutGB0YLQsC4="))
     )
 }
 

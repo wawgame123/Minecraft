@@ -19,6 +19,7 @@ public partial class MainWindow : Window
     private readonly FileSyncService _fileSyncService = new();
     private readonly GameLaunchService _gameLaunchService = new();
     private readonly MinecraftRuntimeService _minecraftRuntimeService = new();
+    private readonly SkinService _skinService = new();
     private readonly BugReportService _bugReportService = new();
     private readonly LauncherUpdateService _launcherUpdateService = new();
     private LauncherSettings _settings = new();
@@ -29,6 +30,7 @@ public partial class MainWindow : Window
     private bool _bindingSettings;
     private bool _syncingPlayerName;
     private bool _mapInitialized;
+    private string? _selectedSkinPath;
 
     public MainWindow()
     {
@@ -60,6 +62,7 @@ public partial class MainWindow : Window
 
             await ShowPendingPatchNotesAsync();
             await LoadManifestAsync(repairMissingGameFiles: false);
+            await LoadSkinPreviewAsync(_skinService.CachedSkinPath(_settings) ?? _settings.SkinSourcePath);
         });
     }
 
@@ -199,6 +202,9 @@ public partial class MainWindow : Window
         _settings.InstallDirectory = selectedInstallDirectory;
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
+        _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
+        _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
+        _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
@@ -211,7 +217,9 @@ public partial class MainWindow : Window
         }
 
         await _settingsService.SaveAsync(_settings);
+        await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
         UpdatePlayerNameMode();
+        UpdateSkinServerPreview();
         RenderManifest();
     }
 
@@ -224,6 +232,9 @@ public partial class MainWindow : Window
             ShadersCheckBox.IsChecked = _settings.EnableShaders;
             RamBox.Text = _settings.RamMb.ToString();
             SyncPlayerNameText(_settings.PlayerName);
+            _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
+            SkinServerUrlBox.Text = _settings.SkinServerUrl;
+            EnableSkinServerCheckBox.IsChecked = _settings.EnableSkinServer;
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
             BindCustomColorBoxes();
@@ -231,6 +242,8 @@ public partial class MainWindow : Window
             PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
+            UpdateSkinStatus();
+            UpdateSkinServerPreview();
         }
         finally
         {
@@ -247,12 +260,13 @@ public partial class MainWindow : Window
 
         Title = $"{_manifest.ServerName} Launcher";
         ServerNameText.Text = _manifest.ServerName;
-        ServerVersionText.Text = $"Сборка {_manifest.PackVersion} | Minecraft {_manifest.MinecraftVersion}";
+        ServerVersionText.Text = $"Сборка {_manifest.PackVersion} | Minecraft {_manifest.MinecraftVersion} | Лаунчер {CurrentLauncherVersion()}";
         PackInfoText.Text = $"Версия сборки: {_manifest.PackVersion}\nMinecraft: {_manifest.MinecraftVersion}";
         LoaderInfoText.Text = $"Loader: {_manifest.Loader} {_manifest.LoaderVersion}";
         InstallInfoText.Text = $"Папка игры: {_settings.InstallDirectory}";
         PackPreviewText.Text = $"{_manifest.PackVersion} / Minecraft {_manifest.MinecraftVersion}";
         LoaderPreviewText.Text = $"{_manifest.Loader} {_manifest.LoaderVersion}";
+        LauncherPreviewText.Text = CurrentLauncherVersion();
         UpdatePlayerPreview();
         SidebarStatusText.Text = "Manifest загружен";
 
@@ -457,6 +471,169 @@ public partial class MainWindow : Window
         }
     }
 
+    private async void ChooseSkinButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            var dialog = new Microsoft.Win32.OpenFileDialog
+            {
+                Title = "Выберите PNG скин",
+                Filter = "Minecraft skin (*.png)|*.png",
+                CheckFileExists = true,
+                Multiselect = false
+            };
+
+            if (dialog.ShowDialog(this) != true)
+            {
+                return;
+            }
+
+            SkinService.ValidateSkinImage(dialog.FileName);
+            _selectedSkinPath = dialog.FileName;
+            _settings.SkinSourcePath = dialog.FileName;
+            await _settingsService.SaveAsync(_settings);
+            UpdateSkinStatus();
+            await LoadSkinPreviewAsync(dialog.FileName);
+        });
+    }
+
+    private async void InstallSkinButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            await SaveSettingsFromUiAsync();
+            var sourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
+            if (string.IsNullOrWhiteSpace(sourcePath))
+            {
+                throw new InvalidOperationException("Выберите PNG скин.");
+            }
+
+            var installedPath = _skinService.InstallSkin(_settings, sourcePath);
+            _selectedSkinPath = sourcePath;
+            _settings.SkinSourcePath = sourcePath;
+            await _settingsService.SaveAsync(_settings);
+            await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
+            SkinStatusText.Text = $"Скин установлен для {CurrentPlayerName()}.";
+            SidebarStatusText.Text = "Скин установлен";
+            await LoadSkinPreviewAsync(installedPath);
+        });
+    }
+
+    private async void SaveSkinServerButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            await SaveSettingsFromUiAsync();
+            SkinStatusText.Text = "Настройка сервера скинов сохранена.";
+            SidebarStatusText.Text = "Скины сохранены";
+        });
+    }
+
+    private void SkinServerSetting_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_bindingSettings)
+        {
+            return;
+        }
+
+        _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
+        _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
+        UpdateSkinServerPreview();
+    }
+
+    private async Task LoadSkinPreviewAsync(string? skinPath)
+    {
+        try
+        {
+            var html = File.Exists(skinPath)
+                ? BuildSkinPreviewHtml("data:image/png;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(skinPath, CurrentToken())))
+                : BuildEmptySkinPreviewHtml();
+            await SkinPreviewWebView.EnsureCoreWebView2Async();
+            SkinPreviewWebView.NavigateToString(html);
+        }
+        catch (Exception ex)
+        {
+            SkinStatusText.Text = "Не удалось открыть 3D-превью: " + ex.Message;
+        }
+    }
+
+    private void UpdateSkinStatus()
+    {
+        var cached = _skinService.CachedSkinPath(_settings);
+        var selected = _selectedSkinPath ?? _settings.SkinSourcePath;
+        SkinStatusText.Text = File.Exists(cached)
+            ? $"Установлен локальный скин для {_settings.PlayerName}."
+            : File.Exists(selected)
+                ? "Скин выбран, можно установить."
+                : "Скин не выбран.";
+    }
+
+    private void UpdateSkinServerPreview()
+    {
+        var baseUrl = SkinServerUrlBox.Text.Trim().TrimEnd('/');
+        SkinServerPreviewText.Text = string.IsNullOrWhiteSpace(baseUrl)
+            ? "Пример: https://example.com/minivibe"
+            : $"Скин игрока будет искаться по адресу: {baseUrl}/skins/%name%.png";
+    }
+
+    private static string BuildEmptySkinPreviewHtml()
+    {
+        return """
+<!doctype html><html><head><meta charset="utf-8"><style>
+html,body{height:100%;margin:0;background:#0b0d14;color:#dce7f5;font-family:Segoe UI,Arial,sans-serif}
+body{display:grid;place-items:center}.hint{opacity:.72;font-size:15px}
+</style></head><body><div class="hint">Выберите PNG скин для 3D-превью</div></body></html>
+""";
+    }
+
+    private static string BuildSkinPreviewHtml(string skinDataUrl)
+    {
+        var escapedSkin = skinDataUrl.Replace("\\", "\\\\", StringComparison.Ordinal).Replace("'", "\\'", StringComparison.Ordinal);
+        return $$$"""
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle at 30% 20%,#20283c,#0b0d14 58%,#05060a);font-family:Segoe UI,Arial,sans-serif}
+.stage{height:100%;display:grid;place-items:center;perspective:900px;cursor:grab}
+.stage:active{cursor:grabbing}.model{position:relative;width:0;height:0;transform-style:preserve-3d;animation:spin 9s linear infinite}
+.stage.dragging .model{animation:none}.part{position:absolute;transform-style:preserve-3d}.face{position:absolute;background-image:url('{{{escapedSkin}}}');background-size:512px 512px;image-rendering:pixelated;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.head{transform:translate3d(-32px,-168px,0)}.body{transform:translate3d(-32px,-104px,0)}.armL{transform:translate3d(-64px,-104px,0)}.armR{transform:translate3d(32px,-104px,0)}.legL{transform:translate3d(-32px,-8px,0)}.legR{transform:translate3d(0,-8px,0)}
+@keyframes spin{from{transform:rotateX(-9deg) rotateY(0deg)}to{transform:rotateX(-9deg) rotateY(360deg)}}
+</style>
+</head>
+<body>
+<div class="stage" id="stage"><div class="model" id="model"></div></div>
+<script>
+const S=8, skin='{{{escapedSkin}}}', model=document.getElementById('model'), stage=document.getElementById('stage');
+function part(cls,w,h,d,uv){const p=document.createElement('div');p.className='part '+cls;model.appendChild(p);
+ const faces=[
+  ['front',w,h,`translateZ(${d/2*S}px)`,uv.f],
+  ['back',w,h,`rotateY(180deg) translateZ(${d/2*S}px)`,uv.b],
+  ['left',d,h,`rotateY(-90deg) translateZ(${w/2*S}px)`,uv.l],
+  ['right',d,h,`rotateY(90deg) translateZ(${w/2*S}px)`,uv.r],
+  ['top',w,d,`rotateX(90deg) translateZ(${d/2*S}px)`,uv.t],
+  ['bottom',w,d,`rotateX(-90deg) translateZ(${h*S-d/2*S}px)`,uv.o]
+ ];
+ for(const [n,fw,fh,tr,u] of faces){const f=document.createElement('div');f.className='face '+n;f.style.width=fw*S+'px';f.style.height=fh*S+'px';f.style.transform=tr;f.style.backgroundPosition=`-${u[0]*S}px -${u[1]*S}px`;p.appendChild(f)}
+}
+part('head',8,8,8,{f:[8,8],b:[24,8],l:[16,8],r:[0,8],t:[8,0],o:[16,0]});
+part('body',8,12,4,{f:[20,20],b:[32,20],l:[28,20],r:[16,20],t:[20,16],o:[28,16]});
+part('armL',4,12,4,{f:[36,52],b:[44,52],l:[40,52],r:[32,52],t:[36,48],o:[40,48]});
+part('armR',4,12,4,{f:[44,20],b:[52,20],l:[48,20],r:[40,20],t:[44,16],o:[48,16]});
+part('legL',4,12,4,{f:[20,52],b:[28,52],l:[24,52],r:[16,52],t:[20,48],o:[24,48]});
+part('legR',4,12,4,{f:[4,20],b:[12,20],l:[8,20],r:[0,20],t:[4,16],o:[8,16]});
+let down=false,lastX=0,lastY=0,ry=25,rx=-9;function apply(){model.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`}
+stage.addEventListener('pointerdown',e=>{down=true;stage.classList.add('dragging');lastX=e.clientX;lastY=e.clientY;stage.setPointerCapture(e.pointerId);apply()});
+stage.addEventListener('pointermove',e=>{if(!down)return;ry+=e.clientX-lastX;rx=Math.max(-40,Math.min(30,rx-(e.clientY-lastY)*.4));lastX=e.clientX;lastY=e.clientY;apply()});
+stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragging')});
+</script>
+</body>
+</html>
+""";
+    }
+
     private void PlayerNameBox_TextChanged(object sender, TextChangedEventArgs e)
     {
         if (_syncingPlayerName)
@@ -570,6 +747,11 @@ public partial class MainWindow : Window
         ShowPanel(MapPanel);
         await LoadMapAsync(forceReload: false);
     }
+    private async void SkinsNavButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowPanel(SkinsPanel);
+        await LoadSkinPreviewAsync(_skinService.CachedSkinPath(_settings) ?? _selectedSkinPath ?? _settings.SkinSourcePath);
+    }
     private void SettingsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(SettingsPanel);
 
     private void ShowPanel(UIElement panel)
@@ -577,6 +759,7 @@ public partial class MainWindow : Window
         HomePanel.Visibility = Visibility.Collapsed;
         NewsPanel.Visibility = Visibility.Collapsed;
         MapPanel.Visibility = Visibility.Collapsed;
+        SkinsPanel.Visibility = Visibility.Collapsed;
         SettingsPanel.Visibility = Visibility.Collapsed;
         panel.Visibility = Visibility.Visible;
     }

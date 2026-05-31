@@ -14,6 +14,7 @@
         SnapsToDevicePixels="True"
         TextOptions.TextFormattingMode="Display"
         TextOptions.TextRenderingMode="ClearType"
+        TextOptions.TextHintingMode="Fixed"
         Background="{DynamicResource AppBackgroundBrush}"
         Foreground="{DynamicResource TextBrush}">
   <Window.Resources>
@@ -221,6 +222,7 @@
             <Button x:Name="HomeNavButton" Content="Главная" Style="{StaticResource NavButtonStyle}" Click="HomeNavButton_Click"/>
             <Button x:Name="NewsNavButton" Content="Новости" Style="{StaticResource NavButtonStyle}" Click="NewsNavButton_Click"/>
             <Button x:Name="MapNavButton" Content="Карта" Style="{StaticResource NavButtonStyle}" Click="MapNavButton_Click"/>
+            <Button x:Name="SkinsNavButton" Content="Скины" Style="{StaticResource NavButtonStyle}" Click="SkinsNavButton_Click"/>
             <Button x:Name="SettingsNavButton" Content="Настройки" Style="{StaticResource NavButtonStyle}" Click="SettingsNavButton_Click"/>
           </StackPanel>
 
@@ -295,7 +297,9 @@
                 <TextBlock Text="Сборка" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
                 <TextBlock x:Name="PackPreviewText" Text="ожидает manifest" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
                 <TextBlock Text="Loader" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
-                <TextBlock x:Name="LoaderPreviewText" Text="NeoForge" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                <TextBlock x:Name="LoaderPreviewText" Text="NeoForge" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,14"/>
+                <TextBlock Text="Лаунчер" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                <TextBlock x:Name="LauncherPreviewText" Text="0.0.0" FontSize="18" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,2,0,0"/>
               </StackPanel>
             </Grid>
           </Border>
@@ -379,6 +383,77 @@
                          TextWrapping="Wrap"/>
             </Grid>
           </Border>
+        </Grid>
+
+        <Grid x:Name="SkinsPanel" Visibility="Collapsed">
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <DockPanel Margin="0,0,0,14">
+            <TextBlock Text="Скины" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
+            <TextBlock Text="PNG 64x64"
+                       DockPanel.Dock="Right"
+                       Foreground="{DynamicResource MutedBrush}"
+                       VerticalAlignment="Center"
+                       TextWrapping="Wrap"/>
+          </DockPanel>
+          <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="1.05*"/>
+              <ColumnDefinition Width="0.95*"/>
+            </Grid.ColumnDefinitions>
+
+            <Border Style="{StaticResource CardStyle}" Margin="0,0,9,0">
+              <Grid>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="*"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <Border Background="{DynamicResource SurfaceAltBrush}"
+                        BorderBrush="{DynamicResource BorderBrush}"
+                        BorderThickness="1"
+                        CornerRadius="8"
+                        MinHeight="390"
+                        ClipToBounds="True">
+                  <wv2:WebView2 x:Name="SkinPreviewWebView"
+                                DefaultBackgroundColor="#0B0D14"/>
+                </Border>
+                <StackPanel Grid.Row="1" Margin="0,14,0,0">
+                  <TextBlock x:Name="SkinStatusText"
+                             Text="Скин не выбран"
+                             Foreground="{DynamicResource MutedBrush}"
+                             TextWrapping="Wrap"/>
+                  <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                    <Button Content="Выбрать PNG" Click="ChooseSkinButton_Click"/>
+                    <Button Content="Установить скин" Style="{StaticResource SecondaryButtonStyle}" Click="InstallSkinButton_Click"/>
+                  </StackPanel>
+                </StackPanel>
+              </Grid>
+            </Border>
+
+            <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="9,0,0,0">
+              <StackPanel>
+                <TextBlock Text="Общий сервер скинов" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="Формат: skins/Ник.png"
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="0,8,0,0"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="Базовый URL" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="SkinServerUrlBox" TextChanged="SkinServerSetting_Changed"/>
+                <CheckBox x:Name="EnableSkinServerCheckBox"
+                          Content="Включить загрузку скинов по никам"
+                          Click="SkinServerSetting_Changed"/>
+                <TextBlock x:Name="SkinServerPreviewText"
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="0,12,0,0"
+                           TextWrapping="Wrap"/>
+                <Button Content="Сохранить настройку"
+                        Margin="0,16,0,0"
+                        Click="SaveSkinServerButton_Click"/>
+              </StackPanel>
+            </Border>
+          </Grid>
         </Grid>
 
         <ScrollViewer x:Name="SettingsPanel" Visibility="Collapsed" VerticalScrollBarVisibility="Auto">

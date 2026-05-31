@@ -8,6 +8,9 @@ public sealed class LauncherSettings
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";
     public string PlayerName { get; set; } = "";
+    public string SkinSourcePath { get; set; } = "";
+    public string SkinServerUrl { get; set; } = "";
+    public bool EnableSkinServer { get; set; }
     public string ExtraLaunchArguments { get; set; } = "";
     public string VisualTheme { get; set; } = "Obsidian";
     public string AccentColor { get; set; } = "Crimson";
