@@ -1,4 +1,5 @@
 using System.IO;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
@@ -11,6 +12,7 @@ namespace ServerLauncher.Services;
 public sealed class SkinService
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
+    private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(45) };
 
     public string InstallSkin(LauncherSettings settings, string sourcePath)
     {
@@ -19,7 +21,7 @@ public sealed class SkinService
             throw new InvalidOperationException("Сначала подтвердите ник игрока.");
         }
 
-        ValidateSkinImage(sourcePath);
+        var pngBytes = ReadSkinPngBytes(sourcePath);
         var uuid = OfflinePlayerUuid(settings.PlayerName);
         var skinsRoot = Path.Combine(settings.InstallDirectory, "cachedImages", "skins");
         var uuidRoot = Path.Combine(skinsRoot, "uuid");
@@ -28,9 +30,9 @@ public sealed class SkinService
         var byUuid = Path.Combine(uuidRoot, uuid + ".png");
         var byUuidFlat = Path.Combine(skinsRoot, uuid + ".png");
         var byName = Path.Combine(skinsRoot, settings.PlayerName + ".png");
-        CopyIfDifferent(sourcePath, byUuid);
-        CopyIfDifferent(sourcePath, byUuidFlat);
-        CopyIfDifferent(sourcePath, byName);
+        File.WriteAllBytes(byUuid, pngBytes);
+        File.WriteAllBytes(byUuidFlat, pngBytes);
+        File.WriteAllBytes(byName, pngBytes);
         return byUuid;
     }
 
@@ -87,7 +89,59 @@ public sealed class SkinService
         await JsonSerializer.SerializeAsync(stream, config, JsonOptions, cancellationToken);
     }
 
+    public async Task UploadSharedSkinAsync(
+        LauncherSettings settings,
+        string sourcePath,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(settings.PlayerName))
+        {
+            throw new InvalidOperationException("Сначала подтвердите ник игрока.");
+        }
+
+        if (string.IsNullOrWhiteSpace(settings.SkinUploadUrl))
+        {
+            throw new InvalidOperationException("Укажите URL загрузчика скинов.");
+        }
+
+        if (string.IsNullOrWhiteSpace(settings.SkinUploadSecret))
+        {
+            throw new InvalidOperationException("Введите код доступа к загрузке скинов.");
+        }
+
+        var pngBytes = ReadSkinPngBytes(sourcePath);
+        using var form = new MultipartFormDataContent();
+        form.Add(new StringContent(settings.PlayerName), "playerName");
+        form.Add(new StringContent(settings.SkinUploadSecret), "secret");
+        form.Add(new ByteArrayContent(pngBytes), "skin", settings.PlayerName + ".png");
+
+        using var response = await _httpClient.PostAsync(settings.SkinUploadUrl.Trim(), form, cancellationToken);
+        var body = await response.Content.ReadAsStringAsync(cancellationToken);
+        if (!response.IsSuccessStatusCode)
+        {
+            var message = string.IsNullOrWhiteSpace(body)
+                ? $"HTTP {(int)response.StatusCode}"
+                : body;
+            throw new InvalidOperationException("Не удалось загрузить скин в общий каталог: " + message);
+        }
+    }
+
     public static void ValidateSkinImage(string path)
+    {
+        _ = ReadSkinFrame(path);
+    }
+
+    public static byte[] ReadSkinPngBytes(string path)
+    {
+        var frame = ReadSkinFrame(path);
+        using var output = new MemoryStream();
+        var encoder = new PngBitmapEncoder();
+        encoder.Frames.Add(BitmapFrame.Create(frame));
+        encoder.Save(output);
+        return output.ToArray();
+    }
+
+    private static BitmapFrame ReadSkinFrame(string path)
     {
         if (!File.Exists(path))
         {
@@ -103,8 +157,10 @@ public sealed class SkinService
 
         if (frame.PixelWidth != 64 || frame.PixelHeight is not (32 or 64))
         {
-            throw new InvalidOperationException("Скин должен быть PNG размером 64x64 или 64x32.");
+            throw new InvalidOperationException("Скин должен быть PNG/JPG размером 64x64 или 64x32.");
         }
+
+        return frame;
     }
 
     public static string OfflinePlayerUuid(string playerName)
@@ -115,19 +171,6 @@ public sealed class SkinService
 
         var hex = Convert.ToHexString(hash).ToLowerInvariant();
         return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
-    }
-
-    private static void CopyIfDifferent(string sourcePath, string destinationPath)
-    {
-        if (string.Equals(
-                Path.GetFullPath(sourcePath),
-                Path.GetFullPath(destinationPath),
-                StringComparison.OrdinalIgnoreCase))
-        {
-            return;
-        }
-
-        File.Copy(sourcePath, destinationPath, overwrite: true);
     }
 
     private sealed class OfflineSkinsConfig

@@ -23,16 +23,22 @@ public sealed class SettingsService
     {
         if (!File.Exists(SettingsPath))
         {
-            var settings = new LauncherSettings
+            var defaultSettings = new LauncherSettings
             {
                 LastSeenLauncherVersion = CurrentLauncherVersion()
             };
-            await SaveAsync(settings);
-            return settings;
+            await SaveAsync(defaultSettings);
+            return defaultSettings;
         }
 
         await using var stream = File.OpenRead(SettingsPath);
-        return await JsonSerializer.DeserializeAsync<LauncherSettings>(stream) ?? new LauncherSettings();
+        var settings = await JsonSerializer.DeserializeAsync<LauncherSettings>(stream) ?? new LauncherSettings();
+        if (string.IsNullOrWhiteSpace(settings.SkinServerUrl))
+        {
+            settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
+        }
+
+        return settings;
     }
 
     public async Task SaveAsync(LauncherSettings settings)

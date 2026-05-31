@@ -107,6 +107,16 @@
       <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
+    <Style TargetType="PasswordBox">
+      <Setter Property="MinHeight" Value="36"/>
+      <Setter Property="Padding" Value="10,7"/>
+      <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
+      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
+    </Style>
+
     <Style TargetType="ComboBox">
       <Setter Property="MinHeight" Value="36"/>
       <Setter Property="Padding" Value="8,5"/>
@@ -392,7 +402,7 @@
           </Grid.RowDefinitions>
           <DockPanel Margin="0,0,0,14">
             <TextBlock Text="Скины" Style="{StaticResource SectionTitleStyle}" DockPanel.Dock="Left"/>
-            <TextBlock Text="PNG 64x64"
+            <TextBlock Text="PNG/JPG 64x64"
                        DockPanel.Dock="Right"
                        Foreground="{DynamicResource MutedBrush}"
                        VerticalAlignment="Center"
@@ -451,6 +461,24 @@
                 <Button Content="Сохранить настройку"
                         Margin="0,16,0,0"
                         Click="SaveSkinServerButton_Click"/>
+
+                <Border Height="1"
+                        Background="{DynamicResource BorderBrush}"
+                        Margin="0,18,0,16"/>
+                <TextBlock Text="Загрузка скина"
+                           FontSize="18"
+                           FontWeight="SemiBold"/>
+                <TextBlock Text="Скин уйдет в общий каталог skins/Ник.png"
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="0,8,0,0"
+                           TextWrapping="Wrap"/>
+                <TextBlock Text="URL загрузчика" Style="{StaticResource LabelStyle}"/>
+                <TextBox x:Name="SkinUploadUrlBox"/>
+                <TextBlock Text="Код доступа" Style="{StaticResource LabelStyle}"/>
+                <PasswordBox x:Name="SkinUploadSecretBox"/>
+                <Button Content="Загрузить для всех"
+                        Margin="0,16,0,0"
+                        Click="UploadSharedSkinButton_Click"/>
               </StackPanel>
             </Border>
           </Grid>

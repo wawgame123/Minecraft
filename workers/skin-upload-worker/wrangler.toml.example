@@ -1,0 +1,8 @@
+name = "minivibe-skins"
+main = "src/index.js"
+compatibility_date = "2026-05-31"
+
+[vars]
+REPO_OWNER = "wawgame123"
+REPO_NAME = "Minecraft"
+BRANCH = "main"

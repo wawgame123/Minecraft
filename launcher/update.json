@@ -1,12 +1,12 @@
 ﻿{
-    "version":  "0.1.13",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.13-framework.zip",
-    "sha256":  "7af5102c5a493634dfeb6464fa213dcbaee8b36504975d70c3810478d0416f68",
+    "version":  "0.1.14",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.14-framework.zip",
+    "sha256":  "e35d70163d99cd168d061e4fae37f4f68cc89df1a5231418e994af2b5c14b8e6",
     "mandatory":  false,
     "notes":  [
-                  "Версия лаунчера теперь показывается отдельно от версии сборки Minecraft.",
-                  "Добавлен раздел скинов: выбор PNG, установка локального OfflineSkins-кеша и 3D-предпросмотр.",
-                  "Добавлена настройка общего сервера скинов формата skins/Ник.png для игроков пиратского сервера.",
-                  "Немного отполирован визуал и рендеринг текста."
+                  "Добавлена загрузка скинов через Cloudflare Worker в папку skins репозитория.",
+                  "Лаунчер принимает PNG/JPG/JPEG, но хранит и отправляет итоговый PNG для OfflineSkins.",
+                  "3D-превью скина теперь показывает верхние слои модели.",
+                  "Добавлены заготовка Worker-а и инструкция по настройке GitHub token/UPLOAD_SECRET."
               ]
 }

@@ -205,6 +205,8 @@ public partial class MainWindow : Window
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
         _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
         _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
+        _settings.SkinUploadUrl = SkinUploadUrlBox.Text.Trim();
+        _settings.SkinUploadSecret = SkinUploadSecretBox.Password.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
@@ -235,6 +237,8 @@ public partial class MainWindow : Window
             _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
             SkinServerUrlBox.Text = _settings.SkinServerUrl;
             EnableSkinServerCheckBox.IsChecked = _settings.EnableSkinServer;
+            SkinUploadUrlBox.Text = _settings.SkinUploadUrl;
+            SkinUploadSecretBox.Password = _settings.SkinUploadSecret;
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
             BindCustomColorBoxes();
@@ -477,8 +481,8 @@ public partial class MainWindow : Window
         {
             var dialog = new Microsoft.Win32.OpenFileDialog
             {
-                Title = "Выберите PNG скин",
-                Filter = "Minecraft skin (*.png)|*.png",
+                Title = "Выберите скин",
+                Filter = "Minecraft skin (*.png;*.jpg;*.jpeg)|*.png;*.jpg;*.jpeg",
                 CheckFileExists = true,
                 Multiselect = false
             };
@@ -505,7 +509,7 @@ public partial class MainWindow : Window
             var sourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
             if (string.IsNullOrWhiteSpace(sourcePath))
             {
-                throw new InvalidOperationException("Выберите PNG скин.");
+                throw new InvalidOperationException("Выберите PNG/JPG скин.");
             }
 
             var installedPath = _skinService.InstallSkin(_settings, sourcePath);
@@ -529,6 +533,28 @@ public partial class MainWindow : Window
         });
     }
 
+    private async void UploadSharedSkinButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            await SaveSettingsFromUiAsync();
+            var sourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
+            if (string.IsNullOrWhiteSpace(sourcePath))
+            {
+                throw new InvalidOperationException("Выберите PNG/JPG скин.");
+            }
+
+            SetBusy(true, "Загружаю скин в общий каталог...");
+            await _skinService.UploadSharedSkinAsync(_settings, sourcePath, CurrentToken());
+            _settings.EnableSkinServer = true;
+            EnableSkinServerCheckBox.IsChecked = true;
+            await _settingsService.SaveAsync(_settings);
+            await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
+            SkinStatusText.Text = $"Скин {CurrentPlayerName()} загружен в общий каталог.";
+            SidebarStatusText.Text = "Скин загружен";
+        });
+    }
+
     private void SkinServerSetting_Changed(object sender, RoutedEventArgs e)
     {
         if (_bindingSettings)
@@ -546,7 +572,7 @@ public partial class MainWindow : Window
         try
         {
             var html = File.Exists(skinPath)
-                ? BuildSkinPreviewHtml("data:image/png;base64," + Convert.ToBase64String(await File.ReadAllBytesAsync(skinPath, CurrentToken())))
+                ? BuildSkinPreviewHtml("data:image/png;base64," + Convert.ToBase64String(SkinService.ReadSkinPngBytes(skinPath)))
                 : BuildEmptySkinPreviewHtml();
             await SkinPreviewWebView.EnsureCoreWebView2Async();
             SkinPreviewWebView.NavigateToString(html);
@@ -582,7 +608,7 @@ public partial class MainWindow : Window
 <!doctype html><html><head><meta charset="utf-8"><style>
 html,body{height:100%;margin:0;background:#0b0d14;color:#dce7f5;font-family:Segoe UI,Arial,sans-serif}
 body{display:grid;place-items:center}.hint{opacity:.72;font-size:15px}
-</style></head><body><div class="hint">Выберите PNG скин для 3D-превью</div></body></html>
+</style></head><body><div class="hint">Выберите PNG/JPG скин для 3D-превью</div></body></html>
 """;
     }
 
@@ -599,6 +625,7 @@ html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle
 .stage{height:100%;display:grid;place-items:center;perspective:900px;cursor:grab}
 .stage:active{cursor:grabbing}.model{position:relative;width:0;height:0;transform-style:preserve-3d;animation:spin 9s linear infinite}
 .stage.dragging .model{animation:none}.part{position:absolute;transform-style:preserve-3d}.face{position:absolute;background-image:url('{{{escapedSkin}}}');background-size:512px 512px;image-rendering:pixelated;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}
+.overlay .face{box-shadow:inset 0 0 0 1px rgba(255,255,255,.16),0 0 8px rgba(255,255,255,.08)}
 .head{transform:translate3d(-32px,-168px,0)}.body{transform:translate3d(-32px,-104px,0)}.armL{transform:translate3d(-64px,-104px,0)}.armR{transform:translate3d(32px,-104px,0)}.legL{transform:translate3d(-32px,-8px,0)}.legR{transform:translate3d(0,-8px,0)}
 @keyframes spin{from{transform:rotateX(-9deg) rotateY(0deg)}to{transform:rotateX(-9deg) rotateY(360deg)}}
 </style>
@@ -607,14 +634,14 @@ html,body{height:100%;margin:0;overflow:hidden;background:radial-gradient(circle
 <div class="stage" id="stage"><div class="model" id="model"></div></div>
 <script>
 const S=8, skin='{{{escapedSkin}}}', model=document.getElementById('model'), stage=document.getElementById('stage');
-function part(cls,w,h,d,uv){const p=document.createElement('div');p.className='part '+cls;model.appendChild(p);
+function part(cls,w,h,d,uv,overlay=false){const p=document.createElement('div');p.className='part '+cls+(overlay?' overlay':'');model.appendChild(p);const o=overlay?1.35:0;
  const faces=[
-  ['front',w,h,`translateZ(${d/2*S}px)`,uv.f],
-  ['back',w,h,`rotateY(180deg) translateZ(${d/2*S}px)`,uv.b],
-  ['left',d,h,`rotateY(-90deg) translateZ(${w/2*S}px)`,uv.l],
-  ['right',d,h,`rotateY(90deg) translateZ(${w/2*S}px)`,uv.r],
-  ['top',w,d,`rotateX(90deg) translateZ(${d/2*S}px)`,uv.t],
-  ['bottom',w,d,`rotateX(-90deg) translateZ(${h*S-d/2*S}px)`,uv.o]
+  ['front',w,h,`translateZ(${d/2*S+o}px)`,uv.f],
+  ['back',w,h,`rotateY(180deg) translateZ(${d/2*S+o}px)`,uv.b],
+  ['left',d,h,`rotateY(-90deg) translateZ(${w/2*S+o}px)`,uv.l],
+  ['right',d,h,`rotateY(90deg) translateZ(${w/2*S+o}px)`,uv.r],
+  ['top',w,d,`rotateX(90deg) translateZ(${d/2*S+o}px)`,uv.t],
+  ['bottom',w,d,`rotateX(-90deg) translateZ(${h*S-d/2*S+o}px)`,uv.o]
  ];
  for(const [n,fw,fh,tr,u] of faces){const f=document.createElement('div');f.className='face '+n;f.style.width=fw*S+'px';f.style.height=fh*S+'px';f.style.transform=tr;f.style.backgroundPosition=`-${u[0]*S}px -${u[1]*S}px`;p.appendChild(f)}
 }
@@ -624,6 +651,12 @@ part('armL',4,12,4,{f:[36,52],b:[44,52],l:[40,52],r:[32,52],t:[36,48],o:[40,48]}
 part('armR',4,12,4,{f:[44,20],b:[52,20],l:[48,20],r:[40,20],t:[44,16],o:[48,16]});
 part('legL',4,12,4,{f:[20,52],b:[28,52],l:[24,52],r:[16,52],t:[20,48],o:[24,48]});
 part('legR',4,12,4,{f:[4,20],b:[12,20],l:[8,20],r:[0,20],t:[4,16],o:[8,16]});
+part('head',8,8,8,{f:[40,8],b:[56,8],l:[48,8],r:[32,8],t:[40,0],o:[48,0]},true);
+part('body',8,12,4,{f:[20,36],b:[32,36],l:[28,36],r:[16,36],t:[20,32],o:[28,32]},true);
+part('armL',4,12,4,{f:[52,52],b:[60,52],l:[56,52],r:[48,52],t:[52,48],o:[56,48]},true);
+part('armR',4,12,4,{f:[44,36],b:[52,36],l:[48,36],r:[40,36],t:[44,32],o:[48,32]},true);
+part('legL',4,12,4,{f:[4,52],b:[12,52],l:[8,52],r:[0,52],t:[4,48],o:[8,48]},true);
+part('legR',4,12,4,{f:[4,36],b:[12,36],l:[8,36],r:[0,36],t:[4,32],o:[8,32]},true);
 let down=false,lastX=0,lastY=0,ry=25,rx=-9;function apply(){model.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`}
 stage.addEventListener('pointerdown',e=>{down=true;stage.classList.add('dragging');lastX=e.clientX;lastY=e.clientY;stage.setPointerCapture(e.pointerId);apply()});
 stage.addEventListener('pointermove',e=>{if(!down)return;ry+=e.clientX-lastX;rx=Math.max(-40,Math.min(30,rx-(e.clientY-lastY)*.4));lastX=e.clientX;lastY=e.clientY;apply()});
