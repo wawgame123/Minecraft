@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.11",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.11-framework.zip",
-    "sha256":  "82a5baa27f016b86dd1aa86778bbe820550768a74391b60a7c7815ead2043688",
+    "version":  "0.1.12",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.12-framework.zip",
+    "sha256":  "a8118fdea80f6f4c3092db2eca84780f640af7c45f50a77cae8febee73f9cbb3",
     "mandatory":  false,
     "notes":  [
-                  "Исправлен запуск NeoForge: лаунчер теперь устанавливает официальный клиентский профиль и patched libraries перед стартом игры.",
-                  "Добавлен быстрый выбор папки игры на главном экране; существующие versions, mods, config и saves остаются на месте.",
-                  "Исправлены повторные .download-файлы и подготовка runtime при установке, чтобы кнопка Играть появлялась только после готовой сборки."
+                  "Исправлен запуск NeoForge: vanilla 1.21.1.jar больше не добавляется в classpath NeoForge, из-за чего пропадает конфликт модулей minecraft и _1._21._1.",
+                  "Обновлен визуал настроек: убрана лишняя кнопка папки игры с главного экрана, удалены тема/акцент и компактный режим, добавлены цвета градиента.",
+                  "Убраны почта, endpoint и автооткрытие письма для отчетов; ошибки теперь сохраняются только локально и копируются в буфер."
               ]
 }

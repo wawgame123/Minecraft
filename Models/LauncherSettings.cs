@@ -4,9 +4,6 @@ public sealed class LauncherSettings
 {
     public string InstallDirectory { get; set; } = DefaultInstallDirectory();
     public bool EnableAutoUpdate { get; set; } = true;
-    public string BugReportEmail { get; set; } = "tupikp37@gmail.com";
-    public string BugReportEndpoint { get; set; } = "";
-    public bool OpenEmailOnError { get; set; } = true;
     public bool EnableShaders { get; set; }
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";
@@ -21,8 +18,9 @@ public sealed class LauncherSettings
     public string CustomTextColor { get; set; } = "";
     public string CustomMutedTextColor { get; set; } = "";
     public string CustomAccentColor { get; set; } = "";
+    public string CustomGradientStartColor { get; set; } = "";
+    public string CustomGradientEndColor { get; set; } = "";
     public bool DynamicBackground { get; set; } = true;
-    public bool CompactMode { get; set; }
     public double PanelOpacity { get; set; } = 0.92;
     public string? LastSeenLauncherVersion { get; set; }
 

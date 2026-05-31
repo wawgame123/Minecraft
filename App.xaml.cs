@@ -34,9 +34,9 @@ public partial class App : System.Windows.Application
             var settingsService = new Services.SettingsService();
             var settings = await settingsService.LoadAsync();
             var reporter = new Services.BugReportService();
-            await reporter.HandleAsync(exception, context, settings, null, openEmailDraft: true);
+            await reporter.HandleAsync(exception, context, settings, null);
             System.Windows.MessageBox.Show(
-                "Ошибка сохранена в отчет и подготовлена к отправке.",
+                "Ошибка сохранена в локальный отчет.",
                 "minivibe",
                 System.Windows.MessageBoxButton.OK,
                 System.Windows.MessageBoxImage.Error);

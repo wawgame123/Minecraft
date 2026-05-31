@@ -1,17 +1,11 @@
-using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Text;
-using System.Text.Json;
-using System.Windows;
 using ServerLauncher.Models;
 
 namespace ServerLauncher.Services;
 
 public sealed class BugReportService
 {
-    private readonly HttpClient _httpClient = new();
-
     public string ReportsDirectory { get; }
 
     public BugReportService()
@@ -26,22 +20,10 @@ public sealed class BugReportService
         string context,
         LauncherSettings settings,
         LauncherManifest? manifest,
-        bool openEmailDraft,
         CancellationToken cancellationToken = default)
     {
         var report = CreateReport(exception, context, settings, manifest);
         var reportPath = await SaveReportAsync(report, cancellationToken);
-
-        if (!string.IsNullOrWhiteSpace(settings.BugReportEndpoint))
-        {
-            await TryPostReportAsync(settings.BugReportEndpoint, report, cancellationToken);
-        }
-
-        if (openEmailDraft && settings.OpenEmailOnError)
-        {
-            TryOpenEmailDraft(settings.BugReportEmail, report, reportPath);
-        }
-
         TryCopyToClipboard(report);
         return reportPath;
     }
@@ -82,45 +64,6 @@ public sealed class BugReportService
         var path = Path.Combine(ReportsDirectory, fileName);
         await File.WriteAllTextAsync(path, report, Encoding.UTF8, cancellationToken);
         return path;
-    }
-
-    private async Task TryPostReportAsync(string endpoint, string report, CancellationToken cancellationToken)
-    {
-        try
-        {
-            using var content = new StringContent(
-                JsonSerializer.Serialize(new { app = "minivibe", report }),
-                Encoding.UTF8,
-                "application/json");
-            using var response = await _httpClient.PostAsync(endpoint, content, cancellationToken);
-            response.EnsureSuccessStatusCode();
-        }
-        catch
-        {
-            // Email draft and local report are the reliable fallback paths.
-        }
-    }
-
-    private static void TryOpenEmailDraft(string email, string report, string reportPath)
-    {
-        if (string.IsNullOrWhiteSpace(email))
-        {
-            return;
-        }
-
-        try
-        {
-            var body = report.Length > 6000 ? report[..6000] + "\n\n[report was shortened]\n" : report;
-            body += $"\n\nLocal report: {reportPath}";
-            var uri = "mailto:" + Uri.EscapeDataString(email)
-                + "?subject=" + Uri.EscapeDataString("minivibe launcher bug report")
-                + "&body=" + Uri.EscapeDataString(body);
-            Process.Start(new ProcessStartInfo(uri) { UseShellExecute = true });
-        }
-        catch
-        {
-            // Some systems have no default mail client.
-        }
     }
 
     private static void TryCopyToClipboard(string report)

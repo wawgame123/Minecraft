@@ -10,6 +10,10 @@
         MinHeight="640"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI"
+        UseLayoutRounding="True"
+        SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Display"
+        TextOptions.TextRenderingMode="ClearType"
         Background="{DynamicResource AppBackgroundBrush}"
         Foreground="{DynamicResource TextBrush}">
   <Window.Resources>
@@ -22,6 +26,7 @@
       <Setter Property="Foreground" Value="{DynamicResource AccentTextBrush}"/>
       <Setter Property="FontWeight" Value="SemiBold"/>
       <Setter Property="Cursor" Value="Hand"/>
+      <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
       <Setter Property="Template">
         <Setter.Value>
           <ControlTemplate TargetType="Button">
@@ -77,11 +82,6 @@
       <Setter Property="BorderThickness" Value="1"/>
       <Setter Property="CornerRadius" Value="8"/>
       <Setter Property="Padding" Value="18"/>
-      <Setter Property="Effect">
-        <Setter.Value>
-          <DropShadowEffect BlurRadius="18" ShadowDepth="0" Opacity="0.18" Color="#000000"/>
-        </Setter.Value>
-      </Setter>
     </Style>
 
     <Style x:Key="SectionTitleStyle" TargetType="TextBlock">
@@ -263,7 +263,6 @@
                   <Button x:Name="PlayButton" Content="Установить" MinWidth="150" Click="PlayButton_Click"/>
                   <Button x:Name="RepairButton" Content="Проверить файлы" Style="{StaticResource SecondaryButtonStyle}" Click="RepairButton_Click"/>
                   <Button x:Name="RefreshManifestButton" Content="Обновить список" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
-                  <Button x:Name="ChooseInstallDirectoryButton" Content="Папка игры" Style="{StaticResource SecondaryButtonStyle}" Click="BrowseInstallDirectoryButton_Click"/>
                 </StackPanel>
               </StackPanel>
 
@@ -411,16 +410,9 @@
 
             <Border Style="{StaticResource CardStyle}" Margin="0,0,0,14">
               <StackPanel>
-                <TextBlock Text="Диагностика и обновления" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="Обновления" FontSize="18" FontWeight="SemiBold"/>
 
                 <CheckBox x:Name="AutoUpdateCheckBox" Content="Автообновление лаунчера при запуске"/>
-                <CheckBox x:Name="OpenEmailOnErrorCheckBox" Content="Открывать письмо с отчетом при ошибке"/>
-
-                <TextBlock Text="Почта для отчетов" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="BugReportEmailBox"/>
-
-                <TextBlock Text="HTTPS endpoint для тихой отправки отчетов" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="BugReportEndpointBox"/>
               </StackPanel>
             </Border>
 
@@ -428,13 +420,7 @@
               <StackPanel>
                 <TextBlock Text="Визуал" FontSize="18" FontWeight="SemiBold"/>
 
-                <TextBlock Text="Тема" Style="{StaticResource LabelStyle}"/>
-                <ComboBox x:Name="ThemeBox" SelectionChanged="VisualSetting_Changed"/>
-
-                <TextBlock Text="Акцент" Style="{StaticResource LabelStyle}"/>
-                <ComboBox x:Name="AccentBox" SelectionChanged="VisualSetting_Changed"/>
-
-                <TextBlock Text="Свои цвета HEX" Style="{StaticResource LabelStyle}"/>
+                <TextBlock Text="Цвета HEX" Style="{StaticResource LabelStyle}"/>
                 <UniformGrid Columns="2" Margin="0,0,0,4">
                   <StackPanel Margin="0,0,6,6">
                     <TextBlock Text="Фон" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
@@ -485,10 +471,23 @@
                       <TextBox x:Name="CustomAccentColorBox" ToolTip="#D84C5B" TextChanged="VisualSetting_Changed"/>
                     </DockPanel>
                   </StackPanel>
+                  <StackPanel Margin="6,0,0,0">
+                    <TextBlock Text="Градиент 1" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomGradientStartColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomGradientStartColorBox" ToolTip="#3225A8" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
+                  </StackPanel>
+                  <StackPanel Margin="0,6,6,0">
+                    <TextBlock Text="Градиент 2" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                    <DockPanel>
+                      <Button Content="Палитра" Tag="CustomGradientEndColorBox" DockPanel.Dock="Right" Margin="8,0,0,0" Style="{StaticResource SecondaryButtonStyle}" Click="ChooseColorButton_Click"/>
+                      <TextBox x:Name="CustomGradientEndColorBox" ToolTip="#00A3FF" TextChanged="VisualSetting_Changed"/>
+                    </DockPanel>
+                  </StackPanel>
                 </UniformGrid>
 
-                <CheckBox x:Name="DynamicBackgroundCheckBox" Content="Динамический фон" Click="VisualSetting_Changed"/>
-                <CheckBox x:Name="CompactModeCheckBox" Content="Компактный режим" Click="VisualSetting_Changed"/>
+                <CheckBox x:Name="DynamicBackgroundCheckBox" Content="Градиент" Click="VisualSetting_Changed"/>
 
                 <TextBlock Text="Плотность панелей" Style="{StaticResource LabelStyle}"/>
                 <Slider x:Name="PanelOpacitySlider"

@@ -81,7 +81,7 @@ public sealed class MinecraftRuntimeService
 
         return new MinecraftRuntime(
             loaderJson?.Id ?? manifest.MinecraftVersion,
-            loaderInstall?.VersionJarPath ?? clientJarPath,
+            loaderInstall is null ? clientJarPath : "",
             classpath,
             nativesRoot,
             assetsRoot,

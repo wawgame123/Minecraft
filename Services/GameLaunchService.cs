@@ -59,7 +59,9 @@ public sealed class GameLaunchService
 
         if (runtime is not null)
         {
-            foreach (var runtimeFile in runtime.ClasspathFiles.Append(runtime.ClientJarPath))
+            foreach (var runtimeFile in runtime.ClasspathFiles
+                .Append(runtime.ClientJarPath)
+                .Where(path => !string.IsNullOrWhiteSpace(path)))
             {
                 if (!File.Exists(runtimeFile))
                 {
@@ -708,8 +710,11 @@ public sealed class GameLaunchService
             : manifest.Launch.Classpath
                 .Select(path => Path.Combine(settings.InstallDirectory, path.Replace('/', Path.DirectorySeparatorChar)))
                 .ToList();
+        IEnumerable<string> runtimeClientJar = string.IsNullOrWhiteSpace(runtime.ClientJarPath)
+            ? []
+            : new[] { runtime.ClientJarPath };
         var classpath = runtime.ClasspathFiles
-            .Concat([runtime.ClientJarPath])
+            .Concat(runtimeClientJar)
             .Concat(manifestClasspath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(Quote);

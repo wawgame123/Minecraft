@@ -6,7 +6,6 @@ using System.Windows.Media;
 using ServerLauncher.Models;
 using ServerLauncher.Services;
 using MediaColor = System.Windows.Media.Color;
-using WpfComboBox = System.Windows.Controls.ComboBox;
 using WinForms = System.Windows.Forms;
 
 namespace ServerLauncher;
@@ -79,7 +78,7 @@ public partial class MainWindow : Window
         }
         catch (Exception ex)
         {
-            await _bugReportService.HandleAsync(ex, "Launcher self-update", _settings, _manifest, openEmailDraft: false);
+            await _bugReportService.HandleAsync(ex, "Launcher self-update", _settings, _manifest);
             ProgressText.Text = "Автообновление недоступно, продолжаю запуск.";
         }
 
@@ -202,14 +201,8 @@ public partial class MainWindow : Window
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
-        _settings.BugReportEmail = BugReportEmailBox.Text.Trim();
-        _settings.BugReportEndpoint = BugReportEndpointBox.Text.Trim();
-        _settings.OpenEmailOnError = OpenEmailOnErrorCheckBox.IsChecked == true;
-        _settings.VisualTheme = SelectedComboValue(ThemeBox, _settings.VisualTheme);
-        _settings.AccentColor = SelectedComboValue(AccentBox, _settings.AccentColor);
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
-        _settings.CompactMode = CompactModeCheckBox.IsChecked == true;
         _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
 
         if (int.TryParse(RamBox.Text.Trim(), out var ram))
@@ -233,14 +226,8 @@ public partial class MainWindow : Window
             SyncPlayerNameText(_settings.PlayerName);
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
-            BugReportEmailBox.Text = _settings.BugReportEmail;
-            BugReportEndpointBox.Text = _settings.BugReportEndpoint;
-            OpenEmailOnErrorCheckBox.IsChecked = _settings.OpenEmailOnError;
-            SelectComboValue(ThemeBox, _settings.VisualTheme);
-            SelectComboValue(AccentBox, _settings.AccentColor);
             BindCustomColorBoxes();
             DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
-            CompactModeCheckBox.IsChecked = _settings.CompactMode;
             PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
@@ -596,21 +583,6 @@ public partial class MainWindow : Window
 
     private void InitializeVisualControls()
     {
-        ThemeBox.ItemsSource = new[]
-        {
-            "Obsidian",
-            "Midnight",
-            "Forest",
-            "Frost"
-        };
-        AccentBox.ItemsSource = new[]
-        {
-            "Crimson",
-            "Emerald",
-            "Cyan",
-            "Gold",
-            "Violet"
-        };
         _visualControlsReady = true;
     }
 
@@ -626,11 +598,8 @@ public partial class MainWindow : Window
 
     private async Task SaveVisualSettingsPreviewAsync()
     {
-        _settings.VisualTheme = SelectedComboValue(ThemeBox, _settings.VisualTheme);
-        _settings.AccentColor = SelectedComboValue(AccentBox, _settings.AccentColor);
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
-        _settings.CompactMode = CompactModeCheckBox.IsChecked == true;
         _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
         ApplyVisualSettings();
         await _settingsService.SaveAsync(_settings);
@@ -647,6 +616,8 @@ public partial class MainWindow : Window
         var text = ReadColor(_settings.CustomTextColor, palette.Text);
         var muted = ReadColor(_settings.CustomMutedTextColor, palette.Muted);
         var accent = ReadColor(_settings.CustomAccentColor, AccentPalette.From(_settings.AccentColor));
+        var gradientStart = ReadColor(_settings.CustomGradientStartColor, accent);
+        var gradientEnd = ReadColor(_settings.CustomGradientEndColor, surface);
         text = EnsureReadable(text, 4.5, background, sidebar, surface, surfaceAlt);
         muted = EnsureReadable(muted, 3.0, background, sidebar, surface, surfaceAlt);
         var accentText = BestReadableText(accent);
@@ -671,31 +642,20 @@ public partial class MainWindow : Window
             EndPoint = new System.Windows.Point(1, 1),
             GradientStops = new GradientStopCollection
             {
-                new(accent, 0),
+                new(gradientStart, 0),
                 new(background, 0.55),
-                new(surface, 1)
+                new(gradientEnd, 1)
             }
         };
 
         DynamicLayer.Visibility = _settings.DynamicBackground ? Visibility.Visible : Visibility.Collapsed;
-        ContentShell.Margin = _settings.CompactMode ? new Thickness(18, 0, 0, 0) : new Thickness(26, 0, 0, 0);
+        ContentShell.Margin = new Thickness(26, 0, 0, 0);
     }
 
     private static MediaColor ColorWithOpacity(MediaColor color, double opacity)
     {
         color.A = (byte)Math.Round(Math.Clamp(opacity, 0, 1) * 255);
         return color;
-    }
-
-    private static string SelectedComboValue(WpfComboBox comboBox, string fallback)
-    {
-        return comboBox.SelectedItem?.ToString() ?? fallback;
-    }
-
-    private static void SelectComboValue(WpfComboBox comboBox, string value)
-    {
-        comboBox.SelectedItem = comboBox.Items.Cast<object>().FirstOrDefault(item => item.ToString() == value)
-            ?? comboBox.Items.Cast<object>().FirstOrDefault();
     }
 
     private void BindCustomColorBoxes()
@@ -707,6 +667,8 @@ public partial class MainWindow : Window
         CustomTextColorBox.Text = _settings.CustomTextColor;
         CustomMutedTextColorBox.Text = _settings.CustomMutedTextColor;
         CustomAccentColorBox.Text = _settings.CustomAccentColor;
+        CustomGradientStartColorBox.Text = _settings.CustomGradientStartColor;
+        CustomGradientEndColorBox.Text = _settings.CustomGradientEndColor;
     }
 
     private void SaveCustomColorsFromUi()
@@ -718,6 +680,8 @@ public partial class MainWindow : Window
         _settings.CustomTextColor = NormalizeHexColor(CustomTextColorBox.Text);
         _settings.CustomMutedTextColor = NormalizeHexColor(CustomMutedTextColorBox.Text);
         _settings.CustomAccentColor = NormalizeHexColor(CustomAccentColorBox.Text);
+        _settings.CustomGradientStartColor = NormalizeHexColor(CustomGradientStartColorBox.Text);
+        _settings.CustomGradientEndColor = NormalizeHexColor(CustomGradientEndColorBox.Text);
     }
 
     private static string NormalizeHexColor(string value)
@@ -820,7 +784,6 @@ public partial class MainWindow : Window
                 "Launcher operation",
                 _settings,
                 _manifest,
-                openEmailDraft: true,
                 CurrentToken());
             MainStatusText.Text = ex.Message;
             SidebarStatusText.Text = "Ошибка";
@@ -967,7 +930,6 @@ public partial class MainWindow : Window
         PlayButton.IsEnabled = !busy;
         RepairButton.IsEnabled = !busy;
         RefreshManifestButton.IsEnabled = !busy;
-        ChooseInstallDirectoryButton.IsEnabled = !busy;
         if (!busy)
         {
             UpdatePrimaryButtonState();
