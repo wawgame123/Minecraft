@@ -34,8 +34,8 @@ internal sealed class InstallerForm : Form
     {
         Text = "minivibe installer";
         Width = 620;
-        Height = 310;
-        MinimumSize = new Size(580, 300);
+        Height = 350;
+        MinimumSize = new Size(580, 340);
         StartPosition = FormStartPosition.CenterScreen;
         FormBorderStyle = FormBorderStyle.FixedDialog;
         MaximizeBox = false;
@@ -77,18 +77,18 @@ internal sealed class InstallerForm : Form
         _launchAfterInstallBox.AutoSize = true;
         _launchAfterInstallBox.Location = new Point(26, 174);
 
-        _progressBar.Location = new Point(26, 208);
+        _progressBar.Location = new Point(26, 206);
         _progressBar.Width = 552;
         _progressBar.Height = 18;
 
         _statusLabel.Text = "Готово к установке.";
         _statusLabel.AutoSize = false;
-        _statusLabel.Width = 552;
+        _statusLabel.Width = 410;
         _statusLabel.Height = 24;
-        _statusLabel.Location = new Point(26, 232);
+        _statusLabel.Location = new Point(26, 236);
 
         _installButton.Text = "Установить";
-        _installButton.Location = new Point(458, 238);
+        _installButton.Location = new Point(458, 268);
         _installButton.Width = 120;
         _installButton.Height = 32;
         _installButton.Click += InstallButton_Click;

@@ -57,7 +57,7 @@ New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--no-restore", "-o", $publishDir)
 
-$zipName = "MinivibeInstaller-$version-framework.zip"
+$zipName = "MinivibeInstaller-$version.zip"
 $zipPath = Join-Path $launcherDir $zipName
 Assert-UnderRoot -Path $zipPath -Root $root
 if (Test-Path -LiteralPath $zipPath) {

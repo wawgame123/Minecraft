@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.2.0",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.0-framework.zip",
-    "sha256":  "707ec001ca7b3208faf0a8fa281fa7622634b540a7290a309c3a4296c410e5f1",
+    "version":  "0.2.1",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.1-WIN-portable.zip",
+    "sha256":  "9fcd389264137b25cd73b6fcae36f6aba0e4c42defe165e3ae2ae34f4c69a16a",
     "mandatory":  false,
     "notes":  [
-                  "BUGFIX: лаунчер распознает уже установленный NeoForge профиль в versions/neoforge-21.1.228.",
-                  "Если есть готовый профиль NeoForge и jar версии, installer NeoForge больше не запускается заново без необходимости.",
-                  "Существующая .minecraft папка используется аккуратнее: лишняя докачка loader-файлов сокращена."
+                  "BUGFIX: исправлена разметка установщика, кнопка Установить больше не перекрывается статусной строкой.",
+                  "Архивы релиза переименованы в понятный формат: installer, WIN-portable, MAC-arm64 и MAC-x64.",
+                  "NeoForge fix из 0.2.0 сохранен."
               ]
 }

@@ -60,14 +60,13 @@ New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 if ([string]::IsNullOrWhiteSpace($Runtime)) {
     Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-o", $publishDir)
-    $packageSuffix = "framework"
+    $zipName = "Minivibe-$version-WIN-portable.zip"
 }
 else {
     Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-o", $publishDir)
-    $packageSuffix = $Runtime
+    $zipName = "Minivibe-$version-$Runtime-portable.zip"
 }
 
-$zipName = "Minivibe-$version-$packageSuffix.zip"
 $zipPath = Join-Path $launcherDir $zipName
 Assert-UnderRoot -Path $zipPath -Root $root
 if (Test-Path -LiteralPath $zipPath) {
@@ -85,9 +84,9 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        $utf8.GetString([Convert]::FromBase64String("QlVHRklYOiDQu9Cw0YPQvdGH0LXRgCDRgNCw0YHQv9C+0LfQvdCw0LXRgiDRg9C20LUg0YPRgdGC0LDQvdC+0LLQu9C10L3QvdGL0LkgTmVvRm9yZ2Ug0L/RgNC+0YTQuNC70Ywg0LIgdmVyc2lvbnMvbmVvZm9yZ2UtMjEuMS4yMjgu")),
-        $utf8.GetString([Convert]::FromBase64String("0JXRgdC70Lgg0LXRgdGC0Ywg0LPQvtGC0L7QstGL0Lkg0L/RgNC+0YTQuNC70YwgTmVvRm9yZ2Ug0LggamFyINCy0LXRgNGB0LjQuCwgaW5zdGFsbGVyIE5lb0ZvcmdlINCx0L7Qu9GM0YjQtSDQvdC1INC30LDQv9GD0YHQutCw0LXRgtGB0Y8g0LfQsNC90L7QstC+INCx0LXQtyDQvdC10L7QsdGF0L7QtNC40LzQvtGB0YLQuC4=")),
-        $utf8.GetString([Convert]::FromBase64String("0KHRg9GJ0LXRgdGC0LLRg9GO0YnQsNGPIC5taW5lY3JhZnQg0L/QsNC/0LrQsCDQuNGB0L/QvtC70YzQt9GD0LXRgtGB0Y8g0LDQutC60YPRgNCw0YLQvdC10LU6INC70LjRiNC90Y/RjyDQtNC+0LrQsNGH0LrQsCBsb2FkZXIt0YTQsNC50LvQvtCyINGB0L7QutGA0LDRidC10L3QsC4="))
+        $utf8.GetString([Convert]::FromBase64String("QlVHRklYOiDQuNGB0L/RgNCw0LLQu9C10L3QsCDRgNCw0LfQvNC10YLQutCwINGD0YHRgtCw0L3QvtCy0YnQuNC60LAsINC60L3QvtC/0LrQsCDQo9GB0YLQsNC90L7QstC40YLRjCDQsdC+0LvRjNGI0LUg0L3QtSDQv9C10YDQtdC60YDRi9Cy0LDQtdGC0YHRjyDRgdGC0LDRgtGD0YHQvdC+0Lkg0YHRgtGA0L7QutC+0Lku")),
+        $utf8.GetString([Convert]::FromBase64String("0JDRgNGF0LjQstGLINGA0LXQu9C40LfQsCDQv9C10YDQtdC40LzQtdC90L7QstCw0L3RiyDQsiDQv9C+0L3Rj9GC0L3Ri9C5INGE0L7RgNC80LDRgjogaW5zdGFsbGVyLCBXSU4tcG9ydGFibGUsIE1BQy1hcm02NCDQuCBNQUMteDY0Lg==")),
+        $utf8.GetString([Convert]::FromBase64String("TmVvRm9yZ2UgZml4INC40LcgMC4yLjAg0YHQvtGF0YDQsNC90LXQvS4="))
     )
 }
 

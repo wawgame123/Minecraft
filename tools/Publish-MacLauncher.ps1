@@ -81,7 +81,8 @@ chmod +x ./MinivibeMac
 The launcher is self-contained and does not require installing .NET separately.
 "@ | Set-Content -LiteralPath $readmePath -Encoding UTF8
 
-    $zipName = "MinivibeMac-$version-$runtime.zip"
+    $arch = if ($runtime -eq "osx-arm64") { "arm64" } elseif ($runtime -eq "osx-x64") { "x64" } else { $runtime }
+    $zipName = "Minivibe-$version-MAC-$arch.zip"
     $zipPath = Join-Path $launcherDir $zipName
     Assert-UnderRoot -Path $zipPath -Root $root
     if (Test-Path -LiteralPath $zipPath) {
