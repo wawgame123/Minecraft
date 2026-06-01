@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -323,7 +324,7 @@ public sealed class MinecraftRuntimeService
         string? localNeoForgeProfileJar = null,
         string loaderVersion = "")
     {
-        foreach (var library in libraries.Where(IsAllowedOnWindows))
+        foreach (var library in libraries.Where(IsAllowedOnCurrentOs))
         {
             if (!string.IsNullOrWhiteSpace(localNeoForgeProfileJar)
                 && IsNeoForgeClientLibrary(library.Name, loaderVersion))
@@ -344,7 +345,7 @@ public sealed class MinecraftRuntimeService
                 workItems.Add(new RuntimeDownloadItem(artifact, libraryPath, AddToClasspath: true, IsNative: false));
             }
 
-            var nativeDownload = NativeDownloadForWindows(library);
+            var nativeDownload = NativeDownloadForCurrentOs(library);
             if (nativeDownload is not null)
             {
                 var nativeJarPath = Path.Combine(librariesRoot, nativeDownload.Path.Replace('/', Path.DirectorySeparatorChar));
@@ -572,7 +573,7 @@ public sealed class MinecraftRuntimeService
         }
     }
 
-    private static bool IsAllowedOnWindows(MinecraftLibrary library)
+    private static bool IsAllowedOnCurrentOs(MinecraftLibrary library)
     {
         if (library.Rules.Count == 0)
         {
@@ -580,10 +581,11 @@ public sealed class MinecraftRuntimeService
         }
 
         var allowed = false;
+        var currentOs = MinecraftOsName();
         foreach (var rule in library.Rules)
         {
             if (rule.Os is not null
-                && !string.Equals(rule.Os.Name, "windows", StringComparison.OrdinalIgnoreCase))
+                && !string.Equals(rule.Os.Name, currentOs, StringComparison.OrdinalIgnoreCase))
             {
                 continue;
             }
@@ -594,15 +596,30 @@ public sealed class MinecraftRuntimeService
         return allowed;
     }
 
-    private static MinecraftDownload? NativeDownloadForWindows(MinecraftLibrary library)
+    private static MinecraftDownload? NativeDownloadForCurrentOs(MinecraftLibrary library)
     {
-        if (!library.Natives.TryGetValue("windows", out var classifier))
+        if (!library.Natives.TryGetValue(MinecraftOsName(), out var classifier))
         {
             return null;
         }
 
         classifier = classifier.Replace("${arch}", Environment.Is64BitOperatingSystem ? "64" : "32", StringComparison.OrdinalIgnoreCase);
         return library.Downloads.Classifiers.TryGetValue(classifier, out var download) ? download : null;
+    }
+
+    private static string MinecraftOsName()
+    {
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+        {
+            return "osx";
+        }
+
+        if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+        {
+            return "linux";
+        }
+
+        return "windows";
     }
 
     private static IReadOnlyList<string> ExtractStringArguments(IReadOnlyList<JsonElement>? arguments)

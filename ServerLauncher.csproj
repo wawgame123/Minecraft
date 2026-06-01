@@ -24,8 +24,11 @@
 
   <ItemGroup>
     <Compile Remove="installer\**" />
+    <Compile Remove="mac\**" />
     <EmbeddedResource Remove="installer\**" />
+    <EmbeddedResource Remove="mac\**" />
     <None Remove="installer\**" />
+    <None Remove="mac\**" />
   </ItemGroup>
 
   <ItemGroup>

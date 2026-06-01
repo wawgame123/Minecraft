@@ -29,11 +29,22 @@ jobs:
           - Лаунчер распознает уже установленный NeoForge профиль в versions/neoforge-21.1.228.
           - Если в существующей .minecraft уже есть профиль и jar версии, NeoForge installer не запускается заново без необходимости.
           - Лишняя докачка loader-файлов сокращена при выборе уже использованной папки Minecraft.
+          - Добавлена отдельная experimental macOS версия на Avalonia: osx-arm64 и osx-x64.
           - Автообновление лаунчера продолжает работать через launcher/update.json.
           NOTES
 
-          gh release create "$TAG_NAME" \
-            "launcher/MinivibeInstaller-$VERSION-framework.zip" \
-            "launcher/Minivibe-$VERSION-framework.zip" \
-            --title "minivibe $TAG_NAME" \
-            --notes-file release-notes.md
+          ASSETS=(
+            "launcher/MinivibeInstaller-$VERSION-framework.zip"
+            "launcher/Minivibe-$VERSION-framework.zip"
+          )
+
+          if compgen -G "launcher/MinivibeMac-$VERSION-osx-*.zip" > /dev/null; then
+            ASSETS+=(launcher/MinivibeMac-"$VERSION"-osx-*.zip)
+          fi
+
+          if gh release view "$TAG_NAME" > /dev/null 2>&1; then
+            gh release edit "$TAG_NAME" --title "minivibe $TAG_NAME BUGFIX" --notes-file release-notes.md
+            gh release upload "$TAG_NAME" "${ASSETS[@]}" --clobber
+          else
+            gh release create "$TAG_NAME" "${ASSETS[@]}" --title "minivibe $TAG_NAME BUGFIX" --notes-file release-notes.md
+          fi
