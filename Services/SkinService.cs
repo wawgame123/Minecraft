@@ -99,17 +99,12 @@ public sealed class SkinService
             throw new InvalidOperationException("Сначала подтвердите ник игрока.");
         }
 
-        if (string.IsNullOrWhiteSpace(settings.SkinUploadUrl))
-        {
-            throw new InvalidOperationException("Укажите URL загрузчика скинов.");
-        }
-
         var pngBytes = ReadSkinPngBytes(sourcePath);
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(settings.PlayerName), "playerName");
         form.Add(new ByteArrayContent(pngBytes), "skin", settings.PlayerName + ".png");
 
-        using var response = await _httpClient.PostAsync(settings.SkinUploadUrl.Trim(), form, cancellationToken);
+        using var response = await _httpClient.PostAsync(LauncherSettings.SharedSkinUploadUrl, form, cancellationToken);
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {

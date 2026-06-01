@@ -205,7 +205,6 @@ public partial class MainWindow : Window
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
         _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
         _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
-        _settings.SkinUploadUrl = SkinUploadUrlBox.Text.Trim();
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
@@ -236,7 +235,6 @@ public partial class MainWindow : Window
             _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
             SkinServerUrlBox.Text = _settings.SkinServerUrl;
             EnableSkinServerCheckBox.IsChecked = _settings.EnableSkinServer;
-            SkinUploadUrlBox.Text = _settings.SkinUploadUrl;
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
             BindCustomColorBoxes();

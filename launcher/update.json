@@ -1,12 +1,11 @@
 ﻿{
-    "version":  "0.1.15",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.15-framework.zip",
-    "sha256":  "effb6242b69465166da269cf44b9e1476e33d4626d743c033e5e11caf6d0994d",
+    "version":  "0.1.16",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.16-framework.zip",
+    "sha256":  "b261228ce615b5f8de57410b7f359e9838483b7f2fcbb37d895f6ad3cf25642e",
     "mandatory":  false,
     "notes":  [
-                  "Загрузка скинов в общий каталог теперь работает без кода доступа.",
-                  "Из лаунчера убрано поле кода для загрузки скина.",
-                  "Cloudflare Worker теперь требует только GITHUB_TOKEN.",
-                  "Остаются проверки ника, PNG-формата и размера файла."
+                  "Ссылка загрузчика скинов теперь зашита в лаунчер.",
+                  "Игроки больше не вводят URL для общей загрузки скинов.",
+                  "Для общего скина нужно только выбрать PNG/JPG и нажать \"Загрузить для всех\"."
               ]
 }

@@ -11,7 +11,6 @@ public sealed class LauncherSettings
     public string SkinSourcePath { get; set; } = "";
     public string SkinServerUrl { get; set; } = DefaultSkinServerUrl;
     public bool EnableSkinServer { get; set; } = true;
-    public string SkinUploadUrl { get; set; } = "";
     public string ExtraLaunchArguments { get; set; } = "";
     public string VisualTheme { get; set; } = "Obsidian";
     public string AccentColor { get; set; } = "Crimson";
@@ -35,4 +34,5 @@ public sealed class LauncherSettings
     }
 
     public const string DefaultSkinServerUrl = "https://raw.githubusercontent.com/wawgame123/Minecraft/main";
+    public const string SharedSkinUploadUrl = "https://minivibe-skins.tupikp37.workers.dev/upload-skin";
 }

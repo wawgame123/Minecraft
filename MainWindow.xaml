@@ -462,8 +462,6 @@
                            Foreground="{DynamicResource MutedBrush}"
                            Margin="0,8,0,0"
                            TextWrapping="Wrap"/>
-                <TextBlock Text="URL загрузчика" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="SkinUploadUrlBox"/>
                 <Button Content="Загрузить для всех"
                         Margin="0,16,0,0"
                         Click="UploadSharedSkinButton_Click"/>
