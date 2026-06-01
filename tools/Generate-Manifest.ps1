@@ -75,7 +75,8 @@ function Convert-CrlfBytesToLf([byte[]]$Bytes) {
 function Get-ManifestFileMetadata([string]$Path) {
     $bytes = [System.IO.File]::ReadAllBytes($Path)
 
-    if ($Path.EndsWith(".json", [StringComparison]::OrdinalIgnoreCase)) {
+    if ($Path.EndsWith(".json", [StringComparison]::OrdinalIgnoreCase) -or
+        $Path.EndsWith(".txt", [StringComparison]::OrdinalIgnoreCase)) {
         $bytes = Convert-CrlfBytesToLf $bytes
     }
 

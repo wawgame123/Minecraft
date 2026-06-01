@@ -12171,16 +12171,16 @@
     {
       "path": "shaderpacks/ComplementaryReimagined_r5.8.1.zip.txt",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/ComplementaryReimagined_r5.8.1.zip.txt",
-      "sha256": "a1fbb67c35777c49da692634e29c5771c51be2e2933d358742dff225bbfacdf2",
-      "size": 116,
+      "sha256": "fed358340384a05bacbfde63e90072302bdcd074c846b23508826a1e993366c2",
+      "size": 111,
       "category": "shaderpack",
       "required": false
     },
     {
       "path": "shaderpacks/eiphoriapatches.zip.txt",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/eiphoriapatches.zip.txt",
-      "sha256": "751d94dff2d93bd6877eca0b9cc930fa4b534775f885369fab0d81db7ce1b60c",
-      "size": 53,
+      "sha256": "87041a4473048a5b37e93c364e9aa6e42b757eaf79bb639dc871b04e29ae4dd6",
+      "size": 51,
       "category": "shaderpack",
       "required": false
     },

@@ -26,9 +26,9 @@ jobs:
           cat > release-notes.md <<'NOTES'
           BUGFIX
 
-          - Добавлен FPS-режим: по умолчанию Minecraft запускается без live-консоли и без redirect логов.
-          - При выключенной консоли лаунчер использует javaw.exe, если он доступен рядом с Java.
-          - Консоль Minecraft можно включить в настройках, когда нужны логи для диагностики.
+          - Исправлена SHA-проверка shaderpack .txt файлов: manifest теперь считает LF так же, как GitHub Raw.
+          - 3D-превью скина больше не рисует outer-layer, если во втором слое нет прозрачности.
+          - Для PNG со слоями превью оставляет outer-layer, для JPG убирает грязную непрозрачную оболочку.
           - Windows installer, Windows portable и experimental macOS сборки входят в релиз.
           NOTES
 
