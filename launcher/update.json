@@ -1,12 +1,12 @@
 ﻿{
-    "version":  "0.1.14",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.14-framework.zip",
-    "sha256":  "e35d70163d99cd168d061e4fae37f4f68cc89df1a5231418e994af2b5c14b8e6",
+    "version":  "0.1.15",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.15-framework.zip",
+    "sha256":  "effb6242b69465166da269cf44b9e1476e33d4626d743c033e5e11caf6d0994d",
     "mandatory":  false,
     "notes":  [
-                  "Добавлена загрузка скинов через Cloudflare Worker в папку skins репозитория.",
-                  "Лаунчер принимает PNG/JPG/JPEG, но хранит и отправляет итоговый PNG для OfflineSkins.",
-                  "3D-превью скина теперь показывает верхние слои модели.",
-                  "Добавлены заготовка Worker-а и инструкция по настройке GitHub token/UPLOAD_SECRET."
+                  "Загрузка скинов в общий каталог теперь работает без кода доступа.",
+                  "Из лаунчера убрано поле кода для загрузки скина.",
+                  "Cloudflare Worker теперь требует только GITHUB_TOKEN.",
+                  "Остаются проверки ника, PNG-формата и размера файла."
               ]
 }

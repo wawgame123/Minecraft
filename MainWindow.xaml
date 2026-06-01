@@ -107,16 +107,6 @@
       <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
     </Style>
 
-    <Style TargetType="PasswordBox">
-      <Setter Property="MinHeight" Value="36"/>
-      <Setter Property="Padding" Value="10,7"/>
-      <Setter Property="Background" Value="{DynamicResource SurfaceAltBrush}"/>
-      <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
-      <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
-      <Setter Property="BorderThickness" Value="1"/>
-      <Setter Property="CaretBrush" Value="{DynamicResource AccentBrush}"/>
-    </Style>
-
     <Style TargetType="ComboBox">
       <Setter Property="MinHeight" Value="36"/>
       <Setter Property="Padding" Value="8,5"/>
@@ -474,8 +464,6 @@
                            TextWrapping="Wrap"/>
                 <TextBlock Text="URL загрузчика" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="SkinUploadUrlBox"/>
-                <TextBlock Text="Код доступа" Style="{StaticResource LabelStyle}"/>
-                <PasswordBox x:Name="SkinUploadSecretBox"/>
                 <Button Content="Загрузить для всех"
                         Margin="0,16,0,0"
                         Click="UploadSharedSkinButton_Click"/>

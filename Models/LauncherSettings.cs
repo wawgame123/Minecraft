@@ -12,7 +12,6 @@ public sealed class LauncherSettings
     public string SkinServerUrl { get; set; } = DefaultSkinServerUrl;
     public bool EnableSkinServer { get; set; } = true;
     public string SkinUploadUrl { get; set; } = "";
-    public string SkinUploadSecret { get; set; } = "";
     public string ExtraLaunchArguments { get; set; } = "";
     public string VisualTheme { get; set; } = "Obsidian";
     public string AccentColor { get; set; } = "Crimson";

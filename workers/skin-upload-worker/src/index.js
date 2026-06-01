@@ -27,16 +27,10 @@ export default {
 
 async function uploadSkin(request, env) {
   requireEnv(env, "GITHUB_TOKEN");
-  requireEnv(env, "UPLOAD_SECRET");
 
   const form = await request.formData();
   const playerName = String(form.get("playerName") || "").trim();
-  const secret = String(form.get("secret") || "");
   const skin = form.get("skin");
-
-  if (secret !== env.UPLOAD_SECRET) {
-    throw new Error("Invalid upload code");
-  }
 
   if (!PLAYER_NAME_RE.test(playerName)) {
     throw new Error("Invalid player name");

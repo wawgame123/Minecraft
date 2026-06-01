@@ -104,15 +104,9 @@ public sealed class SkinService
             throw new InvalidOperationException("Укажите URL загрузчика скинов.");
         }
 
-        if (string.IsNullOrWhiteSpace(settings.SkinUploadSecret))
-        {
-            throw new InvalidOperationException("Введите код доступа к загрузке скинов.");
-        }
-
         var pngBytes = ReadSkinPngBytes(sourcePath);
         using var form = new MultipartFormDataContent();
         form.Add(new StringContent(settings.PlayerName), "playerName");
-        form.Add(new StringContent(settings.SkinUploadSecret), "secret");
         form.Add(new ByteArrayContent(pngBytes), "skin", settings.PlayerName + ".png");
 
         using var response = await _httpClient.PostAsync(settings.SkinUploadUrl.Trim(), form, cancellationToken);
