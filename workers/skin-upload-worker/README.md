@@ -4,9 +4,9 @@ Cloudflare Worker for uploading player skins to GitHub without putting the GitHu
 
 ## What It Does
 
-- Accepts `POST /upload-skin`.
+- Accepts `POST /upload-skin` as JSON from the launcher.
 - Validates Minecraft player name: 3-16 chars, latin letters, digits, `_`.
-- Accepts only the final PNG produced by the launcher.
+- Accepts the final base64 PNG produced by the launcher.
 - Validates PNG size: 64x64 or 64x32.
 - Commits the file to `skins/<name>.png`.
 

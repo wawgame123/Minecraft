@@ -28,23 +28,18 @@ export default {
 async function uploadSkin(request, env) {
   requireEnv(env, "GITHUB_TOKEN");
 
-  const form = await request.formData();
-  const playerName = String(form.get("playerName") || "").trim();
-  const skin = form.get("skin");
+  const upload = await readUploadRequest(request);
+  const playerName = upload.playerName;
+  const bytes = upload.bytes;
 
   if (!PLAYER_NAME_RE.test(playerName)) {
     throw new Error("Invalid player name");
   }
 
-  if (!(skin instanceof File)) {
-    throw new Error("Skin file is missing");
-  }
-
-  if (skin.size <= 0 || skin.size > MAX_SKIN_BYTES) {
+  if (bytes.length <= 0 || bytes.length > MAX_SKIN_BYTES) {
     throw new Error("Skin file is too large");
   }
 
-  const bytes = new Uint8Array(await skin.arrayBuffer());
   const dimensions = readPngDimensions(bytes);
   if (dimensions.width !== 64 || ![32, 64].includes(dimensions.height)) {
     throw new Error("Skin must be PNG 64x64 or 64x32");
@@ -77,6 +72,29 @@ async function uploadSkin(request, env) {
     path,
     rawUrl: `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${path}`
   });
+}
+
+async function readUploadRequest(request) {
+  const contentType = request.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json();
+    return {
+      playerName: String(body.playerName || "").trim(),
+      bytes: base64ToBytes(String(body.skinBase64 || ""))
+    };
+  }
+
+  const form = await request.formData();
+  const skin = form.get("skin");
+  if (!(skin instanceof File)) {
+    throw new Error("Skin file is missing");
+  }
+
+  return {
+    playerName: String(form.get("playerName") || "").trim(),
+    bytes: new Uint8Array(await skin.arrayBuffer())
+  };
 }
 
 async function getExistingFileSha(env, owner, repo, path, branch) {
@@ -128,6 +146,20 @@ function bytesToBase64(bytes) {
   }
 
   return btoa(binary);
+}
+
+function base64ToBytes(value) {
+  if (!value) {
+    throw new Error("Skin file is missing");
+  }
+
+  const binary = atob(value);
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) {
+    bytes[index] = binary.charCodeAt(index);
+  }
+
+  return bytes;
 }
 
 function githubHeaders(env) {

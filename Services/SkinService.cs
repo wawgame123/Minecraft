@@ -99,12 +99,15 @@ public sealed class SkinService
             throw new InvalidOperationException("Сначала подтвердите ник игрока.");
         }
 
-        var pngBytes = ReadSkinPngBytes(sourcePath);
-        using var form = new MultipartFormDataContent();
-        form.Add(new StringContent(settings.PlayerName), "playerName");
-        form.Add(new ByteArrayContent(pngBytes), "skin", settings.PlayerName + ".png");
+        var request = new SharedSkinUploadRequest(
+            settings.PlayerName,
+            Convert.ToBase64String(ReadSkinPngBytes(sourcePath)));
+        using var content = new StringContent(
+            JsonSerializer.Serialize(request),
+            Encoding.UTF8,
+            "application/json");
 
-        using var response = await _httpClient.PostAsync(LauncherSettings.SharedSkinUploadUrl, form, cancellationToken);
+        using var response = await _httpClient.PostAsync(LauncherSettings.SharedSkinUploadUrl, content, cancellationToken);
         var body = await response.Content.ReadAsStringAsync(cancellationToken);
         if (!response.IsSuccessStatusCode)
         {
@@ -188,4 +191,8 @@ public sealed class SkinService
         [JsonPropertyName("disablePlayerHeads")]
         public bool DisablePlayerHeads { get; set; }
     }
+
+    private sealed record SharedSkinUploadRequest(
+        [property: JsonPropertyName("playerName")] string PlayerName,
+        [property: JsonPropertyName("skinBase64")] string SkinBase64);
 }
