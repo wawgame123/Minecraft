@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.16",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.16-framework.zip",
-    "sha256":  "b261228ce615b5f8de57410b7f359e9838483b7f2fcbb37d895f6ad3cf25642e",
+    "version":  "0.1.17",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.17-framework.zip",
+    "sha256":  "fc96cc5828b498e060e8cd600eb4d263b701c6df8907732c84e00a6e3d026a25",
     "mandatory":  false,
     "notes":  [
-                  "Ссылка загрузчика скинов теперь зашита в лаунчер.",
-                  "Игроки больше не вводят URL для общей загрузки скинов.",
-                  "Для общего скина нужно только выбрать PNG/JPG и нажать \"Загрузить для всех\"."
+                  "Кнопка скина упрощена: «Сохранить скин» сразу ставит его локально и загружает в GitHub.",
+                  "С правой панели скинов убраны ссылки, URL и лишние кнопки.",
+                  "Базовый адрес скинов и адрес загрузчика теперь задаются внутри лаунчера."
               ]
 }

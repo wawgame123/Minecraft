@@ -425,8 +425,8 @@
                              Foreground="{DynamicResource MutedBrush}"
                              TextWrapping="Wrap"/>
                   <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
-                    <Button Content="Выбрать PNG" Click="ChooseSkinButton_Click"/>
-                    <Button Content="Установить скин" Style="{StaticResource SecondaryButtonStyle}" Click="InstallSkinButton_Click"/>
+                    <Button Content="Выбрать PNG/JPG" Click="ChooseSkinButton_Click"/>
+                    <Button Content="Сохранить скин" Style="{StaticResource SecondaryButtonStyle}" Click="InstallSkinButton_Click"/>
                   </StackPanel>
                 </StackPanel>
               </Grid>
@@ -434,37 +434,11 @@
 
             <Border Grid.Column="1" Style="{StaticResource CardStyle}" Margin="9,0,0,0">
               <StackPanel>
-                <TextBlock Text="Общий сервер скинов" FontSize="18" FontWeight="SemiBold"/>
-                <TextBlock Text="Формат: skins/Ник.png"
+                <TextBlock Text="Общий скин" FontSize="18" FontWeight="SemiBold"/>
+                <TextBlock Text="Нажмите «Сохранить скин»: лаунчер установит его локально и загрузит для других игроков."
                            Foreground="{DynamicResource MutedBrush}"
                            Margin="0,8,0,0"
                            TextWrapping="Wrap"/>
-                <TextBlock Text="Базовый URL" Style="{StaticResource LabelStyle}"/>
-                <TextBox x:Name="SkinServerUrlBox" TextChanged="SkinServerSetting_Changed"/>
-                <CheckBox x:Name="EnableSkinServerCheckBox"
-                          Content="Включить загрузку скинов по никам"
-                          Click="SkinServerSetting_Changed"/>
-                <TextBlock x:Name="SkinServerPreviewText"
-                           Foreground="{DynamicResource MutedBrush}"
-                           Margin="0,12,0,0"
-                           TextWrapping="Wrap"/>
-                <Button Content="Сохранить настройку"
-                        Margin="0,16,0,0"
-                        Click="SaveSkinServerButton_Click"/>
-
-                <Border Height="1"
-                        Background="{DynamicResource BorderBrush}"
-                        Margin="0,18,0,16"/>
-                <TextBlock Text="Загрузка скина"
-                           FontSize="18"
-                           FontWeight="SemiBold"/>
-                <TextBlock Text="Скин уйдет в общий каталог skins/Ник.png"
-                           Foreground="{DynamicResource MutedBrush}"
-                           Margin="0,8,0,0"
-                           TextWrapping="Wrap"/>
-                <Button Content="Загрузить для всех"
-                        Margin="0,16,0,0"
-                        Click="UploadSharedSkinButton_Click"/>
               </StackPanel>
             </Border>
           </Grid>

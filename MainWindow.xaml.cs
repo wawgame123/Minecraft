@@ -203,8 +203,8 @@ public partial class MainWindow : Window
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
-        _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
-        _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
+        _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
+        _settings.EnableSkinServer = true;
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
@@ -219,7 +219,6 @@ public partial class MainWindow : Window
         await _settingsService.SaveAsync(_settings);
         await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
         UpdatePlayerNameMode();
-        UpdateSkinServerPreview();
         RenderManifest();
     }
 
@@ -233,8 +232,6 @@ public partial class MainWindow : Window
             RamBox.Text = _settings.RamMb.ToString();
             SyncPlayerNameText(_settings.PlayerName);
             _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
-            SkinServerUrlBox.Text = _settings.SkinServerUrl;
-            EnableSkinServerCheckBox.IsChecked = _settings.EnableSkinServer;
             ExtraArgsBox.Text = _settings.ExtraLaunchArguments;
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
             BindCustomColorBoxes();
@@ -243,7 +240,6 @@ public partial class MainWindow : Window
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
             UpdateSkinStatus();
-            UpdateSkinServerPreview();
         }
         finally
         {
@@ -511,56 +507,16 @@ public partial class MainWindow : Window
             var installedPath = _skinService.InstallSkin(_settings, sourcePath);
             _selectedSkinPath = sourcePath;
             _settings.SkinSourcePath = sourcePath;
+            _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
+            _settings.EnableSkinServer = true;
+            SetBusy(true, "Сохраняю скин...");
+            await _skinService.UploadSharedSkinAsync(_settings, sourcePath, CurrentToken());
             await _settingsService.SaveAsync(_settings);
             await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
-            SkinStatusText.Text = $"Скин установлен для {CurrentPlayerName()}.";
-            SidebarStatusText.Text = "Скин установлен";
+            SkinStatusText.Text = $"Скин {CurrentPlayerName()} сохранен и загружен для всех.";
+            SidebarStatusText.Text = "Скин сохранен";
             await LoadSkinPreviewAsync(installedPath);
         });
-    }
-
-    private async void SaveSkinServerButton_Click(object sender, RoutedEventArgs e)
-    {
-        await RunGuardedAsync(async () =>
-        {
-            await SaveSettingsFromUiAsync();
-            SkinStatusText.Text = "Настройка сервера скинов сохранена.";
-            SidebarStatusText.Text = "Скины сохранены";
-        });
-    }
-
-    private async void UploadSharedSkinButton_Click(object sender, RoutedEventArgs e)
-    {
-        await RunGuardedAsync(async () =>
-        {
-            await SaveSettingsFromUiAsync();
-            var sourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
-            if (string.IsNullOrWhiteSpace(sourcePath))
-            {
-                throw new InvalidOperationException("Выберите PNG/JPG скин.");
-            }
-
-            SetBusy(true, "Загружаю скин в общий каталог...");
-            await _skinService.UploadSharedSkinAsync(_settings, sourcePath, CurrentToken());
-            _settings.EnableSkinServer = true;
-            EnableSkinServerCheckBox.IsChecked = true;
-            await _settingsService.SaveAsync(_settings);
-            await _skinService.SaveOfflineSkinsConfigAsync(_settings, CurrentToken());
-            SkinStatusText.Text = $"Скин {CurrentPlayerName()} загружен в общий каталог.";
-            SidebarStatusText.Text = "Скин загружен";
-        });
-    }
-
-    private void SkinServerSetting_Changed(object sender, RoutedEventArgs e)
-    {
-        if (_bindingSettings)
-        {
-            return;
-        }
-
-        _settings.SkinServerUrl = SkinServerUrlBox.Text.Trim();
-        _settings.EnableSkinServer = EnableSkinServerCheckBox.IsChecked == true;
-        UpdateSkinServerPreview();
     }
 
     private async Task LoadSkinPreviewAsync(string? skinPath)
@@ -588,14 +544,6 @@ public partial class MainWindow : Window
             : File.Exists(selected)
                 ? "Скин выбран, можно установить."
                 : "Скин не выбран.";
-    }
-
-    private void UpdateSkinServerPreview()
-    {
-        var baseUrl = SkinServerUrlBox.Text.Trim().TrimEnd('/');
-        SkinServerPreviewText.Text = string.IsNullOrWhiteSpace(baseUrl)
-            ? "Пример: https://example.com/minivibe"
-            : $"Скин игрока будет искаться по адресу: {baseUrl}/skins/%name%.png";
     }
 
     private static string BuildEmptySkinPreviewHtml()
