@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Minivibe — краткий гайд по модам</title>
+  <style>
+    :root {
+      --bg:#0d1117; --panel:rgba(22,27,34,.94); --panel2:rgba(33,38,45,.92);
+      --text:#e6edf3; --muted:#9da7b3; --accent:#ff4d6d; --border:rgba(240,246,252,.12);
+      --shadow:0 18px 45px rgba(0,0,0,.35);
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;font-family:"Segoe UI",Arial,sans-serif;color:var(--text);background:
+      radial-gradient(circle at 20% 0%,rgba(124,58,237,.35),transparent 30%),
+      radial-gradient(circle at 85% 10%,rgba(255,77,109,.24),transparent 28%),
+      var(--bg);line-height:1.55}
+    header{padding:64px 18px 42px;text-align:center}
+    .hero{max-width:980px;margin:auto}
+    .badge{display:inline-block;padding:8px 14px;border:1px solid var(--border);border-radius:999px;background:rgba(255,255,255,.06);color:var(--muted);margin-bottom:16px}
+    h1{font-size:clamp(36px,7vw,76px);line-height:1.02;margin:0 0 16px;letter-spacing:-2px}
+    h1 span{background:linear-gradient(90deg,#ff4d6d,#ffd166,#7c3aed);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .subtitle{max-width:760px;margin:0 auto;color:var(--muted);font-size:clamp(17px,2.4vw,22px)}
+    .nav{display:flex;gap:10px;flex-wrap:wrap;justify-content:center;margin-top:26px}
+    .nav a{color:var(--text);text-decoration:none;padding:10px 14px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--border)}
+    main{max-width:1180px;margin:auto;padding:20px 18px 70px}
+    section{margin:42px 0 64px}
+    .section-title{display:flex;align-items:end;justify-content:space-between;gap:18px;margin-bottom:18px}
+    h2{font-size:clamp(28px,4vw,44px);margin:0}
+    h3{margin:0 0 10px;font-size:24px}
+    .hint{color:var(--muted);max-width:540px;margin:0}
+    .grid{display:grid;grid-template-columns:repeat(12,1fr);gap:18px}
+    .card{grid-column:span 4;background:linear-gradient(180deg,var(--panel),rgba(13,17,23,.96));border:1px solid var(--border);border-radius:24px;overflow:hidden;box-shadow:var(--shadow)}
+    .wide{grid-column:span 6}
+    .big{grid-column:span 12}
+    .photo{width:100%;height:220px;object-fit:cover;display:block}
+    .content{padding:18px}
+    .tag{display:inline-block;padding:5px 9px;margin:0 6px 8px 0;border-radius:999px;background:rgba(255,255,255,.11);border:1px solid var(--border);font-size:13px}
+    p{color:var(--muted);margin:8px 0 12px}
+    ul,ol{margin:10px 0 0;padding-left:20px}
+    li{margin:7px 0}
+    .tip{margin-top:12px;padding:12px;border-radius:16px;background:rgba(255,77,109,.10);border:1px solid rgba(255,77,109,.25);color:#ffdbe2}
+    .mechanics{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:12px}
+    .mechanic{padding:14px;border-radius:18px;background:var(--panel2);border:1px solid var(--border)}
+    .mechanic strong{display:block;margin-bottom:4px}
+    .path{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .step{padding:9px 12px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid var(--border)}
+    .footer{text-align:center;color:var(--muted);padding:34px 18px 50px;border-top:1px solid var(--border);background:rgba(0,0,0,.16)}
+    code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:7px}
+    @media(max-width:920px){.card,.wide{grid-column:span 6}.mechanics{grid-template-columns:1fr}}
+    @media(max-width:640px){.card,.wide,.big{grid-column:span 12}.section-title{display:block}.photo{height:190px}}
+  </style>
+</head>
+<body>
+<header>
+  <div class="hero">
+    <div class="badge">⚔️ Minivibe • Minecraft 1.21.1 • NeoForge</div>
+    <h1>Краткий гайд по <span>основным модам</span></h1>
+    <p class="subtitle">Названия механизмов и предметов написаны по-русски, чтобы игрокам было проще ориентироваться в русифицированной сборке.</p>
+    <div class="nav">
+      <a href="#create">Create</a>
+      <a href="#mechanisms">Механизмы</a>
+      <a href="#adventure">Приключения</a>
+      <a href="#base">База</a>
+      <a href="#survival">Выживание</a>
+      <a href="#start">Старт</a>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="create">
+  <div class="section-title">
+    <h2>⚙️ Create — главный технический мод</h2>
+    <p class="hint">Мод про вращение, шестерни, конвейеры, обработку ресурсов, заводы, фермы и поезда.</p>
+  </div>
+
+  <div class="grid">
+    <article class="card big">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2378350f%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23f97316%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%E2%9A%99%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3ECreate%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BC%D0%B5%D1%85%D0%B0%D0%BD%D0%B8%D0%B7%D0%BC%D1%8B%20%E2%80%A2%20%D0%B7%D0%B0%D0%B2%D0%BE%D0%B4%D1%8B%20%E2%80%A2%20%D0%B0%D0%B2%D1%82%D0%BE%D0%BC%D0%B0%D1%82%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Create">
+      <div class="content">
+        <span class="tag">механизмы</span><span class="tag">автоматизация</span><span class="tag">фермы</span><span class="tag">логистика</span>
+        <h3>Суть Create</h3>
+        <p>В Create почти всё работает от вращения. Источник силы крутит валы, шестерни и ремни, а они приводят в движение прессы, смесители, жёрнова, конвейеры и другие механизмы.</p>
+        <div class="mechanics">
+          <div class="mechanic"><strong>Источник вращения</strong><span>В начале используй водяное колесо. Позже можно перейти на ветряную мельницу или паровой двигатель.</span></div>
+          <div class="mechanic"><strong>Передача вращения</strong><span>Валы, малые шестерни, большие шестерни, ремни и цепные передачи переносят силу между механизмами.</span></div>
+          <div class="mechanic"><strong>Нагрузка системы</strong><span>Каждый механизм потребляет часть мощности. Если нагрузки слишком много, вся система остановится.</span></div>
+          <div class="mechanic"><strong>Встроенные подсказки</strong><span>Наведи на предмет из Create и зажми <code>W</code>. Откроется анимационная инструкция.</span></div>
+        </div>
+        <div class="tip">Фишка: Create проще изучать через встроенные анимации, а не через длинные статьи.</div>
+      </div>
+    </article>
+
+    <article class="card big">
+      <div class="content">
+        <h3>📈 Примерная прогрессия Create</h3>
+        <p>Такой порядок поможет не запутаться:</p>
+        <div class="path">
+          <div class="step">Водяное колесо</div>
+          <div class="step">Валы</div>
+          <div class="step">Шестерни</div>
+          <div class="step">Жёрнов</div>
+          <div class="step">Механический пресс</div>
+          <div class="step">Смеситель</div>
+          <div class="step">Конвейерные ленты</div>
+          <div class="step">Дробильные колёса</div>
+          <div class="step">Механическая рука</div>
+          <div class="step">Автоматические фермы</div>
+          <div class="step">Паровой двигатель</div>
+          <div class="step">Поезда</div>
+        </div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="mechanisms">
+  <div class="section-title">
+    <h2>🔩 Основные механизмы Create</h2>
+    <p class="hint">Самые важные блоки и устройства, которые чаще всего используются в автоматизации.</p>
+  </div>
+
+  <div class="grid">
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%237c2d12%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23ea580c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23171717%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%8C%80%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%A1%D0%B8%D0%BB%D0%B0%20%D0%B2%D1%80%D0%B0%D1%89%D0%B5%D0%BD%D0%B8%D1%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B2%D0%BE%D0%B4%D1%8F%D0%BD%D0%BE%D0%B5%20%D0%BA%D0%BE%D0%BB%D0%B5%D1%81%D0%BE%20%E2%80%A2%20%D0%B2%D0%B5%D1%82%D1%80%D1%8F%D0%BA%20%E2%80%A2%20%D0%BF%D0%B0%D1%80%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Источники вращения">
+      <div class="content">
+        <h3>🌀 Водяное колесо, ветряк и пар</h3>
+        <p>Это источники вращения. Водяное колесо удобно в начале, ветряк даёт больше свободы, паровой двигатель нужен для мощных заводов.</p>
+        <div class="tip">Если механизм не работает, сначала проверь: есть ли вращение и хватает ли мощности.</div>
+      </div>
+    </article>
+
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2392400e%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23fbbf24%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%E2%9A%99%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%92%D0%B0%D0%BB%D1%8B%20%D0%B8%20%D1%88%D0%B5%D1%81%D1%82%D0%B5%D1%80%D0%BD%D0%B8%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BF%D0%B5%D1%80%D0%B5%D0%B4%D0%B0%D1%87%D0%B0%20%D1%81%D0%BA%D0%BE%D1%80%D0%BE%D1%81%D1%82%D0%B8%20%D0%B8%20%D0%BD%D0%B0%D0%BF%D1%80%D0%B0%D0%B2%D0%BB%D0%B5%D0%BD%D0%B8%D1%8F%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Валы и шестерни">
+      <div class="content">
+        <h3>⚙️ Валы и шестерни</h3>
+        <p>Валы передают вращение прямо, а шестерни помогают менять направление, скорость и расположение механизмов.</p>
+        <ul>
+          <li>Малая шестерня — простая передача.</li>
+          <li>Большая шестерня — изменение скорости.</li>
+          <li>Ремень — удобная передача на расстояние.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%237c2d12%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23ea580c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23171717%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%94%A9%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9C%D0%B5%D1%85%D0%B0%D0%BD%D0%B8%D1%87%D0%B5%D1%81%D0%BA%D0%B8%D0%B9%20%D0%BF%D1%80%D0%B5%D1%81%D1%81%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BF%D0%BB%D0%B0%D1%81%D1%82%D0%B8%D0%BD%D1%8B%20%E2%80%A2%20%D0%BF%D1%80%D0%B5%D1%81%D1%81%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5%20%E2%80%A2%20%D0%B0%D0%B2%D1%82%D0%BE%D0%BA%D1%80%D0%B0%D1%84%D1%82%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Механический пресс">
+      <div class="content">
+        <h3>🔩 Механический пресс</h3>
+        <p>Прессует предметы, делает пластины и участвует в автоматическом крафте.</p>
+        <ul>
+          <li>Работает над подставкой или чашей.</li>
+          <li>Часто используется для металлических пластин.</li>
+          <li>Подходит для стартовой автоматизации.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23065f46%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2310b981%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%A5%A3%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%A1%D0%BC%D0%B5%D1%81%D0%B8%D1%82%D0%B5%D0%BB%D1%8C%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B8%D0%BD%D0%B3%D1%80%D0%B5%D0%B4%D0%B8%D0%B5%D0%BD%D1%82%D1%8B%20%E2%80%A2%20%D0%B6%D0%B8%D0%B4%D0%BA%D0%BE%D1%81%D1%82%D0%B8%20%E2%80%A2%20%D0%BA%D0%BE%D1%82%D1%91%D0%BB%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Механический смеситель">
+      <div class="content">
+        <h3>🥣 Механический смеситель</h3>
+        <p>Смешивает предметы и жидкости в чаше. Используется для сплавов, теста, еды и некоторых рецептов аддонов.</p>
+        <div class="tip">Для нагреваемых рецептов под чашу часто ставят источник тепла.</div>
+      </div>
+    </article>
+
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2344403c%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%23a8a29e%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%AA%A8%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%94%D1%80%D0%BE%D0%B1%D0%BB%D0%B5%D0%BD%D0%B8%D0%B5%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B6%D1%91%D1%80%D0%BD%D0%BE%D0%B2%20%E2%80%A2%20%D0%B4%D1%80%D0%BE%D0%B1%D0%B8%D0%BB%D1%8C%D0%BD%D1%8B%D0%B5%20%D0%BA%D0%BE%D0%BB%D1%91%D1%81%D0%B0%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Жёрнов и дробильные колёса">
+      <div class="content">
+        <h3>🪨 Жёрнов и дробильные колёса</h3>
+        <p>Жёрнов подходит для ранней переработки. Дробильные колёса мощнее и полезны для заводов по переработке руды.</p>
+        <ul>
+          <li>Жёрнов проще сделать.</li>
+          <li>Дробильные колёса требуют больше места.</li>
+          <li>Можно увеличить выход ресурсов.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="card">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e3a8a%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%230ea5e9%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230f172a%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%93%A6%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9A%D0%BE%D0%BD%D0%B2%D0%B5%D0%B9%D0%B5%D1%80%D1%8B%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BF%D0%B5%D1%80%D0%B5%D0%BD%D0%BE%D1%81%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BC%D0%B5%D1%82%D0%BE%D0%B2%20%D0%B8%20%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%BA%D0%B0%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Конвейеры">
+      <div class="content">
+        <h3>📦 Конвейерные ленты</h3>
+        <p>Переносят предметы между механизмами. С ними можно делать линии обработки: сундук → дробилка → пресс → сундук.</p>
+        <ul>
+          <li>Андезитовая воронка загружает и выгружает предметы.</li>
+          <li>Латунная воронка удобна для фильтрации.</li>
+          <li>Желоб перемещает предметы вертикально.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e3a8a%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%230ea5e9%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230f172a%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%93%A6%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9A%D0%BE%D0%BD%D0%B2%D0%B5%D0%B9%D0%B5%D1%80%D1%8B%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BF%D0%B5%D1%80%D0%B5%D0%BD%D0%BE%D1%81%20%D0%BF%D1%80%D0%B5%D0%B4%D0%BC%D0%B5%D1%82%D0%BE%D0%B2%20%D0%B8%20%D1%81%D0%BE%D1%80%D1%82%D0%B8%D1%80%D0%BE%D0%B2%D0%BA%D0%B0%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Механическая рука">
+      <div class="content">
+        <h3>🦾 Механическая рука</h3>
+        <p>Перекладывает предметы между блоками, конвейерами и механизмами. Очень полезна для сложных линий производства.</p>
+        <ul>
+          <li>Может забирать предметы из одного места и класть в другое.</li>
+          <li>Помогает автоматизировать крафты и сортировку.</li>
+          <li>Лучше использовать после освоения конвейеров.</li>
+        </ul>
+      </div>
+    </article>
+
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%233f3f46%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2364748b%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%9A%82%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9F%D0%BE%D0%B5%D0%B7%D0%B4%D0%B0%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D1%81%D1%82%D0%B0%D0%BD%D1%86%D0%B8%D0%B8%20%E2%80%A2%20%D0%B2%D0%B0%D0%B3%D0%BE%D0%BD%D1%8B%20%E2%80%A2%20%D0%BB%D0%BE%D0%B3%D0%B8%D1%81%D1%82%D0%B8%D0%BA%D0%B0%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Поезда Create">
+      <div class="content">
+        <h3>🚂 Поезда и станции</h3>
+        <p>Поезда помогают перевозить ресурсы между шахтой, базой, колонией и заводами.</p>
+        <ul>
+          <li>Железнодорожная станция задаёт маршрут.</li>
+          <li>Вагоны можно использовать для грузов.</li>
+          <li>Поезда удобны на больших картах и серверах.</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="adventure">
+  <div class="section-title">
+    <h2>🌍 Приключения и исследование</h2>
+    <p class="hint">Новые мобы, биомы, измерения, боссы и данжи.</p>
+  </div>
+  <div class="grid">
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2314532d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2322c55e%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%230f172a%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%A6%96%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9D%D0%BE%D0%B2%D1%8B%D0%B5%20%D1%81%D1%83%D1%89%D0%B5%D1%81%D1%82%D0%B2%D0%B0%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%BC%D0%BE%D0%B1%D1%8B%20%E2%80%A2%20%D0%BF%D0%B5%D1%89%D0%B5%D1%80%D1%8B%20%E2%80%A2%20%D1%80%D0%B5%D0%B4%D0%BA%D0%B8%D0%B9%20%D0%BB%D1%83%D1%82%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Новые мобы">
+      <div class="content">
+        <h3>🦖 Пещеры и новые существа</h3>
+        <p>Моды Alex’s Caves и Alex’s Mobs добавляют необычных существ, новые подземные зоны, редкие предметы и опасные места.</p>
+        <ul>
+          <li>Не все существа враждебные — часть можно использовать или приручать.</li>
+          <li>В новые пещеры лучше идти с бронёй, едой и запасом факелов.</li>
+          <li>Редкий лут часто нужен для особых крафтов.</li>
+        </ul>
+      </div>
+    </article>
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23312e81%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%237c3aed%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%8C%B2%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%A1%D1%83%D0%BC%D0%B5%D1%80%D0%B5%D1%87%D0%BD%D1%8B%D0%B9%20%D0%BB%D0%B5%D1%81%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B1%D0%BE%D1%81%D1%81%D1%8B%20%E2%80%A2%20%D0%B4%D0%B0%D0%BD%D0%B6%D0%B8%20%E2%80%A2%20%D0%B8%D0%B7%D0%BC%D0%B5%D1%80%D0%B5%D0%BD%D0%B8%D0%B5%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Сумеречный лес">
+      <div class="content">
+        <h3>🌲 Сумеречный лес</h3>
+        <p>Отдельное измерение с боссами, башнями, лабиринтами и своей прогрессией.</p>
+        <ul>
+          <li>Боссов лучше проходить по порядку.</li>
+          <li>Если зона закрыта эффектом, нужен предыдущий босс.</li>
+          <li>Данжи дают хороший лут для средней стадии игры.</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="base">
+  <div class="section-title">
+    <h2>🏰 База, колонии и хранение</h2>
+    <p class="hint">Для удобной базы, города с жителями и нормальной системы хранения.</p>
+  </div>
+  <div class="grid">
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23334155%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2394a3b8%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%8F%98%EF%B8%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9A%D0%BE%D0%BB%D0%BE%D0%BD%D0%B8%D0%B8%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B6%D0%B8%D1%82%D0%B5%D0%BB%D0%B8%20%E2%80%A2%20%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D1%8F%20%E2%80%A2%20%D0%BF%D1%80%D0%BE%D1%84%D0%B5%D1%81%D1%81%D0%B8%D0%B8%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Колонии">
+      <div class="content">
+        <h3>🏘️ Колонии и здания</h3>
+        <p>Мод на колонии позволяет строить поселение с жителями, профессиями и рабочими зданиями.</p>
+        <ul>
+          <li>Начни с ратуши и хижины строителя.</li>
+          <li>Строителю нужны блоки, инструменты и еда.</li>
+          <li>Колонию лучше ставить на просторном ровном месте.</li>
+        </ul>
+      </div>
+    </article>
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%23075985%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2338bdf8%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%8E%92%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%A5%D1%80%D0%B0%D0%BD%D0%B5%D0%BD%D0%B8%D0%B5%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D1%80%D1%8E%D0%BA%D0%B7%D0%B0%D0%BA%D0%B8%20%E2%80%A2%20%D1%81%D1%83%D0%BD%D0%B4%D1%83%D0%BA%D0%B8%20%E2%80%A2%20%D0%B0%D0%BF%D0%B3%D1%80%D0%B5%D0%B9%D0%B4%D1%8B%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Хранение">
+      <div class="content">
+        <h3>🎒 Рюкзаки и хранилища</h3>
+        <p>Продвинутые рюкзаки, сундуки, бочки и улучшения: больше места, фильтры, автоподбор, магнит и сортировка.</p>
+        <ul>
+          <li>Рюкзак полезен уже в первые часы.</li>
+          <li>Фильтры помогают не забивать инвентарь мусором.</li>
+          <li>Для базы удобно делать отдельные хранилища под ресурсы.</li>
+        </ul>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="survival">
+  <div class="section-title">
+    <h2>🔥 Выживание, еда и оптимизация</h2>
+    <p class="hint">Моды, которые делают игру удобнее, стабильнее и живее.</p>
+  </div>
+  <div class="grid">
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%2314532d%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2384cc16%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%231c1917%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%F0%9F%8D%B2%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%A4%D0%B5%D1%80%D0%BC%D0%B5%D1%80%D1%81%D0%BA%D0%B0%D1%8F%20%D0%BA%D1%83%D1%85%D0%BD%D1%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3E%D0%B5%D0%B4%D0%B0%20%E2%80%A2%20%D0%B3%D0%BE%D1%82%D0%BE%D0%B2%D0%BA%D0%B0%20%E2%80%A2%20%D1%81%D1%8B%D1%82%D0%BE%D1%81%D1%82%D1%8C%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Еда">
+      <div class="content">
+        <h3>🍲 Фермерская кухня</h3>
+        <p>Добавляет готовку, новые блюда, ножи, разделочные доски, кастрюли и еду с полезными эффектами.</p>
+        <ul>
+          <li>Хорошая еда помогает в шахтах и путешествиях.</li>
+          <li>Кухня на базе реально полезна, а не просто декор.</li>
+          <li>Центральная кухня Create помогает автоматизировать готовку.</li>
+        </ul>
+      </div>
+    </article>
+    <article class="card wide">
+      <img class="photo" src="data:image/svg+xml;charset=utf-8,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%221200%22%20height%3D%22650%22%20viewBox%3D%220%200%201200%20650%22%3E%0A%20%20%3Cdefs%3E%0A%20%20%20%20%3ClinearGradient%20id%3D%22g%22%20x1%3D%220%22%20y1%3D%220%22%20x2%3D%221%22%20y2%3D%221%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22%231e293b%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%2255%25%22%20stop-color%3D%22%2394a3b8%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22%23111827%22/%3E%0A%20%20%20%20%3C/linearGradient%3E%0A%20%20%20%20%3CradialGradient%20id%3D%22r%22%20cx%3D%2275%25%22%20cy%3D%2220%25%22%20r%3D%2255%25%22%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%220%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0.45%29%22/%3E%0A%20%20%20%20%20%20%3Cstop%20offset%3D%22100%25%22%20stop-color%3D%22rgba%28255%2C255%2C255%2C0%29%22/%3E%0A%20%20%20%20%3C/radialGradient%3E%0A%20%20%20%20%3Cfilter%20id%3D%22shadow%22%3E%0A%20%20%20%20%20%20%3CfeDropShadow%20dx%3D%220%22%20dy%3D%2218%22%20stdDeviation%3D%2222%22%20flood-color%3D%22rgba%280%2C0%2C0%2C.42%29%22/%3E%0A%20%20%20%20%3C/filter%3E%0A%20%20%3C/defs%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23g%29%22/%3E%0A%20%20%3Crect%20width%3D%221200%22%20height%3D%22650%22%20fill%3D%22url%28%23r%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%221000%22%20cy%3D%22120%22%20r%3D%22190%22%20fill%3D%22rgba%28255%2C255%2C255%2C.12%29%22/%3E%0A%20%20%3Ccircle%20cx%3D%22130%22%20cy%3D%22520%22%20r%3D%22220%22%20fill%3D%22rgba%280%2C0%2C0%2C.18%29%22/%3E%0A%20%20%3Cg%20filter%3D%22url%28%23shadow%29%22%3E%0A%20%20%20%20%3Crect%20x%3D%2290%22%20y%3D%2290%22%20width%3D%221020%22%20height%3D%22470%22%20rx%3D%2242%22%20fill%3D%22rgba%2813%2C17%2C23%2C.48%29%22%20stroke%3D%22rgba%28255%2C255%2C255%2C.24%29%22%20/%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22250%22%20font-size%3D%22106%22%20font-family%3D%22Segoe%20UI%20Emoji%2C%20Arial%22%3E%E2%9A%A1%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22135%22%20y%3D%22380%22%20font-size%3D%2264%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20font-weight%3D%22800%22%20fill%3D%22%23fff%22%3E%D0%9E%D0%BF%D1%82%D0%B8%D0%BC%D0%B8%D0%B7%D0%B0%D1%86%D0%B8%D1%8F%3C/text%3E%0A%20%20%20%20%3Ctext%20x%3D%22138%22%20y%3D%22450%22%20font-size%3D%2232%22%20font-family%3D%22Segoe%20UI%2C%20Arial%22%20fill%3D%22rgba%28255%2C255%2C255%2C.78%29%22%3EFPS%20%E2%80%A2%20%D0%BF%D0%B0%D0%BC%D1%8F%D1%82%D1%8C%20%E2%80%A2%20%D0%BF%D0%BB%D0%B0%D0%B2%D0%BD%D0%BE%D1%81%D1%82%D1%8C%3C/text%3E%0A%20%20%3C/g%3E%0A%3C/svg%3E" alt="Оптимизация">
+      <div class="content">
+        <h3>⚡ Оптимизация</h3>
+        <p>Моды на оптимизацию повышают FPS, уменьшают расход памяти и делают большую сборку стабильнее.</p>
+        <ul>
+          <li>Соль обычно даёт самый заметный прирост FPS.</li>
+          <li>Литий улучшает внутреннюю логику игры.</li>
+          <li>Ферритовое ядро снижает расход памяти.</li>
+          <li>Современные исправления помогают с загрузкой и лагами.</li>
+        </ul>
+        <div class="tip">Если FPS низкий, проверь, что Minecraft запускается не на встроенной графике Intel, а на дискретной видеокарте.</div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<section id="start">
+  <div class="section-title">
+    <h2>✅ Что делать в начале</h2>
+    <p class="hint">Короткий порядок действий, чтобы не потеряться.</p>
+  </div>
+  <article class="card big">
+    <div class="content">
+      <ol>
+        <li>Сделай базовые инструменты, еду и временную базу.</li>
+        <li>Собери рюкзак и настрой фильтры для мусорных блоков.</li>
+        <li>Изучи справочник рецептов: рецепт предмета и где он используется.</li>
+        <li>Начни Create с водяного колеса, валов и шестерён.</li>
+        <li>Сделай простую линию: сундук → конвейер → жёрнов или пресс → сундук.</li>
+        <li>Потом добавь смеситель, дробильные колёса и механическую руку.</li>
+        <li>После нормальной брони иди в Сумеречный лес, новые пещеры и структуры.</li>
+      </ol>
+      <div class="tip">Главная связка сборки: Create + фермерская кухня + рюкзаки и хранилища. Так можно сделать базу, где ресурсы, еда и механизмы работают почти автоматически.</div>
+    </div>
+  </article>
+</section>
+</main>
+
+<div class="footer">Minivibe Guide • русские названия механизмов • картинки встроены в HTML</div>
+</body>
+</html>
