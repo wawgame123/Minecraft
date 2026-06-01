@@ -88,9 +88,9 @@ public sealed class GameLaunchService
             throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", issues.Take(4)));
         }
 
-        var javaPath = TryResolveJava(settings);
-        var args = BuildArguments(manifest, settings, runtime);
         var captureOutput = outputReceived is not null || errorReceived is not null;
+        var javaPath = ResolveLaunchJava(settings, preferWindowless: !captureOutput);
+        var args = BuildArguments(manifest, settings, runtime);
         var startInfo = new ProcessStartInfo
         {
             FileName = javaPath!,
@@ -99,7 +99,7 @@ public sealed class GameLaunchService
             UseShellExecute = false,
             RedirectStandardOutput = outputReceived is not null,
             RedirectStandardError = errorReceived is not null,
-            CreateNoWindow = captureOutput
+            CreateNoWindow = true
         };
 
         if (outputReceived is not null)
@@ -213,6 +213,18 @@ public sealed class GameLaunchService
     {
         return JavaCandidates(settings)
             .FirstOrDefault(candidate => JavaMajorVersion(candidate) >= RequiredJavaMajorVersion);
+    }
+
+    private static string? ResolveLaunchJava(LauncherSettings settings, bool preferWindowless)
+    {
+        var javaPath = TryResolveJava(settings);
+        if (!preferWindowless || string.IsNullOrWhiteSpace(javaPath))
+        {
+            return javaPath;
+        }
+
+        var javawPath = Path.Combine(Path.GetDirectoryName(javaPath) ?? "", "javaw.exe");
+        return File.Exists(javawPath) ? javawPath : javaPath;
     }
 
     private static IEnumerable<string> LocalJavaCandidates(LauncherSettings settings)

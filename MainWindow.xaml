@@ -523,6 +523,9 @@
                 </DockPanel>
 
                 <CheckBox x:Name="ShadersCheckBox" Content="Шейдеры"/>
+                <CheckBox x:Name="GameConsoleCheckBox"
+                          Content="Показывать консоль Minecraft при запуске"
+                          ToolTip="Выключите для максимального FPS. Включайте, когда нужно смотреть логи или краши."/>
 
                 <TextBlock Text="RAM, МБ" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="RamBox"/>

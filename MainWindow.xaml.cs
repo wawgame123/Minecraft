@@ -212,6 +212,7 @@ public partial class MainWindow : Window
 
         _settings.InstallDirectory = selectedInstallDirectory;
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
+        _settings.EnableGameConsole = GameConsoleCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
         _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
@@ -240,6 +241,7 @@ public partial class MainWindow : Window
         {
             InstallDirectoryBox.Text = _settings.InstallDirectory;
             ShadersCheckBox.IsChecked = _settings.EnableShaders;
+            GameConsoleCheckBox.IsChecked = _settings.EnableGameConsole;
             RamBox.Text = _settings.RamMb.ToString();
             SyncPlayerNameText(_settings.PlayerName);
             _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
@@ -425,36 +427,44 @@ public partial class MainWindow : Window
             }
 
             SetBusy(true, "Запускаю Minecraft...");
-            var logWindow = new GameLogWindow
+            GameLogWindow? logWindow = null;
+            if (_settings.EnableGameConsole)
             {
-                Owner = this
-            };
-            logWindow.AppendLine("Запускаю Minecraft...");
-            logWindow.Show();
+                logWindow = new GameLogWindow
+                {
+                    Owner = this
+                };
+                logWindow.AppendLine("Запускаю Minecraft...");
+                logWindow.Show();
+            }
 
             var process = _gameLaunchService.Start(
                 _manifest!,
                 _settings,
                 minecraftRuntime,
-                outputReceived: logWindow.AppendLine,
-                errorReceived: line => logWindow.AppendLine("[ERR] " + line),
+                outputReceived: logWindow is null ? null : line => logWindow.AppendLine(line),
+                errorReceived: logWindow is null ? null : line => logWindow.AppendLine("[ERR] " + line),
                 processExited: exitCode =>
                 {
-                    logWindow.MarkProcessExited(exitCode);
+                    logWindow?.MarkProcessExited(exitCode);
                     if (!Dispatcher.HasShutdownStarted)
                     {
                         Dispatcher.Invoke(() =>
                         {
                             MainStatusText.Text = exitCode == 0
                                 ? "Minecraft закрыт."
-                                : $"Minecraft завершился с кодом {exitCode}. Подробности в консоли.";
+                                : _settings.EnableGameConsole
+                                    ? $"Minecraft завершился с кодом {exitCode}. Подробности в консоли."
+                                    : $"Minecraft завершился с кодом {exitCode}. Для подробностей включите консоль Minecraft в настройках.";
                             SidebarStatusText.Text = exitCode == 0 ? "Игра закрыта" : "Ошибка игры";
                         });
                     }
                 });
 
-            logWindow.SetProcessStarted(process.Id);
-            MainStatusText.Text = "Minecraft запущен.";
+            logWindow?.SetProcessStarted(process.Id);
+            MainStatusText.Text = _settings.EnableGameConsole
+                ? "Minecraft запущен."
+                : "Minecraft запущен в FPS-режиме без live-консоли.";
             SidebarStatusText.Text = "Игра запущена";
         });
     }

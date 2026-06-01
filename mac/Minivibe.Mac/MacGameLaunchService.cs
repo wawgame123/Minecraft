@@ -131,6 +131,15 @@ internal sealed class MacGameLaunchService
             throw new InvalidOperationException("Не удалось запустить Minecraft.");
         }
 
+        try
+        {
+            process.PriorityClass = ProcessPriorityClass.AboveNormal;
+        }
+        catch
+        {
+            // Some systems do not allow changing process priority.
+        }
+
         if (outputReceived is not null)
         {
             process.BeginOutputReadLine();

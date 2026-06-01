@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.2.4",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.4-WIN-portable.zip",
-    "sha256":  "423f1a20a9c658064273f68006f25eb5d4367f80460219bb8d4bf400e670e758",
+    "version":  "0.2.5",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.5-WIN-portable.zip",
+    "sha256":  "82bf954ac7217358230d64e9fd658ab026af3b99f3e11aa435aa73da7f791281",
     "mandatory":  false,
     "notes":  [
-                  "Консоль Minecraft теперь обновляется пачками и не должна просаживать FPS при большом потоке логов.",
-                  "Minecraft запускается с AboveNormal priority.",
-                  "Добавлены стандартные G1GC JVM-флаги для более ровной работы модовой сборки."
+                  "Добавлен FPS-режим: по умолчанию Minecraft запускается без live-консоли и без redirect логов.",
+                  "При выключенной консоли лаунчер использует javaw.exe, если он доступен рядом с Java.",
+                  "Консоль Minecraft можно включить в настройках, когда нужны логи для диагностики."
               ]
 }

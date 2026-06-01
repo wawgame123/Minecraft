@@ -26,9 +26,9 @@ jobs:
           cat > release-notes.md <<'NOTES'
           BUGFIX
 
-          - Консоль Minecraft теперь обновляется пачками и не должна просаживать FPS при большом потоке логов.
-          - Minecraft запускается с AboveNormal priority.
-          - Добавлены стандартные G1GC JVM-флаги для более ровной работы модовой сборки.
+          - Добавлен FPS-режим: по умолчанию Minecraft запускается без live-консоли и без redirect логов.
+          - При выключенной консоли лаунчер использует javaw.exe, если он доступен рядом с Java.
+          - Консоль Minecraft можно включить в настройках, когда нужны логи для диагностики.
           - Windows installer, Windows portable и experimental macOS сборки входят в релиз.
           NOTES
 
