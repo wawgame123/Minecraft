@@ -56,7 +56,12 @@ public sealed class MinecraftRuntimeService
         AddLibraryDownloads(versionJson.Libraries, librariesRoot, workItems);
         if (loaderJson is not null)
         {
-            AddLibraryDownloads(loaderJson.Libraries, librariesRoot, workItems);
+            AddLibraryDownloads(
+                loaderJson.Libraries,
+                librariesRoot,
+                workItems,
+                loaderInstall?.VersionJarPath,
+                manifest.LoaderVersion);
         }
 
         await EnsureLibraryDownloadsAsync(workItems, progress, cancellationToken);
@@ -78,6 +83,10 @@ public sealed class MinecraftRuntimeService
             .Select(item => item.DestinationPath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
+        if (!string.IsNullOrWhiteSpace(loaderInstall?.VersionJarPath))
+        {
+            classpath.Add(loaderInstall.VersionJarPath);
+        }
 
         return new MinecraftRuntime(
             loaderJson?.Id ?? manifest.MinecraftVersion,
@@ -152,6 +161,7 @@ public sealed class MinecraftRuntimeService
             : installerVersionJson.Id;
         var installedVersionRoot = Path.Combine(settings.InstallDirectory, "versions", loaderVersionId);
         var installedVersionJsonPath = Path.Combine(installedVersionRoot, loaderVersionId + ".json");
+        var installedVersionJarPath = Path.Combine(installedVersionRoot, loaderVersionId + ".jar");
         var neoforgeClientJarPath = Path.Combine(
             settings.InstallDirectory,
             "libraries",
@@ -160,27 +170,28 @@ public sealed class MinecraftRuntimeService
             "neoforge",
             manifest.LoaderVersion,
             $"neoforge-{manifest.LoaderVersion}-client.jar");
+        var installedVersion = await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
+        var hasInstalledProfileJar = File.Exists(installedVersionJarPath);
+        var hasNeoForgeClientJar = File.Exists(neoforgeClientJarPath);
 
-        if (!File.Exists(installedVersionJsonPath) || !File.Exists(neoforgeClientJarPath))
+        if (installedVersion is null || (!hasNeoForgeClientJar && !hasInstalledProfileJar))
         {
             await RunNeoForgeInstallerAsync(javaPath, loaderRoot, manifest.LoaderVersion, settings.InstallDirectory, progress, cancellationToken);
+            installedVersion = await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
+            hasInstalledProfileJar = File.Exists(installedVersionJarPath);
+            hasNeoForgeClientJar = File.Exists(neoforgeClientJarPath);
         }
 
-        if (!File.Exists(neoforgeClientJarPath))
+        if (!hasNeoForgeClientJar && !hasInstalledProfileJar)
         {
             throw new InvalidOperationException($"NeoForge установлен не полностью: не найден {neoforgeClientJarPath}");
         }
 
-        if (File.Exists(installedVersionJsonPath))
+        if (installedVersion is not null)
         {
-            await using var installedStream = File.OpenRead(installedVersionJsonPath);
-            var installedVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(installedStream, JsonOptions, cancellationToken);
-            if (installedVersion is not null && installedVersion.Libraries.Count > 0 && !string.IsNullOrWhiteSpace(installedVersion.MainClass))
-            {
-                return new LoaderInstall(
-                    installedVersion,
-                    VersionJarPath: null);
-            }
+            return new LoaderInstall(
+                installedVersion,
+                VersionJarPath: hasInstalledProfileJar && !hasNeoForgeClientJar ? installedVersionJarPath : null);
         }
 
         return new LoaderInstall(
@@ -222,6 +233,27 @@ public sealed class MinecraftRuntimeService
 
         return JsonSerializer.Deserialize<MinecraftVersionJson>(bytes, JsonOptions)
             ?? throw new InvalidOperationException($"Не удалось прочитать version.json NeoForge {manifest.LoaderVersion}.");
+    }
+
+    private static async Task<MinecraftVersionJson?> TryReadInstalledLoaderVersionAsync(
+        string installedVersionJsonPath,
+        CancellationToken cancellationToken)
+    {
+        if (!File.Exists(installedVersionJsonPath))
+        {
+            return null;
+        }
+
+        await using var installedStream = File.OpenRead(installedVersionJsonPath);
+        var installedVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(installedStream, JsonOptions, cancellationToken);
+        if (installedVersion is null
+            || installedVersion.Libraries.Count == 0
+            || string.IsNullOrWhiteSpace(installedVersion.MainClass))
+        {
+            return null;
+        }
+
+        return installedVersion;
     }
 
     private async Task RunNeoForgeInstallerAsync(
@@ -287,10 +319,18 @@ public sealed class MinecraftRuntimeService
     private static void AddLibraryDownloads(
         IEnumerable<MinecraftLibrary> libraries,
         string librariesRoot,
-        ICollection<RuntimeDownloadItem> workItems)
+        ICollection<RuntimeDownloadItem> workItems,
+        string? localNeoForgeProfileJar = null,
+        string loaderVersion = "")
     {
         foreach (var library in libraries.Where(IsAllowedOnWindows))
         {
+            if (!string.IsNullOrWhiteSpace(localNeoForgeProfileJar)
+                && IsNeoForgeClientLibrary(library.Name, loaderVersion))
+            {
+                continue;
+            }
+
             var artifact = library.Downloads.Artifact;
 
             if (artifact is null && TryCreateArtifactFromName(library.Name, out var generatedArtifact))
@@ -311,6 +351,21 @@ public sealed class MinecraftRuntimeService
                 workItems.Add(new RuntimeDownloadItem(nativeDownload, nativeJarPath, AddToClasspath: false, IsNative: true));
             }
         }
+    }
+
+    private static bool IsNeoForgeClientLibrary(string name, string loaderVersion)
+    {
+        if (string.IsNullOrWhiteSpace(loaderVersion))
+        {
+            return false;
+        }
+
+        var parts = name.Split(':', StringSplitOptions.RemoveEmptyEntries);
+        return parts.Length >= 3
+            && string.Equals(parts[0], "net.neoforged", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(parts[1], "neoforge", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(parts[2], loaderVersion, StringComparison.OrdinalIgnoreCase)
+            && (parts.Length == 3 || string.Equals(parts[3], "client", StringComparison.OrdinalIgnoreCase));
     }
 
     private static bool TryCreateArtifactFromName(string name, out MinecraftDownload download)

@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.19",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.19-framework.zip",
-    "sha256":  "f890d89e76cdc787a8526e7ea79ab9a1bbc2c377ceab47726473696bcdd7f12f",
+    "version":  "0.2.0",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.0-framework.zip",
+    "sha256":  "707ec001ca7b3208faf0a8fa281fa7622634b540a7290a309c3a4296c410e5f1",
     "mandatory":  false,
     "notes":  [
-                  "Новости и блок последних изменений очищены в manifest.json.",
-                  "Добавлен установщик minivibe с выбором папки установки и дефолтом %APPDATA%\\.minivibe.",
-                  "Проверка скинов оставлена через общий каталог GitHub по нику игрока."
+                  "BUGFIX: лаунчер распознает уже установленный NeoForge профиль в versions/neoforge-21.1.228.",
+                  "Если есть готовый профиль NeoForge и jar версии, installer NeoForge больше не запускается заново без необходимости.",
+                  "Существующая .minecraft папка используется аккуратнее: лишняя докачка loader-файлов сокращена."
               ]
 }

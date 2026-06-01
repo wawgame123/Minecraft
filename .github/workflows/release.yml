@@ -21,17 +21,19 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG_NAME: ${{ github.ref_name }}
         run: |
-          cat > release-notes.md <<'NOTES'
-          minivibe launcher
+          VERSION="${TAG_NAME#v}"
 
-          - Добавлен установщик с выбором папки установки.
-          - Папка по умолчанию: %APPDATA%\.minivibe.
-          - В лаунчере очищены новости и последние изменения сборки.
+          cat > release-notes.md <<'NOTES'
+          BUGFIX
+
+          - Лаунчер распознает уже установленный NeoForge профиль в versions/neoforge-21.1.228.
+          - Если в существующей .minecraft уже есть профиль и jar версии, NeoForge installer не запускается заново без необходимости.
+          - Лишняя докачка loader-файлов сокращена при выборе уже использованной папки Minecraft.
           - Автообновление лаунчера продолжает работать через launcher/update.json.
           NOTES
 
           gh release create "$TAG_NAME" \
-            launcher/MinivibeInstaller-0.1.0-framework.zip \
-            launcher/Minivibe-0.1.19-framework.zip \
+            "launcher/MinivibeInstaller-$VERSION-framework.zip" \
+            "launcher/Minivibe-$VERSION-framework.zip" \
             --title "minivibe $TAG_NAME" \
             --notes-file release-notes.md
