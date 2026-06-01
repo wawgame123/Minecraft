@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.IO;
+using System.Net.Http;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
+using System.Windows.Media.Imaging;
 using ServerLauncher.Models;
 using ServerLauncher.Services;
 using MediaColor = System.Windows.Media.Color;
@@ -23,6 +25,7 @@ public partial class MainWindow : Window
     private readonly MinecraftServerListService _serverListService = new();
     private readonly BugReportService _bugReportService = new();
     private readonly LauncherUpdateService _launcherUpdateService = new();
+    private readonly HttpClient _newsHttpClient = new();
     private LauncherSettings _settings = new();
     private LauncherManifest? _manifest;
     private CancellationTokenSource? _operationCts;
@@ -276,8 +279,81 @@ public partial class MainWindow : Window
 
         HomeChangelogList.ItemsSource = _manifest.Changelog.Take(4);
         NewsList.ItemsSource = _manifest.News;
+        if (_manifest.News.Count > 0)
+        {
+            NewsList.SelectedIndex = 0;
+        }
+        else
+        {
+            RenderNewsItem(null);
+        }
 
         RenderMapLink();
+    }
+
+    private void NewsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
+    {
+        RenderNewsItem(NewsList.SelectedItem as NewsItem);
+    }
+
+    private async void RenderNewsItem(NewsItem? item)
+    {
+        NewsImage.Visibility = Visibility.Collapsed;
+        NewsWebView.Visibility = Visibility.Collapsed;
+        NewsBodyText.Visibility = Visibility.Visible;
+        NewsImage.Source = null;
+
+        if (item is null)
+        {
+            NewsTitleText.Text = "Новостей пока нет";
+            NewsDateText.Text = "";
+            NewsBodyText.Text = "Здесь появятся записи из manifest.json.";
+            return;
+        }
+
+        NewsTitleText.Text = string.IsNullOrWhiteSpace(item.Title) ? "Новость" : item.Title;
+        NewsDateText.Text = item.Date;
+        var kind = (item.Kind ?? NewsItem.TextKind).Trim().ToLowerInvariant();
+
+        if (kind == NewsItem.ImageKind && !string.IsNullOrWhiteSpace(item.Url))
+        {
+            NewsBodyText.Visibility = Visibility.Collapsed;
+            NewsImage.Visibility = Visibility.Visible;
+            try
+            {
+                NewsImage.Source = new BitmapImage(new Uri(item.Url, UriKind.Absolute));
+            }
+            catch (Exception ex)
+            {
+                NewsImage.Visibility = Visibility.Collapsed;
+                NewsBodyText.Visibility = Visibility.Visible;
+                NewsBodyText.Text = "Не удалось открыть картинку: " + ex.Message;
+            }
+
+            return;
+        }
+
+        if (kind == NewsItem.HtmlKind && !string.IsNullOrWhiteSpace(item.Url))
+        {
+            NewsBodyText.Visibility = Visibility.Collapsed;
+            NewsWebView.Visibility = Visibility.Visible;
+            try
+            {
+                var html = await _newsHttpClient.GetStringAsync(item.Url);
+                await NewsWebView.EnsureCoreWebView2Async();
+                NewsWebView.NavigateToString(html);
+            }
+            catch (Exception ex)
+            {
+                NewsWebView.Visibility = Visibility.Collapsed;
+                NewsBodyText.Visibility = Visibility.Visible;
+                NewsBodyText.Text = "Не удалось открыть HTML-новость: " + ex.Message;
+            }
+
+            return;
+        }
+
+        NewsBodyText.Text = string.IsNullOrWhiteSpace(item.Text) ? item.Title : item.Text;
     }
 
     private void RenderMapLink()

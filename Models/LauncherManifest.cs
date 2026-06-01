@@ -32,7 +32,8 @@ public sealed class LauncherManifest
     public List<string> Changelog { get; set; } = [];
 
     [JsonPropertyName("news")]
-    public List<string> News { get; set; } = [];
+    [JsonConverter(typeof(NewsItemListJsonConverter))]
+    public List<NewsItem> News { get; set; } = [];
 
     [JsonPropertyName("launch")]
     public LaunchManifestOptions Launch { get; set; } = new();

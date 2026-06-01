@@ -25,10 +25,13 @@
   <ItemGroup>
     <Compile Remove="installer\**" />
     <Compile Remove="mac\**" />
+    <Compile Remove="admin\**" />
     <EmbeddedResource Remove="installer\**" />
     <EmbeddedResource Remove="mac\**" />
+    <EmbeddedResource Remove="admin\**" />
     <None Remove="installer\**" />
     <None Remove="mac\**" />
+    <None Remove="admin\**" />
   </ItemGroup>
 
   <ItemGroup>

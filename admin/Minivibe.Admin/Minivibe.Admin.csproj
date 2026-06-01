@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>MinivibeAdmin</AssemblyName>
+    <Product>minivibe admin</Product>
+    <Version>0.1.0</Version>
+    <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
+    <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\Models\*.cs" LinkBase="Models" />
+  </ItemGroup>
+</Project>
