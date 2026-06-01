@@ -1,0 +1,37 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          cat > release-notes.md <<'NOTES'
+          minivibe launcher
+
+          - Добавлен установщик с выбором папки установки.
+          - Папка по умолчанию: %APPDATA%\.minivibe.
+          - В лаунчере очищены новости и последние изменения сборки.
+          - Автообновление лаунчера продолжает работать через launcher/update.json.
+          NOTES
+
+          gh release create "$TAG_NAME" \
+            launcher/MinivibeInstaller-0.1.0-framework.zip \
+            launcher/Minivibe-0.1.19-framework.zip \
+            --title "minivibe $TAG_NAME" \
+            --notes-file release-notes.md
