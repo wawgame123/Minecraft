@@ -26,10 +26,9 @@ jobs:
           cat > release-notes.md <<'NOTES'
           BUGFIX
 
-          - Исправлено чтение новостей нового формата из manifest.json.
-          - Лаунчер теперь поддерживает новости текстом, картинками и HTML.
-          - Сохранена совместимость со старым форматом news как массивом строк.
-          - Обновление нужно для manifest.json после добавления новостей через minivibe admin.
+          - Консоль Minecraft теперь обновляется пачками и не должна просаживать FPS при большом потоке логов.
+          - Minecraft запускается с AboveNormal priority.
+          - Добавлены стандартные G1GC JVM-флаги для более ровной работы модовой сборки.
           - Windows installer, Windows portable и experimental macOS сборки входят в релиз.
           NOTES
 

@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Formats.Tar;
 using System.IO.Compression;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -444,9 +445,17 @@ internal sealed class MacGameLaunchService
         var args = new List<string>
         {
             $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
+            "-XX:+UseG1GC",
+            "-XX:+ParallelRefProcEnabled",
+            "-XX:MaxGCPauseMillis=200",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+DisableExplicitGC",
+            "-XX:G1NewSizePercent=20",
+            "-XX:G1ReservePercent=20",
+            "-XX:InitiatingHeapOccupancyPercent=15",
             "-Djava.library.path=" + Quote(runtime.NativesDirectory),
             "-Dminecraft.launcher.brand=minivibe",
-            "-Dminecraft.launcher.version=0.2.3"
+            "-Dminecraft.launcher.version=" + CurrentLauncherVersion()
         };
 
         args.AddRange(runtime.JvmArgs
@@ -517,6 +526,12 @@ internal sealed class MacGameLaunchService
 
         var hex = Convert.ToHexString(hash).ToLowerInvariant();
         return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
+    }
+
+    private static string CurrentLauncherVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static string Quote(string value)

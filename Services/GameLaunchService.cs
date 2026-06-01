@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.IO.Compression;
 using System.IO;
 using System.Net.Http;
+using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -147,6 +148,15 @@ public sealed class GameLaunchService
         if (!process.Start())
         {
             throw new InvalidOperationException("Не удалось запустить процесс Minecraft.");
+        }
+
+        try
+        {
+            process.PriorityClass = ProcessPriorityClass.AboveNormal;
+        }
+        catch
+        {
+            // Some systems do not allow changing process priority.
         }
 
         if (outputReceived is not null)
@@ -722,9 +732,17 @@ public sealed class GameLaunchService
         var args = new List<string>
         {
             $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
+            "-XX:+UseG1GC",
+            "-XX:+ParallelRefProcEnabled",
+            "-XX:MaxGCPauseMillis=200",
+            "-XX:+UnlockExperimentalVMOptions",
+            "-XX:+DisableExplicitGC",
+            "-XX:G1NewSizePercent=20",
+            "-XX:G1ReservePercent=20",
+            "-XX:InitiatingHeapOccupancyPercent=15",
             "-Djava.library.path=" + Quote(runtime.NativesDirectory),
             "-Dminecraft.launcher.brand=minivibe",
-            "-Dminecraft.launcher.version=0.1"
+            "-Dminecraft.launcher.version=" + CurrentLauncherVersion()
         };
 
         args.AddRange(runtime.JvmArgs
@@ -797,6 +815,12 @@ public sealed class GameLaunchService
 
         var hex = Convert.ToHexString(hash).ToLowerInvariant();
         return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
+    }
+
+    private static string CurrentLauncherVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static string Quote(string value)

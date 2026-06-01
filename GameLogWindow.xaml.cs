@@ -1,18 +1,30 @@
 using System.ComponentModel;
 using System.Text;
 using System.Windows;
+using System.Windows.Threading;
 
 namespace ServerLauncher;
 
 public partial class GameLogWindow : Window
 {
-    private const int MaxLogCharacters = 240_000;
+    private const int MaxLogCharacters = 120_000;
+    private const int MaxPendingLines = 4_000;
+    private const int MaxFlushLines = 350;
     private readonly StringBuilder _logBuffer = new();
+    private readonly Queue<string> _pendingLines = new();
+    private readonly DispatcherTimer _flushTimer;
     private bool _allowClose;
+    private int _droppedLines;
 
     public GameLogWindow()
     {
         InitializeComponent();
+        _flushTimer = new DispatcherTimer
+        {
+            Interval = TimeSpan.FromMilliseconds(250)
+        };
+        _flushTimer.Tick += (_, _) => FlushPendingLines();
+        _flushTimer.Start();
     }
 
     public void SetProcessStarted(int processId)
@@ -36,14 +48,50 @@ public partial class GameLogWindow : Window
             return;
         }
 
-        if (!Dispatcher.CheckAccess())
+        var line = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
+        lock (_pendingLines)
         {
-            Dispatcher.Invoke(() => AppendLine(message));
+            if (_pendingLines.Count >= MaxPendingLines)
+            {
+                _pendingLines.Dequeue();
+                _droppedLines += 1;
+            }
+
+            _pendingLines.Enqueue(line);
+        }
+    }
+
+    private void FlushPendingLines()
+    {
+        if (Dispatcher.HasShutdownStarted)
+        {
             return;
         }
 
-        var line = $"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}";
-        _logBuffer.Append(line);
+        var flushed = 0;
+        var hadLines = false;
+        lock (_pendingLines)
+        {
+            if (_droppedLines > 0)
+            {
+                _logBuffer.Append($"[{DateTime.Now:HH:mm:ss}] Пропущено строк лога: {_droppedLines}. Консоль ограничивает поток, чтобы не снижать FPS.{Environment.NewLine}");
+                _droppedLines = 0;
+                hadLines = true;
+            }
+
+            while (_pendingLines.Count > 0 && flushed < MaxFlushLines)
+            {
+                _logBuffer.Append(_pendingLines.Dequeue());
+                flushed += 1;
+                hadLines = true;
+            }
+        }
+
+        if (!hadLines)
+        {
+            return;
+        }
+
         TrimBufferIfNeeded();
         LogBox.Text = _logBuffer.ToString();
         LogBox.CaretIndex = LogBox.Text.Length;
@@ -80,12 +128,19 @@ public partial class GameLogWindow : Window
 
     private void ClearButton_Click(object sender, RoutedEventArgs e)
     {
+        lock (_pendingLines)
+        {
+            _pendingLines.Clear();
+            _droppedLines = 0;
+        }
+
         _logBuffer.Clear();
         LogBox.Clear();
     }
 
     private void CopyButton_Click(object sender, RoutedEventArgs e)
     {
+        FlushPendingLines();
         if (LogBox.Text.Length > 0)
         {
             System.Windows.Clipboard.SetText(LogBox.Text);
@@ -107,5 +162,11 @@ public partial class GameLogWindow : Window
         }
 
         base.OnClosing(e);
+    }
+
+    protected override void OnClosed(EventArgs e)
+    {
+        _flushTimer.Stop();
+        base.OnClosed(e);
     }
 }
