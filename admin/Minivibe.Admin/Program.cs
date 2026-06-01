@@ -269,7 +269,19 @@ internal sealed class MainForm : Form
         try
         {
             SaveAll();
-            RunGit("add manifest.json launcher/update.json news server-pack");
+            var paths = new List<string>
+            {
+                "manifest.json",
+                "launcher/update.json",
+                "server-pack"
+            };
+
+            if (Directory.Exists(Path.Combine(_root, "news")))
+            {
+                paths.Add("news");
+            }
+
+            RunGit("add -- " + string.Join(" ", paths.Select(QuoteGitArgument)));
 
             var hasChanges = RunGit("diff --cached --quiet", allowFailure: true).ExitCode != 0;
             if (!hasChanges)
@@ -603,6 +615,11 @@ internal sealed class MainForm : Form
         }
 
         return result;
+    }
+
+    private static string QuoteGitArgument(string value)
+    {
+        return "\"" + value.Replace("\"", "\\\"", StringComparison.Ordinal) + "\"";
     }
 
     private static Button Button(string text, Action action)
