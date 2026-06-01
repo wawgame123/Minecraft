@@ -17,6 +17,7 @@ public sealed class MainWindow : Window
     private readonly MinecraftRuntimeService _runtimeService = new();
     private readonly MacGameLaunchService _launchService = new();
     private readonly MacSkinService _skinService = new();
+    private readonly MinecraftServerListService _serverListService = new();
 
     private readonly TextBox _playerNameBox = new();
     private readonly TextBox _installDirectoryBox = new();
@@ -160,6 +161,7 @@ public sealed class MainWindow : Window
         _playButton.Content = "Играть";
         _playButton.Click += async (_, _) => await RunGuardedAsync(PlayAsync);
         panel.Children.Add(_playButton);
+        panel.Children.Add(Label("Сервер: 213.152.43.44:25697"));
 
         return panel;
     }
@@ -248,6 +250,14 @@ public sealed class MainWindow : Window
         var progress = new Progress<string>(SetStatus);
         var javaPath = await _launchService.EnsureCompatibleJavaAsync(_settings, progress, _operation.Token);
         var runtime = await _runtimeService.EnsureAsync(_manifest!, _settings, javaPath, progress, _operation.Token);
+        try
+        {
+            await _serverListService.EnsureMinivibeServerAsync(_settings, _operation.Token);
+        }
+        catch (Exception ex)
+        {
+            AppendLog("[ERR] Не удалось автоматически добавить сервер: " + ex.Message);
+        }
 
         AppendLog("Запускаю Minecraft...");
         _launchService.Start(

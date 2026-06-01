@@ -266,6 +266,11 @@
                   <Button x:Name="RepairButton" Content="Проверить файлы" Style="{StaticResource SecondaryButtonStyle}" Click="RepairButton_Click"/>
                   <Button x:Name="RefreshManifestButton" Content="Обновить список" Style="{StaticResource SecondaryButtonStyle}" Click="RefreshManifestButton_Click"/>
                 </StackPanel>
+                <TextBlock x:Name="ServerAddressText"
+                           Text="Сервер: 213.152.43.44:25697"
+                           FontSize="13"
+                           Foreground="{DynamicResource MutedBrush}"
+                           Margin="0,8,0,0"/>
               </StackPanel>
 
               <StackPanel Grid.Column="1" VerticalAlignment="Center">

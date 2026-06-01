@@ -20,6 +20,7 @@ public partial class MainWindow : Window
     private readonly GameLaunchService _gameLaunchService = new();
     private readonly MinecraftRuntimeService _minecraftRuntimeService = new();
     private readonly SkinService _skinService = new();
+    private readonly MinecraftServerListService _serverListService = new();
     private readonly BugReportService _bugReportService = new();
     private readonly LauncherUpdateService _launcherUpdateService = new();
     private LauncherSettings _settings = new();
@@ -71,10 +72,17 @@ public partial class MainWindow : Window
         try
         {
             var progress = new Progress<string>(message => ProgressText.Text = message);
-            var updating = await _launcherUpdateService.CheckAndApplyUpdateAsync(_settings, progress, CurrentToken());
-            if (updating)
+            var update = await _launcherUpdateService.CheckAndPrepareUpdateAsync(_settings, progress, CurrentToken());
+            if (update is not null)
             {
+                System.Windows.MessageBox.Show(
+                    $"Вышла новая версия лаунчера: {update.Manifest.Version}.{Environment.NewLine}{Environment.NewLine}После нажатия OK лаунчер будет перезапущен.",
+                    "Обновление minivibe",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+
                 ProgressText.Text = "Обновление скачано. Перезапускаю лаунчер...";
+                await _launcherUpdateService.ApplyPreparedUpdateAsync(update, CurrentToken());
                 System.Windows.Application.Current.Shutdown();
                 return true;
             }
@@ -328,6 +336,16 @@ public partial class MainWindow : Window
             if (launchIssues.Count > 0)
             {
                 throw new InvalidOperationException("Minecraft не готов к запуску: " + string.Join("; ", launchIssues.Take(4)));
+            }
+
+            try
+            {
+                await _serverListService.EnsureMinivibeServerAsync(_settings, CurrentToken());
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                ProgressText.Text = "Не удалось автоматически добавить сервер, запуск продолжается.";
             }
 
             SetBusy(true, "Запускаю Minecraft...");

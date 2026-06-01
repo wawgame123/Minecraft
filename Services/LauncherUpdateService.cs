@@ -25,35 +25,35 @@ public sealed class LauncherUpdateService
 
     private readonly HttpClient _httpClient = new();
 
-    public async Task<bool> CheckAndApplyUpdateAsync(
+    public async Task<PreparedLauncherUpdate?> CheckAndPrepareUpdateAsync(
         LauncherSettings settings,
         IProgress<string>? progress,
         CancellationToken cancellationToken)
     {
         if (!settings.EnableAutoUpdate)
         {
-            return false;
+            return null;
         }
 
         progress?.Report("Проверяю обновления лаунчера...");
         var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
         if (update is null || string.IsNullOrWhiteSpace(update.Version) || string.IsNullOrWhiteSpace(update.Url))
         {
-            return false;
+            return null;
         }
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
         if (!Version.TryParse(update.Version, out var remoteVersion) || remoteVersion <= currentVersion)
         {
             progress?.Report("Лаунчер актуален.");
-            return false;
+            return null;
         }
 
         var processPath = Environment.ProcessPath;
         if (string.IsNullOrWhiteSpace(processPath) || !processPath.EndsWith(".exe", StringComparison.OrdinalIgnoreCase))
         {
             progress?.Report("Обновление доступно, но текущий запуск не похож на готовый .exe.");
-            return false;
+            return null;
         }
 
         progress?.Report($"Скачиваю обновление лаунчера {update.Version}...");
@@ -83,9 +83,24 @@ public sealed class LauncherUpdateService
         }
 
         ZipFile.ExtractToDirectory(zipPath, extractPath);
-        await SavePendingPatchNotesAsync(update, cancellationToken);
-        StartUpdaterScript(extractPath, AppContext.BaseDirectory, processPath, Environment.ProcessId);
-        return true;
+        return new PreparedLauncherUpdate(
+            update,
+            extractPath,
+            AppContext.BaseDirectory,
+            processPath,
+            Environment.ProcessId);
+    }
+
+    public async Task ApplyPreparedUpdateAsync(
+        PreparedLauncherUpdate preparedUpdate,
+        CancellationToken cancellationToken)
+    {
+        await SavePendingPatchNotesAsync(preparedUpdate.Manifest, cancellationToken);
+        StartUpdaterScript(
+            preparedUpdate.ExtractPath,
+            preparedUpdate.TargetDirectory,
+            preparedUpdate.ExePath,
+            preparedUpdate.ProcessId);
     }
 
     public async Task<LauncherUpdateManifest?> ReadPendingPatchNotesAsync(CancellationToken cancellationToken)
@@ -189,3 +204,10 @@ public sealed class LauncherUpdateService
         return Convert.ToHexString(hash).ToLowerInvariant();
     }
 }
+
+public sealed record PreparedLauncherUpdate(
+    LauncherUpdateManifest Manifest,
+    string ExtractPath,
+    string TargetDirectory,
+    string ExePath,
+    int ProcessId);

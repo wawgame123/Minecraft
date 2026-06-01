@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>MinivibeMac</AssemblyName>
     <Product>minivibe mac</Product>
-    <Version>0.2.1</Version>
+    <Version>0.2.2</Version>
     <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
   </PropertyGroup>
@@ -23,5 +23,6 @@
     <Compile Include="..\..\Services\LauncherEndpoints.cs" Link="Services\LauncherEndpoints.cs" />
     <Compile Include="..\..\Services\ManifestService.cs" Link="Services\ManifestService.cs" />
     <Compile Include="..\..\Services\MinecraftRuntimeService.cs" Link="Services\MinecraftRuntimeService.cs" />
+    <Compile Include="..\..\Services\MinecraftServerListService.cs" Link="Services\MinecraftServerListService.cs" />
   </ItemGroup>
 </Project>

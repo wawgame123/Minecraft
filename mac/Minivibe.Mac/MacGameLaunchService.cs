@@ -446,7 +446,7 @@ internal sealed class MacGameLaunchService
             $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
             "-Djava.library.path=" + Quote(runtime.NativesDirectory),
             "-Dminecraft.launcher.brand=minivibe",
-            "-Dminecraft.launcher.version=0.2.1"
+            "-Dminecraft.launcher.version=0.2.2"
         };
 
         args.AddRange(runtime.JvmArgs
