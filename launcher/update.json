@@ -1,11 +1,11 @@
 ﻿{
-    "version":  "0.1.18",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.18-framework.zip",
-    "sha256":  "addd8e3c4ef311620c85a21ce732cb9f1cb3abe03b4e40cde1c3256901b9eeca",
+    "version":  "0.1.19",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.1.19-framework.zip",
+    "sha256":  "f890d89e76cdc787a8526e7ea79ab9a1bbc2c377ceab47726473696bcdd7f12f",
     "mandatory":  false,
     "notes":  [
-                  "Загрузка скина переведена на JSON, чтобы убрать ошибку multipart в Cloudflare Worker.",
-                  "Worker принимает skinBase64 и все так же коммитит skins/Ник.png в GitHub.",
-                  "Локальная установка скина осталась без изменений."
+                  "Новости и блок последних изменений очищены в manifest.json.",
+                  "Добавлен установщик minivibe с выбором папки установки и дефолтом %APPDATA%\\.minivibe.",
+                  "Проверка скинов оставлена через общий каталог GitHub по нику игрока."
               ]
 }

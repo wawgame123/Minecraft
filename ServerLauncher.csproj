@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Minivibe</AssemblyName>
     <Product>minivibe</Product>
-    <Version>0.1.18</Version>
+    <Version>0.1.19</Version>
     <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <ApplicationIcon>Assets\launcher-icon.ico</ApplicationIcon>
@@ -20,6 +20,12 @@
     <None Remove="Assets\launcher-icon.png" />
     <Resource Include="Assets\launcher-icon.ico" />
     <Resource Include="Assets\launcher-icon.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="installer\**" />
+    <EmbeddedResource Remove="installer\**" />
+    <None Remove="installer\**" />
   </ItemGroup>
 
   <ItemGroup>

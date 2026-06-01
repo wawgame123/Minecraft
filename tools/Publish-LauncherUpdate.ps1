@@ -85,9 +85,9 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        $utf8.GetString([Convert]::FromBase64String("0JfQsNCz0YDRg9C30LrQsCDRgdC60LjQvdCwINC/0LXRgNC10LLQtdC00LXQvdCwINC90LAgSlNPTiwg0YfRgtC+0LHRiyDRg9Cx0YDQsNGC0Ywg0L7RiNC40LHQutGDIG11bHRpcGFydCDQsiBDbG91ZGZsYXJlIFdvcmtlci4=")),
-        $utf8.GetString([Convert]::FromBase64String("V29ya2VyINC/0YDQuNC90LjQvNCw0LXRgiBza2luQmFzZTY0INC4INCy0YHQtSDRgtCw0Log0LbQtSDQutC+0LzQvNC40YLQuNGCIHNraW5zL9Cd0LjQui5wbmcg0LIgR2l0SHViLg==")),
-        $utf8.GetString([Convert]::FromBase64String("0JvQvtC60LDQu9GM0L3QsNGPINGD0YHRgtCw0L3QvtCy0LrQsCDRgdC60LjQvdCwINC+0YHRgtCw0LvQsNGB0Ywg0LHQtdC3INC40LfQvNC10L3QtdC90LjQuS4="))
+        $utf8.GetString([Convert]::FromBase64String("0J3QvtCy0L7RgdGC0Lgg0Lgg0LHQu9C+0Log0L/QvtGB0LvQtdC00L3QuNGFINC40LfQvNC10L3QtdC90LjQuSDQvtGH0LjRidC10L3RiyDQsiBtYW5pZmVzdC5qc29uLg==")),
+        $utf8.GetString([Convert]::FromBase64String("0JTQvtCx0LDQstC70LXQvSDRg9GB0YLQsNC90L7QstGJ0LjQuiBtaW5pdmliZSDRgSDQstGL0LHQvtGA0L7QvCDQv9Cw0L/QutC4INGD0YHRgtCw0L3QvtCy0LrQuCDQuCDQtNC10YTQvtC70YLQvtC8ICVBUFBEQVRBJVwubWluaXZpYmUu")),
+        $utf8.GetString([Convert]::FromBase64String("0J/RgNC+0LLQtdGA0LrQsCDRgdC60LjQvdC+0LIg0L7RgdGC0LDQstC70LXQvdCwINGH0LXRgNC10Lcg0L7QsdGJ0LjQuSDQutCw0YLQsNC70L7QsyBHaXRIdWIg0L/QviDQvdC40LrRgyDQuNCz0YDQvtC60LAu"))
     )
 }
 

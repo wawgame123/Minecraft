@@ -266,15 +266,8 @@ public partial class MainWindow : Window
         UpdatePlayerPreview();
         SidebarStatusText.Text = "Manifest загружен";
 
-        var changelog = _manifest.Changelog.Count > 0
-            ? _manifest.Changelog
-            : ["История обновлений пока пуста."];
-        HomeChangelogList.ItemsSource = changelog.Take(4);
-
-        var news = _manifest.News.Count > 0
-            ? _manifest.News
-            : _manifest.Changelog.Count > 0 ? _manifest.Changelog : ["Новостей пока нет."];
-        NewsList.ItemsSource = news;
+        HomeChangelogList.ItemsSource = _manifest.Changelog.Take(4);
+        NewsList.ItemsSource = _manifest.News;
 
         RenderMapLink();
     }
