@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Http;
 using System.Security.Cryptography;
 using ServerLauncher.Models;
@@ -26,6 +27,8 @@ public sealed class FileSyncService
         CancellationToken cancellationToken)
     {
         Directory.CreateDirectory(settings.InstallDirectory);
+        RemoveBlockedMods(settings.InstallDirectory, progress);
+
         var files = GetManagedFiles(manifest, settings.EnableShaders).ToList();
         var statuses = new FileStatusItem[files.Count];
         var repairQueue = new ConcurrentBag<(int Index, ManifestFile File, string FullPath)>();
@@ -84,6 +87,8 @@ public sealed class FileSyncService
                     ReportPercent(progress, "Скачивание", done, repairCount);
                 });
         }
+
+        await ExtractManagedArchivesAsync(files, settings.InstallDirectory, progress, cancellationToken);
 
         progress?.Report("Проверка завершена");
         return statuses;
@@ -189,6 +194,92 @@ public sealed class FileSyncService
         File.Move(tempPath, destinationPath, true);
     }
 
+    private static async Task ExtractManagedArchivesAsync(
+        IReadOnlyList<ManifestFile> files,
+        string installDirectory,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        var archives = files.Where(IsExtractableArchive).ToList();
+        if (archives.Count == 0)
+        {
+            return;
+        }
+
+        var completed = 0;
+        ReportPercent(progress, "Распаковка", completed, archives.Count);
+        foreach (var archive in archives)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            ExtractArchiveIfNeeded(archive, installDirectory);
+            completed++;
+            ReportPercent(progress, "Распаковка", completed, archives.Count);
+            await Task.Yield();
+        }
+    }
+
+    private static void ExtractArchiveIfNeeded(ManifestFile file, string installDirectory)
+    {
+        var archivePath = ResolveInsideInstallDirectory(installDirectory, file.Path);
+        if (!File.Exists(archivePath))
+        {
+            return;
+        }
+
+        var targetDirectory = ResolveInsideInstallDirectory(installDirectory, file.ExtractTo!);
+        var markerPath = ResolveInsideInstallDirectory(
+            installDirectory,
+            Path.Combine(".minivibe-state", "extracted", SafeMarkerName(file.Path) + ".sha256"));
+        var expectedMarker = file.Sha256 ?? "";
+
+        if (Directory.Exists(targetDirectory)
+            && File.Exists(markerPath)
+            && string.Equals(File.ReadAllText(markerPath).Trim(), expectedMarker, StringComparison.OrdinalIgnoreCase))
+        {
+            return;
+        }
+
+        var tempDirectory = Path.Combine(Path.GetTempPath(), "MinivibeExtract", Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDirectory);
+        try
+        {
+            ZipFile.ExtractToDirectory(archivePath, tempDirectory, overwriteFiles: true);
+            if (Directory.Exists(targetDirectory))
+            {
+                Directory.Delete(targetDirectory, recursive: true);
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(targetDirectory)!);
+            Directory.Move(tempDirectory, targetDirectory);
+            Directory.CreateDirectory(Path.GetDirectoryName(markerPath)!);
+            File.WriteAllText(markerPath, expectedMarker);
+        }
+        finally
+        {
+            if (Directory.Exists(tempDirectory))
+            {
+                Directory.Delete(tempDirectory, recursive: true);
+            }
+        }
+    }
+
+    private static bool IsExtractableArchive(ManifestFile file)
+    {
+        return !string.IsNullOrWhiteSpace(file.ExtractTo)
+            && file.Path.EndsWith(".zip", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static string SafeMarkerName(string value)
+    {
+        var builder = new System.Text.StringBuilder(value.Length);
+        foreach (var character in value)
+        {
+            builder.Append(char.IsLetterOrDigit(character) ? character : '_');
+        }
+
+        return builder.ToString();
+    }
+
     private static string ResolveInsideInstallDirectory(string installDirectory, string relativePath)
     {
         var root = Path.GetFullPath(installDirectory);
@@ -215,6 +306,43 @@ public sealed class FileSyncService
         return !string.IsNullOrWhiteSpace(hash)
             && !hash.Equals("HASH_HERE", StringComparison.OrdinalIgnoreCase)
             && hash.Length >= 32;
+    }
+
+    private static void RemoveBlockedMods(string installDirectory, IProgress<string>? progress)
+    {
+        var modsDirectory = Path.Combine(installDirectory, "mods");
+        if (!Directory.Exists(modsDirectory))
+        {
+            return;
+        }
+
+        foreach (var modPath in Directory.EnumerateFiles(modsDirectory, "*.jar", SearchOption.TopDirectoryOnly))
+        {
+            var normalizedName = NormalizeModName(Path.GetFileNameWithoutExtension(modPath));
+            if (!normalizedName.Contains("moreculling", StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            try
+            {
+                File.Delete(modPath);
+                progress?.Report("Удален несовместимый мод More Culling");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Не удалось удалить несовместимый мод More Culling: {modPath}. {ex.Message}", ex);
+            }
+        }
+    }
+
+    private static string NormalizeModName(string value)
+    {
+        return value
+            .Replace("-", "", StringComparison.Ordinal)
+            .Replace("_", "", StringComparison.Ordinal)
+            .Replace(" ", "", StringComparison.Ordinal)
+            .ToLowerInvariant();
     }
 
     private static void ReportPercent(IProgress<string>? progress, string label, int completed, int total)

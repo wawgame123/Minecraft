@@ -58,6 +58,10 @@ public sealed class ManifestFile
 
     [JsonPropertyName("required")]
     public bool Required { get; set; }
+
+    [JsonPropertyName("extractTo")]
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public string? ExtractTo { get; set; }
 }
 
 public sealed class LaunchManifestOptions

@@ -383,15 +383,21 @@
                 </StackPanel>
 
                 <Grid Grid.Row="1">
-                  <TextBlock x:Name="NewsBodyText"
-                             Foreground="{DynamicResource TextBrush}"
-                             TextWrapping="Wrap"
-                             FontSize="15"/>
-                  <Image x:Name="NewsImage"
-                         Visibility="Collapsed"
-                         Stretch="Uniform"
-                         HorizontalAlignment="Stretch"
-                         VerticalAlignment="Stretch"/>
+                  <ScrollViewer x:Name="NewsContentScroll"
+                                VerticalScrollBarVisibility="Auto">
+                    <StackPanel>
+                      <Image x:Name="NewsImage"
+                             Visibility="Collapsed"
+                             Stretch="Uniform"
+                             HorizontalAlignment="Stretch"
+                             MaxHeight="360"
+                             Margin="0,0,0,14"/>
+                      <TextBlock x:Name="NewsBodyText"
+                                 Foreground="{DynamicResource TextBrush}"
+                                 TextWrapping="Wrap"
+                                 FontSize="15"/>
+                    </StackPanel>
+                  </ScrollViewer>
                   <wv2:WebView2 x:Name="NewsWebView"
                                 Visibility="Collapsed"
                                 DefaultBackgroundColor="#090A0F"/>

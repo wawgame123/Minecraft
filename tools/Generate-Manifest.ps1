@@ -30,6 +30,10 @@ function Convert-ToRawUrl([string]$RelativePath) {
 }
 
 function Get-Category([string]$RelativePath) {
+    if ($RelativePath.Equals("emotes.zip", [StringComparison]::OrdinalIgnoreCase)) {
+        return "archive"
+    }
+
     $firstSegment = ($RelativePath -split '[\\/]')[0].ToLowerInvariant()
 
     switch ($firstSegment) {
@@ -47,6 +51,24 @@ function Get-Category([string]$RelativePath) {
             }
         }
     }
+}
+
+function Write-FolderZip([string]$SourceDirectory, [string]$DestinationZip) {
+    if (-not (Test-Path -LiteralPath $SourceDirectory)) {
+        return
+    }
+
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    if (Test-Path -LiteralPath $DestinationZip) {
+        Remove-Item -LiteralPath $DestinationZip -Force
+    }
+
+    [System.IO.Compression.ZipFile]::CreateFromDirectory(
+        $SourceDirectory,
+        $DestinationZip,
+        [System.IO.Compression.CompressionLevel]::Optimal,
+        $false
+    )
 }
 
 function Get-RelativePathCompat([string]$BasePath, [string]$FullPath) {
@@ -75,8 +97,7 @@ function Convert-CrlfBytesToLf([byte[]]$Bytes) {
 function Get-ManifestFileMetadata([string]$Path) {
     $bytes = [System.IO.File]::ReadAllBytes($Path)
 
-    if ($Path.EndsWith(".json", [StringComparison]::OrdinalIgnoreCase) -or
-        $Path.EndsWith(".txt", [StringComparison]::OrdinalIgnoreCase)) {
+    if ($Path.EndsWith(".json", [StringComparison]::OrdinalIgnoreCase)) {
         $bytes = Convert-CrlfBytesToLf $bytes
     }
 
@@ -97,6 +118,10 @@ function Get-ManifestFileMetadata([string]$Path) {
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $packAbsolute = (Resolve-Path -LiteralPath (Join-Path $root $PackRoot)).Path
 $outputAbsolute = Join-Path $root $Output
+$emotesDirectory = Join-Path $packAbsolute "emotes"
+$emotesArchive = Join-Path $packAbsolute "emotes.zip"
+
+Write-FolderZip -SourceDirectory $emotesDirectory -DestinationZip $emotesArchive
 
 if ($LaunchClasspath.Count -eq 0) {
     $LaunchClasspath = @("$Loader-$LoaderVersion.jar")
@@ -109,25 +134,35 @@ Get-ChildItem -LiteralPath $packAbsolute -Recurse -File |
     Sort-Object FullName |
     ForEach-Object {
         $relativeToPack = (Get-RelativePathCompat $packAbsolute $_.FullName).Replace("\", "/")
-        $relativeToRepo = ($PackRoot.TrimEnd("/", "\") + "/" + $relativeToPack).Replace("\", "/")
-        $metadata = Get-ManifestFileMetadata $_.FullName
         $category = Get-Category $relativeToPack
 
-        $entry = [ordered]@{
-            path = $relativeToPack
-            url = Convert-ToRawUrl $relativeToRepo
-            sha256 = $metadata.Hash
-            size = $metadata.Size
-            category = $category
-            required = $category -ne "shaderpack"
-        }
+        $skipFile = $relativeToPack.StartsWith("emotes/", [StringComparison]::OrdinalIgnoreCase) -or
+            ($category -eq "shaderpack" -and $relativeToPack.EndsWith(".txt", [StringComparison]::OrdinalIgnoreCase))
 
-        if ($category -eq "shaderpack") {
-            $entry.required = $false
-            $optionalShaders.Add([pscustomobject]$entry)
-        }
-        else {
-            $requiredFiles.Add([pscustomobject]$entry)
+        if (-not $skipFile) {
+            $relativeToRepo = ($PackRoot.TrimEnd("/", "\") + "/" + $relativeToPack).Replace("\", "/")
+            $metadata = Get-ManifestFileMetadata $_.FullName
+
+            $entry = [ordered]@{
+                path = $relativeToPack
+                url = Convert-ToRawUrl $relativeToRepo
+                sha256 = $metadata.Hash
+                size = $metadata.Size
+                category = $category
+                required = $category -ne "shaderpack"
+            }
+
+            if ($category -eq "archive") {
+                $entry.extractTo = "emotes"
+                $requiredFiles.Add([pscustomobject]$entry)
+            }
+            elseif ($category -eq "shaderpack") {
+                $entry.required = $false
+                $optionalShaders.Add([pscustomobject]$entry)
+            }
+            else {
+                $requiredFiles.Add([pscustomobject]$entry)
+            }
         }
     }
 

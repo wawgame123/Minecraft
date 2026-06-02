@@ -302,6 +302,7 @@ public partial class MainWindow : Window
     {
         NewsImage.Visibility = Visibility.Collapsed;
         NewsWebView.Visibility = Visibility.Collapsed;
+        NewsContentScroll.Visibility = Visibility.Visible;
         NewsBodyText.Visibility = Visibility.Visible;
         NewsImage.Source = null;
 
@@ -319,7 +320,10 @@ public partial class MainWindow : Window
 
         if (kind == NewsItem.ImageKind && !string.IsNullOrWhiteSpace(item.Url))
         {
-            NewsBodyText.Visibility = Visibility.Collapsed;
+            NewsBodyText.Text = string.IsNullOrWhiteSpace(item.Text) ? item.Title : item.Text;
+            NewsBodyText.Visibility = string.IsNullOrWhiteSpace(NewsBodyText.Text)
+                ? Visibility.Collapsed
+                : Visibility.Visible;
             NewsImage.Visibility = Visibility.Visible;
             try
             {
@@ -337,6 +341,7 @@ public partial class MainWindow : Window
 
         if (kind == NewsItem.HtmlKind && !string.IsNullOrWhiteSpace(item.Url))
         {
+            NewsContentScroll.Visibility = Visibility.Collapsed;
             NewsBodyText.Visibility = Visibility.Collapsed;
             NewsWebView.Visibility = Visibility.Visible;
             try
@@ -348,6 +353,7 @@ public partial class MainWindow : Window
             catch (Exception ex)
             {
                 NewsWebView.Visibility = Visibility.Collapsed;
+                NewsContentScroll.Visibility = Visibility.Visible;
                 NewsBodyText.Visibility = Visibility.Visible;
                 NewsBodyText.Text = "Не удалось открыть HTML-новость: " + ex.Message;
             }

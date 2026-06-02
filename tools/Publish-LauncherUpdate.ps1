@@ -42,6 +42,10 @@ function Invoke-Checked {
     }
 }
 
+function ConvertFrom-Utf8Base64([string]$Value) {
+    [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Value))
+}
+
 [xml]$projectXml = Get-Content -Raw -LiteralPath $project
 $version = $projectXml.Project.PropertyGroup.Version
 if ([string]::IsNullOrWhiteSpace($version)) {
@@ -76,7 +80,6 @@ if (Test-Path -LiteralPath $zipPath) {
 Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
 $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $url = "https://raw.githubusercontent.com/$Repository/$Branch/launcher/$zipName"
-$utf8 = [System.Text.Encoding]::UTF8
 
 $update = [ordered]@{
     version = $version
@@ -84,9 +87,9 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        $utf8.GetString([Convert]::FromBase64String("0JjRgdC/0YDQsNCy0LvQtdC90LAgU0hBLdC/0YDQvtCy0LXRgNC60LAgc2hhZGVycGFjayAudHh0INGE0LDQudC70L7QsjogbWFuaWZlc3Qg0YLQtdC/0LXRgNGMINGB0YfQuNGC0LDQtdGCIExGINGC0LDQuiDQttC1LCDQutCw0LogR2l0SHViIFJhdy4=")),
-        $utf8.GetString([Convert]::FromBase64String("M0Qt0L/RgNC10LLRjNGOINGB0LrQuNC90LAg0LHQvtC70YzRiNC1INC90LUg0YDQuNGB0YPQtdGCIG91dGVyLWxheWVyLCDQtdGB0LvQuCDQstC+INCy0YLQvtGA0L7QvCDRgdC70L7QtSDQvdC10YIg0L/RgNC+0LfRgNCw0YfQvdC+0YHRgtC4Lg==")),
-        $utf8.GetString([Convert]::FromBase64String("0JTQu9GPIFBORyDRgdC+INGB0LvQvtGP0LzQuCDQv9GA0LXQstGM0Y4g0L7RgdGC0LDQstC70Y/QtdGCIG91dGVyLWxheWVyLCDQtNC70Y8gSlBHINGD0LHQuNGA0LDQtdGCINCz0YDRj9C30L3Rg9GOINC90LXQv9GA0L7Qt9GA0LDRh9C90YPRjiDQvtCx0L7Qu9C+0YfQutGDLg=="))
+        ConvertFrom-Utf8Base64 "RW1vdGVzINGC0LXQv9C10YDRjCDRgdC60LDRh9C40LLQsNGO0YLRgdGPINC+0LTQvdC40Lwg0LDRgNGF0LjQstC+0Lwg0Lgg0YDQsNGB0L/QsNC60L7QstGL0LLQsNGO0YLRgdGPINC70LDRg9C90YfQtdGA0L7QvCwg0L/QvtGN0YLQvtC80YMg0L/RgNC+0LLQtdGA0LrQsCDRgdCx0L7RgNC60Lgg0YHRgtCw0LvQsCDQt9Cw0LzQtdGC0L3QviDQsdGL0YHRgtGA0LXQtS4="
+        ConvertFrom-Utf8Base64 "U2hhZGVycGFjayAudHh0IGNvbXBhbmlvbi3RhNCw0LnQu9GLINCx0L7Qu9GM0YjQtSDQvdC1INC60L7QvdGC0YDQvtC70LjRgNGD0Y7RgtGB0Y8gbWFuaWZlc3Q6IE1pbmVjcmFmdCDQvNC+0LbQtdGCINC80LXQvdGP0YLRjCDQuNGFINCx0LXQtyDQsdC10YHQutC+0L3QtdGH0L3QvtC5INC/0LXRgNC10LfQsNC60LDRh9C60Lgu"
+        ConvertFrom-Utf8Base64 "0J3QvtCy0L7RgdGC0Lgg0YEg0LrQsNGA0YLQuNC90LrQvtC5INGC0LXQv9C10YDRjCDQvNC+0LPRg9GCINC/0L7QutCw0LfRi9Cy0LDRgtGMINC4INC/0YDQuNC60YDQtdC/0LvQtdC90L3Ri9C5INGC0LXQutGB0YIg0LIg0L7QtNC90L7QvCDQsdC70L7QutC1Lg=="
     )
 }
 
