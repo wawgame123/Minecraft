@@ -797,6 +797,22 @@
       "size": 763725,
       "category": "mod",
       "required": true
+    },
+    {
+      "path": "mods/interiors-1.21.1-neoforge-0.6.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/interiors-1.21.1-neoforge-0.6.1.jar",
+      "sha256": "0d1326fb8b67623ae1c69a63b788dcdcecaf8df400c7d8e5e55ace79a5166fe5",
+      "size": 486912,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "mods/create_connected-1.2.0-mc1.21.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create_connected-1.2.0-mc1.21.1.jar",
+      "sha256": "4cd981c0ef9eaca586ff95e934937dc2834c9693ec58502501045efff262dd62",
+      "size": 6557328,
+      "category": "mod",
+      "required": true
     }
   ],
   "optionalShaders": [
