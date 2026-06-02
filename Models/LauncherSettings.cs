@@ -5,6 +5,7 @@ public sealed class LauncherSettings
     public string InstallDirectory { get; set; } = DefaultInstallDirectory();
     public bool EnableAutoUpdate { get; set; } = true;
     public bool EnableShaders { get; set; }
+    public bool EnableEmotes { get; set; }
     public bool EnableGameConsole { get; set; }
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";

@@ -529,6 +529,17 @@
                 </DockPanel>
 
                 <CheckBox x:Name="ShadersCheckBox" Content="Шейдеры"/>
+                <DockPanel Margin="0,2,0,0">
+                  <Button Content="Переустановить"
+                          DockPanel.Dock="Right"
+                          Margin="8,0,0,0"
+                          Style="{StaticResource SecondaryButtonStyle}"
+                          Click="ReinstallEmotesButton_Click"/>
+                  <CheckBox x:Name="EmotesCheckBox"
+                            Content="Эмоции"
+                            Click="EmotesCheckBox_Click"
+                            ToolTip="Скачивает emotes одним архивом и распаковывает. При обычном запуске эмоции не проверяются."/>
+                </DockPanel>
                 <CheckBox x:Name="GameConsoleCheckBox"
                           Content="Показывать консоль Minecraft при запуске"
                           ToolTip="Выключите для максимального FPS. Включайте, когда нужно смотреть логи или краши."/>

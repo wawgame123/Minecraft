@@ -28,6 +28,9 @@ public sealed class LauncherManifest
     [JsonPropertyName("optionalShaders")]
     public List<ManifestFile> OptionalShaders { get; set; } = [];
 
+    [JsonPropertyName("optionalEmotes")]
+    public List<ManifestFile> OptionalEmotes { get; set; } = [];
+
     [JsonPropertyName("changelog")]
     public List<string> Changelog { get; set; } = [];
 

@@ -1,890 +1,876 @@
-{
-  "serverName": "minivibe",
-  "packVersion": "1.0.0",
-  "minecraftVersion": "1.21.1",
-  "loader": "neoforge",
-  "loaderVersion": "21.1.228",
-  "blueMapUrl": "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat",
-  "requiredFiles": [
-    {
-      "path": "emotes.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/emotes.zip",
-      "sha256": "1a70026f22e1d44987b95377041870ac1cc10679d5f6b6e2b8032a3340df3584",
-      "size": 49257931,
-      "category": "archive",
-      "required": true,
-      "extractTo": "emotes"
-    },
-    {
-      "path": "neoforge-21.1.228.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/neoforge-21.1.228.jar",
-      "sha256": "499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99",
-      "size": 26836906,
-      "category": "loader",
-      "required": true
-    },
-    {
-      "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
-      "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
-      "size": 1708817,
-      "category": "resourcepack",
-      "required": true
-    },
-    {
-      "path": "mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
-      "sha256": "055e4ca4474ed4730b5f0d1d30f0fa052655bc70e7a3e9a9af08c24a5bc7107a",
-      "size": 468241,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/accessories-neoforge-1.1.0-beta.53-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/accessories-neoforge-1.1.0-beta.53-1.21.1.jar",
-      "sha256": "10017a3da78ea63e9ece27a1ca32f8cf490362f348778cf8cb759e7282f3beb0",
-      "size": 1078697,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/alexscaves-2.0.10.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alexscaves-2.0.10.jar",
-      "sha256": "6fad35bf07fcb977aaa32d3fe05bf122150c6a30ed16b057385040207a3b788f",
-      "size": 74900204,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/alexsmobs-1.22.17.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alexsmobs-1.22.17.jar",
-      "sha256": "6e502855f79e4c9f2a11d560a9b88a3ab295aa378c44b0f0a0dd95f95d0301a6",
-      "size": 26620546,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/alltheleaks-1.1.9\u002B1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alltheleaks-1.1.9%2B1.21.1-neoforge.jar",
-      "sha256": "94c8e671c99ad3b098678cc1947594f7723e294c7692a4d0f9126a4d85a756e6",
-      "size": 536836,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/appleskin-neoforge-mc1.21-3.0.9.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/appleskin-neoforge-mc1.21-3.0.9.jar",
-      "sha256": "38b48dd6231341c9f964ce6e42c57ec866c6cc8f72bec938390a59bafb3922df",
-      "size": 75804,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/architectury-13.0.8-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/architectury-13.0.8-neoforge.jar",
-      "sha256": "5ec578f814e8cca87aeffa6e424032e78d9ea5ea6b603dd834c2dc13c31141ee",
-      "size": 584004,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/BadOptimizations-2.4.1-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BadOptimizations-2.4.1-1.21.1.jar",
-      "sha256": "22e2467892d3706f43d1cf2aa637785bb8601c20b0098a82ab956e6a8fc4d2ba",
-      "size": 283566,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/BetterPingDisplay-1.21.1-1.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BetterPingDisplay-1.21.1-1.1.jar",
-      "sha256": "f8388de4831ca70f3e94d98d4655278b514f8589234fa92df0d6b2ff1dff321b",
-      "size": 13871,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/BiomesOPlenty-neoforge-1.21.1-21.1.0.13.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BiomesOPlenty-neoforge-1.21.1-21.1.0.13.jar",
-      "sha256": "07f449b7766845883523ffadb8fb706ec011c1212aa378b48bea5841188f0b04",
-      "size": 22338082,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/blockui-1.0.211-1.21.1-snapshot.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/blockui-1.0.211-1.21.1-snapshot.jar",
-      "sha256": "5dfffc80c057b4d36123bd5f5cad9f32f86896a9dd993ea4a3ecad315cabd77e",
-      "size": 468147,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/bookshelf-neoforge-1.21.1-21.1.81.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/bookshelf-neoforge-1.21.1-21.1.81.jar",
-      "sha256": "19e88d40da2b6a114c2b808f7fb469d96e66a5379df0a8a43fcb7834498b3e76",
-      "size": 328813,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/c2me-neoforge-mc1.21.1-0.3.0\u002Balpha.0.93.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/c2me-neoforge-mc1.21.1-0.3.0%2Balpha.0.93.jar",
-      "sha256": "2735b16e136e51c03c9a8211fbecaf9d571a28475981223c60662465664f5322",
-      "size": 4510749,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/carryon-neoforge-1.21.1-2.2.4.4.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/carryon-neoforge-1.21.1-2.2.4.4.jar",
-      "sha256": "ad69537be8be8b433227792e43f8df7b4d3cef7e359255d471a44e776ad8dd57",
-      "size": 357489,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/chat_heads-0.15.1-neoforge-1.21.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/chat_heads-0.15.1-neoforge-1.21.jar",
-      "sha256": "b1ed6a52efa3cb43e4c37e3982bc7b08116302511b8f675346f6aea6d3524e41",
-      "size": 89272,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/citadel-1.21.1-2.7.6.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/citadel-1.21.1-2.7.6.jar",
-      "sha256": "9e12468c49e5a95b7adbf22b3b4d05bc55565989b89c40b985cd73bdfe63c3c2",
-      "size": 3028943,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/cloth-config-15.0.140-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cloth-config-15.0.140-neoforge.jar",
-      "sha256": "65e722e0d98431a07c45f8bdd8d529a217cc8c175fde1740248bd5c1b4f3c0d4",
-      "size": 1163890,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/cloth-config-15.0.140-neoforge-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cloth-config-15.0.140-neoforge-1.21.1.jar",
-      "sha256": "65e722e0d98431a07c45f8bdd8d529a217cc8c175fde1740248bd5c1b4f3c0d4",
-      "size": 1163890,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Clumps-neoforge-1.21.1-19.0.0.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Clumps-neoforge-1.21.1-19.0.0.1.jar",
-      "sha256": "b524ccdace2ef8fd19f5b2074f7de1103ac5065c52553f064c00e098346c293e",
-      "size": 18382,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/controlify-3.0.0\u002Blts\u002B1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/controlify-3.0.0%2Blts%2B1.21.1-neoforge.jar",
-      "sha256": "2d50c50d6efbf78e8670b7deb9817221a6152db29274d7244930a4c6673aafab",
-      "size": 7981699,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Controlling-neoforge-1.21.1-19.0.5.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Controlling-neoforge-1.21.1-19.0.5.jar",
-      "sha256": "cc525fb6b030d9e4d33176983f278919e17b33935e2ca568929bdfa98f2b44a0",
-      "size": 77555,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/coroutil-neoforge-1.21.0-1.3.8.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/coroutil-neoforge-1.21.0-1.3.8.jar",
-      "sha256": "9b32bcf2c793d33b93b5d4739c0dc4b64231025c7dc5fe40732b66d7cf4b2826",
-      "size": 63981,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/create-1.21.1-6.0.10.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-1.21.1-6.0.10.jar",
-      "sha256": "ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a",
-      "size": 19123767,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/createaddition-1.5.11.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/createaddition-1.5.11.jar",
-      "sha256": "e9f597d3a057a05ce5636a3152f65180e362b8ff6a03d6702ef622619c2d15fd",
-      "size": 1623047,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/create-aeronautics-bundled-1.21.1-1.2.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-aeronautics-bundled-1.21.1-1.2.1.jar",
-      "sha256": "5a8c6d168ec1b47ecee7f2e83a93accbca71544d2b14ca1ca1b1271855f26248",
-      "size": 33030286,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/create-central-kitchen-2.4.0.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-central-kitchen-2.4.0.jar",
-      "sha256": "259a9b88d305780234bb2020359879406d74b945616d99a16871334d7aee1826",
-      "size": 342464,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/CreateDragonsPlus-1.10.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/CreateDragonsPlus-1.10.1.jar",
-      "sha256": "a192bc7074232e6e6a4acc7620a66f28a1fa314235ef2648edae034b1434b428",
-      "size": 759631,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/create-enchantment-industry-2.3.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-enchantment-industry-2.3.1.jar",
-      "sha256": "6bd60393cf582568a09aa38f82fe6ea6e5928659d7befc6b0ee9f46025179064",
-      "size": 684729,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/do_a_barrel_roll-neoforge-3.7.3\u002B1.21.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/do_a_barrel_roll-neoforge-3.7.3%2B1.21.jar",
-      "sha256": "e56395ebb26318c11f3a9474bba14518f17f4f2028683eb0aa9cdc7dacf124e2",
-      "size": 465787,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/domum-ornamentum-1.0.233-snapshot-main.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/domum-ornamentum-1.0.233-snapshot-main.jar",
-      "sha256": "7321f70c4bacc3f40aa6f2adf730b917554c51fe42513639c4f7550055956f70",
-      "size": 1156594,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/dummmmmmy-1.21-2.0.12-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/dummmmmmy-1.21-2.0.12-neoforge.jar",
-      "sha256": "4d35c6cdc7a17d6175f116ec8b31ce5ebc740e5d1412ce32cc721b042b2f5298",
-      "size": 219158,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/dynamic-fps-3.11.4\u002Bminecraft-1.21.0-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/dynamic-fps-3.11.4%2Bminecraft-1.21.0-neoforge.jar",
-      "sha256": "78cb67c9faeff5d1cb4da48d41e48ecc47baddaaec0f792e6edc8207aee0ab8e",
-      "size": 220193,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/emotecraft-for-MC1.21.1-2.4.12-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/emotecraft-for-MC1.21.1-2.4.12-neoforge.jar",
-      "sha256": "8cff63e900acd55bb39d41978cc2a70a974e326e2038c30ff20ccfde4c953a43",
-      "size": 861829,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/enchdesc-neoforge-1.21.1-21.1.9.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/enchdesc-neoforge-1.21.1-21.1.9.jar",
-      "sha256": "74d546ecb147da7e2cb53fe3115f6e062094329dcf15639b3da694cc00d3f843",
-      "size": 81847,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/endersdelight-1.3.0.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/endersdelight-1.3.0.jar",
-      "sha256": "2210b5d3c7ce22ba8ffb6f70bb620c838a4b514a4cbd40a6a2b74b529199b5c0",
-      "size": 152449,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/entityculling-neoforge-1.10.2-mc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/entityculling-neoforge-1.10.2-mc1.21.1.jar",
-      "sha256": "20014df18edb983b2c8eb764e70209ef84a4ac5aefd29ef25502fb102b0306cd",
-      "size": 1582824,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/FarmersDelight-1.21.1-1.3.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/FarmersDelight-1.21.1-1.3.2.jar",
-      "sha256": "8ff438d62e1fce61542945faae45975d823e04bd6e73a07a121ea05ce2f03de7",
-      "size": 3163042,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/FarmersStructures-1.0.2-1.21.1_neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/FarmersStructures-1.0.2-1.21.1_neoforge.jar",
-      "sha256": "4c99583903ad7db011008a1c41c8d0464f2727d017e2ac543a1a1d027c9313f4",
-      "size": 497259,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/fast-ip-ping-v1.0.11-mc1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/fast-ip-ping-v1.0.11-mc1.21.1-neoforge.jar",
-      "sha256": "c93500aa25eaa7bc473e753b8abf4234e7c46713d50bb82b30383ee47e646f5a",
-      "size": 10413,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/ferritecore-7.0.3-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ferritecore-7.0.3-neoforge.jar",
-      "sha256": "d87ea28262715ebff45b8a82d493e6b468e7a4521bc021df5d88302196d030a8",
-      "size": 121559,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/forgified-fabric-api-0.116.7\u002B2.2.4\u002B1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/forgified-fabric-api-0.116.7%2B2.2.4%2B1.21.1.jar",
-      "sha256": "68abf2864e957df26ac0cc3bd5352ee67880e052b47a80f22f28556c1179f18d",
-      "size": 5569793,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/GlitchCore-neoforge-1.21.1-2.1.0.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/GlitchCore-neoforge-1.21.1-2.1.0.2.jar",
-      "sha256": "59d2a3fb3d6877e43018fd6a2b199d526074a864276a5f49091409a1cdc62fae",
-      "size": 90717,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/IceAndFireCE-2.0-beta.15-1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/IceAndFireCE-2.0-beta.15-1.21.1-neoforge.jar",
-      "sha256": "93e0b3dae60bdc630431e3e1d7179eca291a55f93704edf631a44418b500875b",
-      "size": 20933691,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/ImmediatelyFast-NeoForge-1.6.10\u002B1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ImmediatelyFast-NeoForge-1.6.10%2B1.21.1.jar",
-      "sha256": "9fbb8dce1bb72feacdc3b75c6fcbf689865ad3793a19649443d76be20993ddd0",
-      "size": 368598,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/iris-flywheel-compat-NeoForge-2.4.0.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/iris-flywheel-compat-NeoForge-2.4.0.jar",
-      "sha256": "f5351cf9a838ae1624fcda78a8734b52cfde20de824db30e3f00dd00b9128ec8",
-      "size": 907133,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/iris-neoforge-1.8.12\u002Bmc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/iris-neoforge-1.8.12%2Bmc1.21.1.jar",
-      "sha256": "3e3f94d2d5cdcb8145c4385d521974aa2d8669b2cc212351f70cf06488182e83",
-      "size": 2438548,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Jade-1.21.1-NeoForge-15.10.5.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Jade-1.21.1-NeoForge-15.10.5.jar",
-      "sha256": "067bb4b007e1d6f6b79f0afe99c91252aa825472b99a76d33a60d24442f9e92d",
-      "size": 725742,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/jei-1.21.1-neoforge-19.27.0.340.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/jei-1.21.1-neoforge-19.27.0.340.jar",
-      "sha256": "8aaf547432f1b4958239b036356b910692fe40f858c3073d996f56bbf7c99826",
-      "size": 1529391,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/jupiter-2.3.7-1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/jupiter-2.3.7-1.21.1-neoforge.jar",
-      "sha256": "95af332af250f97fe2d9d288fe6b2057c266673a388348bf33756b0b693ace15",
-      "size": 278988,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/JustEnoughResources-NeoForge-1.21.1-1.6.0.17.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/JustEnoughResources-NeoForge-1.21.1-1.6.0.17.jar",
-      "sha256": "7a47d69b5530704690d5a5f0726cd74a2d6c57df17dd4a8589c4ab5212f91460",
-      "size": 292088,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/krypton_fnp-neoforge-1.21.1-0.2.28.1-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/krypton_fnp-neoforge-1.21.1-0.2.28.1-1.21.1.jar",
-      "sha256": "05ebe849611daafe533fc57ed9b5156edfa9157ced04d38a7860b1e2075984b9",
-      "size": 1015871,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/lambdynamiclights-4.8.8\u002B1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/lambdynamiclights-4.8.8%2B1.21.1.jar",
-      "sha256": "5c41d55ad9306f8d0a8c1b0174d71a3e333026b08adb6883653cd91ab6c5bea0",
-      "size": 2017417,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/letsdo-vinery-neoforge-1.5.3.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/letsdo-vinery-neoforge-1.5.3.jar",
-      "sha256": "d0348d1bbf15cd7f8ec5821457887240150d073fb5f612bc70f9517515225d10",
-      "size": 2001616,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/lithium-neoforge-0.15.3\u002Bmc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/lithium-neoforge-0.15.3%2Bmc1.21.1.jar",
-      "sha256": "a6548862bd13ff8eea6747cf61df50c8374a16a22d067614e414ed600eee6d83",
-      "size": 774148,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/minecolonies-1.1.1313-1.21.1-snapshot.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/minecolonies-1.1.1313-1.21.1-snapshot.jar",
-      "sha256": "0bc57201361f50b7c903db307cc95b2995fec0b32ab2e0448314e9a6c3655531",
-      "size": 77431860,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/modernfix-neoforge-5.27.8\u002Bmc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/modernfix-neoforge-5.27.8%2Bmc1.21.1.jar",
-      "sha256": "e505d7ae5078d67837dc4a8d037c8eb3f4911748ce1a5e8fc5f0398f5f699500",
-      "size": 568759,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/moonlight-neoforge-1.21.1-3.0.12.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/moonlight-neoforge-1.21.1-3.0.12.jar",
-      "sha256": "4b54c0bae43f937f231ff21d4df4d4f6f0c69aad0f06c59ae137faf79bc0964c",
-      "size": 1578553,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/MouseTweaks-neoforge-mc1.21-2.26.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/MouseTweaks-neoforge-mc1.21-2.26.1.jar",
-      "sha256": "68e6f4201c5de97b77929a7215c9552495696ca6a3bf3ae4eacc34e135f6cc8b",
-      "size": 73938,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/multipiston-1.2.58-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/multipiston-1.2.58-1.21.1.jar",
-      "sha256": "7ca26db4648589b7f76694c249d5096c0c0afb7615fe6adf9f638c6c825c15e7",
-      "size": 34139,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/MyNethersDelight-1.21.1-1.10.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/MyNethersDelight-1.21.1-1.10.2.jar",
-      "sha256": "002678f15ae0e61805d3bbd0bc8c7d7f683d63e6ab479ff8fb2518514134c4c2",
-      "size": 825875,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/notenoughcrashes-neoforge-4.4.9\u002B1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/notenoughcrashes-neoforge-4.4.9%2B1.21.1.jar",
-      "sha256": "5e26339287e4cd21e1be00d52088e3b5f0cab176eac967acd7404115c6ecd22f",
-      "size": 598916,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/oceansdelight-neoforge-1.0.4-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/oceansdelight-neoforge-1.0.4-1.21.1.jar",
-      "sha256": "30fec2263f77bcd4002995d9fc127a911c964317dbd0e3c54e348954d1722d38",
-      "size": 117108,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/offlineskins-1.21.1-v1a-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/offlineskins-1.21.1-v1a-neoforge.jar",
-      "sha256": "e9927be7cba0bc7c7ce4705458e428491063026d18ecaa30f57513bd2b3d0052",
-      "size": 99647,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/owo-lib-neoforge-0.12.15.5-beta.1-1.21.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/owo-lib-neoforge-0.12.15.5-beta.1-1.21.jar",
-      "sha256": "de6ed336bd80154b7241a7b3276694befc1c94550add8bcdfe7f82e5172fd13d",
-      "size": 1221583,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/polymorph-neoforge-1.1.0\u002B1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/polymorph-neoforge-1.1.0%2B1.21.1.jar",
-      "sha256": "bec8118978adeb052de9c4eaf9a595830621d82515a764f32f9c8a4dd52ab94b",
-      "size": 174972,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/prickle-neoforge-1.21.1-21.1.11.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/prickle-neoforge-1.21.1-21.1.11.jar",
-      "sha256": "ccf46c442ed3c7fe41ad056f0940560829ec4dd88360985dfacd78f4614eb167",
-      "size": 84812,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Quark-4.1-479.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Quark-4.1-479.jar",
-      "sha256": "e75c07635fc2d36c81c127d20b285681c73c3c9b73fff3f01daf2d2b22469da6",
-      "size": 15598989,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/sable-neoforge-1.21.1-1.2.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sable-neoforge-1.21.1-1.2.2.jar",
-      "sha256": "15fb660a0d368204b37f3967bfcc48137397b7174ca2945c5635cc4539c755f8",
-      "size": 12719293,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Searchables-neoforge-1.21.1-1.0.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Searchables-neoforge-1.21.1-1.0.2.jar",
-      "sha256": "ca193f0c69033d8f709f9e073a7c1ef4ea46714e5c2f94eb23ace12781c6aa68",
-      "size": 77326,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/SereneSeasons-neoforge-1.21.1-10.1.0.3.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/SereneSeasons-neoforge-1.21.1-10.1.0.3.jar",
-      "sha256": "db5182afe9197044916d364b69cd70139457f92859b0bf4f4bb76c3f42360a65",
-      "size": 159206,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/skinlayers3d-neoforge-1.11.1-mc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/skinlayers3d-neoforge-1.11.1-mc1.21.1.jar",
-      "sha256": "c825d6acd41a983217f410c6d51c6557e3afc35131f6da0aa6dcd07e67cfa52c",
-      "size": 1974380,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/sodium-neoforge-0.6.13\u002Bmc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sodium-neoforge-0.6.13%2Bmc1.21.1.jar",
-      "sha256": "7acd7af2ef75ec883a6872c17494ead65e38025151eb08a1d60e36d34377f403",
-      "size": 1162994,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/sophisticatedbackpacks-1.21.1-3.25.49.1791.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedbackpacks-1.21.1-3.25.49.1791.jar",
-      "sha256": "6fa4bca1297c26ffdcbb66c1e4936ca26f9f5222a6617fd60923e44ee3305bdc",
-      "size": 1063233,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/sophisticatedcore-1.21.1-1.4.42.1892.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedcore-1.21.1-1.4.42.1892.jar",
-      "sha256": "e6c10244608652acbfb796fe44167e7ee84481b4e48ad016c9f4bc62f6ee4f2c",
-      "size": 1612666,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/sophisticatedstorage-1.21.1-1.5.52.1756.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedstorage-1.21.1-1.5.52.1756.jar",
-      "sha256": "340af03ac63c927bfeb262dd8e7e32d3d3dd86f35010c84b883b4bee06bb09cc",
-      "size": 1696879,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/spark-1.10.124-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/spark-1.10.124-neoforge.jar",
-      "sha256": "647e8a81afbe414dba1df4ba15fd06c5d32d4cb544e68828405e8e074c2e16db",
-      "size": 3642581,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/structurize-1.0.828-1.21.1-snapshot.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/structurize-1.0.828-1.21.1-snapshot.jar",
-      "sha256": "bc05e724541f5bb11806ede846b8d05f29ea8d427d4839aecc2e594627f7088e",
-      "size": 1064650,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/TerraBlender-neoforge-1.21.1-4.1.0.8.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/TerraBlender-neoforge-1.21.1-4.1.0.8.jar",
-      "sha256": "0c49b5ef447a7f09100e9a210888a7347fbda0aa75322063991f6063b25fe3f9",
-      "size": 120365,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/ToughAsNails-neoforge-1.21.1-10.1.0.13.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ToughAsNails-neoforge-1.21.1-10.1.0.13.jar",
-      "sha256": "21fee226bbca6dca81d4453c63f642ad31228041e76b7a87574a8f3bdf37fa67",
-      "size": 429636,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/towntalk-1.2.0.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/towntalk-1.2.0.jar",
-      "sha256": "98139f54cc0f6f4be6d7fa8927cd170df8b14545ae04643436dbd48517589eb4",
-      "size": 52301863,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/trading_floor-3.0.16.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/trading_floor-3.0.16.jar",
-      "sha256": "f0aacddb1f8f191f13b79c603e52bd49a6d1cb918078d8a3bdcb2621c88b8d40",
-      "size": 214343,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/twilightforest-1.21.1-4.8.3345-universal.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/twilightforest-1.21.1-4.8.3345-universal.jar",
-      "sha256": "493da16d10210f9f53a3c33b3d8fcb4ae9b14016ee420d753c894562bd9aba35",
-      "size": 27154121,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/uranus-2.4.1-1.21.1-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/uranus-2.4.1-1.21.1-neoforge.jar",
-      "sha256": "2156a9b353bccfb1f0bf703561a74146ea8803323c48e9b8aef5fab8d58e1d1e",
-      "size": 847732,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/voicechat-neoforge-1.21.1-2.6.17.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/voicechat-neoforge-1.21.1-2.6.17.jar",
-      "sha256": "0981cdb58e540722d68ba444dc4396e2467a8f0b2f346de55c68282c5671d70a",
-      "size": 4902096,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/watut-neoforge-1.21.0-1.2.7.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/watut-neoforge-1.21.0-1.2.7.jar",
-      "sha256": "b1aac4b9832e16439ee86f27814f7b6a42f2f6bea0ea6949dfffffcd0599d88c",
-      "size": 432269,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/waveycapes-neoforge-1.9.2-mc1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/waveycapes-neoforge-1.9.2-mc1.21.1.jar",
-      "sha256": "9dfd72fbbeaefeb61d3a8352233bdfb564453d029139c436f5f82095e7409649",
-      "size": 1843422,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/xaerominimap-neoforge-1.21.1-25.3.13.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/xaerominimap-neoforge-1.21.1-25.3.13.jar",
-      "sha256": "05fb78259566983b1e66501f46d6695bfab087e9630f3b65e82677b88244a1c2",
-      "size": 2138329,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsApi-1.21.1-NeoForge-5.1.6.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsApi-1.21.1-NeoForge-5.1.6.jar",
-      "sha256": "08e1d21690d3213a4c62de6b6cf79f3527afb2e72e0cad0e1848d46eb8f682ca",
-      "size": 388678,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterDesertTemples-1.21.1-NeoForge-4.1.5.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterDesertTemples-1.21.1-NeoForge-4.1.5.jar",
-      "sha256": "2c3191ad447092cc7873a06e92f16bd3e2ff9dc31e93268b8893d06dd89e1fd6",
-      "size": 905839,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterDungeons-1.21.1-NeoForge-5.1.4.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterDungeons-1.21.1-NeoForge-5.1.4.jar",
-      "sha256": "61816c3b7c9d92c6b44f93dce87ceb0a22827f20285d5d9c4d10d519d734de04",
-      "size": 782160,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterEndIsland-1.21.1-NeoForge-3.1.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterEndIsland-1.21.1-NeoForge-3.1.2.jar",
-      "sha256": "8005f1ea798d09fc05dad07a21ed1f393a523a718197cdbd37b1ce6d9a17e4a4",
-      "size": 398130,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterMineshafts-1.21.1-NeoForge-5.1.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterMineshafts-1.21.1-NeoForge-5.1.1.jar",
-      "sha256": "5625930dfb3240820d6e4ecf55fff0c39f70ce782fad117a4d418251184c7be0",
-      "size": 493967,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterNetherFortresses-1.21.1-NeoForge-3.1.5.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterNetherFortresses-1.21.1-NeoForge-3.1.5.jar",
-      "sha256": "5450a64a7036237f449496837e08f3e5b3aa1d7974a10df43944172def75d8ff",
-      "size": 609639,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterOceanMonuments-1.21.1-NeoForge-4.1.2.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterOceanMonuments-1.21.1-NeoForge-4.1.2.jar",
-      "sha256": "cdcf8fe0e08c75261048d43c6ed4898972d23e096dd04a2524c136f06416ab02",
-      "size": 1025571,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/YungsBetterStrongholds-1.21.1-NeoForge-5.1.3.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterStrongholds-1.21.1-NeoForge-5.1.3.jar",
-      "sha256": "a9cab2fc01538368862365691f7d215309801aed0b390351681b6b60a1db7b58",
-      "size": 461244,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/Zeta-1.1-40.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Zeta-1.1-40.jar",
-      "sha256": "4f17d1a2b9fd6d18ddb7697aa451db7fb154053b8648f79de279ae0d7e68a2fa",
-      "size": 763725,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/ChatImage-1.4.7-1.21.0-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ChatImage-1.4.7-1.21.0-neoforge.jar",
-      "sha256": "baa65370bb0ae489a758e8fc85772181de0485ee76e044542a4d5b8f34357336",
-      "size": 702438,
-      "category": "mod",
-      "required": true
-    }
-  ],
-  "optionalShaders": [
-    {
-      "path": "shaderpacks/BSL_v10.1.3.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/BSL_v10.1.3.zip",
-      "sha256": "185774628b5259c36255183fc1adeb0f64f89235f7ea2c826fa327d1112687a8",
-      "size": 1127026,
-      "category": "shaderpack",
-      "required": false
-    },
-    {
-      "path": "shaderpacks/Complementary Shaders .zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/Complementary%20Shaders%20.zip",
-      "sha256": "3f1cd389e717b2e62f58edff222059b9c60de71b14bb49b517eb58318ce35b15",
-      "size": 546925,
-      "category": "shaderpack",
-      "required": false
-    },
-    {
-      "path": "shaderpacks/Insanity-Shader-Universal-v1.650.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/Insanity-Shader-Universal-v1.650.zip",
-      "sha256": "ed0ece7500307584a7bba09a872fde39df78fcfa1b90f3e4fac36da60e96a511",
-      "size": 1037373,
-      "category": "shaderpack",
-      "required": false
-    },
-    {
-      "path": "shaderpacks/iterationT3.2.0.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/iterationT3.2.0.zip",
-      "sha256": "c0735d5f1de0edca2b1c155dae1c650ddb8d2d04a3ebdd3d2ff74dd7a19db116",
-      "size": 42846966,
-      "category": "shaderpack",
-      "required": false
-    }
-  ],
-  "changelog": [],
-  "news": [
-    {
-      "title": "\u041C\u043E\u0434 \u043D\u0430 \u0445\u0430\u0439\u043F\u043E\u0432\u044B\u0435 \u0445\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0430",
-      "date": "2026-06-02",
-      "kind": "image",
-      "text": "\u041C\u043E\u0434 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u043D\u043E\u0432\u0435 \u0445\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0430 \u043F\u043E\u0437\u0432\u043E\u043B\u044F\u044E\u0449\u0438\u0435 \u0445\u0440\u0430\u043D\u0438\u0442\u044C \u043C\u043D\u043E\u0436\u0435\u0441\u0442\u0432\u043E \u0431\u043B\u043E\u043A\u043E\u0432 \u043E\u0434\u043D\u043E\u0433\u043E \u0442\u0438\u043F\u0430, \u043C\u043E\u0436\u043D\u043E \u043F\u0440\u043E\u043A\u0430\u0447\u0430\u0442\u044C \u0434\u043B\u044F \u0445\u0440\u0430\u043D\u0435\u043D\u0438\u044F \u0431\u043B\u043E\u0447\u043D\u044B\u0445 \u0432\u0435\u0440\u0441\u0438\u0439 \u0440\u0435\u0441\u0443\u0440\u0441\u0430 \u0438 \u0434\u043B\u044F \u0440\u0430\u0441\u0448\u0438\u0440\u0435\u043D\u0438\u044F \u0445\u0440\u0430\u043D\u0438\u043B\u0438\u0449\u0430",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/news/20260602-183435-cold-biome-dark-wood.png"
-    },
-    {
-      "title": "\u041C\u043E\u0434 \u043D\u0430 \u0440\u044E\u043A\u0437\u0430\u043A\u0438",
-      "date": "2026-06-02",
-      "kind": "image",
-      "text": "\u041C\u043E\u0434 \u0434\u043E\u0431\u0430\u0432\u043B\u044F\u0435\u0442 \u0440\u044E\u043A\u0437\u0430\u043A\u0438 \u0430 \u0442\u0430\u043A\u0436\u0435 \u0441\u043B\u043E\u0442 \u0434\u043B\u044F \u0430\u043A\u0441\u0435\u0441\u0441\u0443\u0430\u0440\u043E\u0432 \u0441\u043F\u0440\u0430\u0432\u0430 \u0441\u0432\u0435\u0440\u0445\u0443 \u0432 \u0438\u043D\u0432\u0435\u043D\u0442\u0430\u0440\u0435, \u0442\u0443\u0434\u0430 \u043C\u043E\u0436\u043D\u043E \u043D\u0430\u0434\u0435\u0442\u044C \u0440\u044E\u043A\u0437\u0430\u043A \u0438 \u043D\u0430\u0441\u0442\u0440\u043E\u0438\u0432 \u043A\u043D\u043E\u043F\u043A\u0443 \u0432 \u043D\u0430\u0441\u0442\u0440\u043E\u0439\u043A\u0430\u0445 \u043C\u043E\u0436\u043D\u043E \u043E\u0442\u043A\u0440\u044B\u0432\u0442\u0430\u044C \u0440\u044E\u043A\u0437\u0430\u043A \u043D\u0435 \u0441\u043D\u0438\u043C\u0430\u044F \u0435\u0433\u043E \u0441 \u043F\u043B\u0435\u0447",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/news/20260602-183553-Backpack.png"
-    },
-    {
-      "title": "\u0413\u0410\u0419\u0414 \u041F\u041E \u041C\u041E\u0414\u0410\u041C",
-      "date": "2026-06-02",
-      "kind": "html",
-      "text": null,
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/news/20260602-183709-minivibe_mods_guide_updated.html"
-    }
-  ],
-  "launch": {
-    "mainClass": "net.minecraft.client.main.Main",
-    "classpath": [
-      "neoforge-21.1.228.jar"
-    ],
-    "jvmArgs": [],
-    "gameArgs": [
-      "--username",
-      "${player_name}",
-      "--version",
-      "${version_name}",
-      "--gameDir",
-      "${game_directory}",
-      "--uuid",
-      "${player_uuid}",
-      "--accessToken",
-      "0",
-      "--userType",
-      "legacy"
-    ]
-  }
+﻿{
+    "serverName":  "minivibe",
+    "packVersion":  "1.0.0",
+    "minecraftVersion":  "1.21.1",
+    "loader":  "neoforge",
+    "loaderVersion":  "21.1.228",
+    "blueMapUrl":  "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat",
+    "requiredFiles":  [
+                          {
+                              "path":  "mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
+                              "sha256":  "055e4ca4474ed4730b5f0d1d30f0fa052655bc70e7a3e9a9af08c24a5bc7107a",
+                              "size":  468241,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/accessories-neoforge-1.1.0-beta.53-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/accessories-neoforge-1.1.0-beta.53-1.21.1.jar",
+                              "sha256":  "10017a3da78ea63e9ece27a1ca32f8cf490362f348778cf8cb759e7282f3beb0",
+                              "size":  1078697,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/alexscaves-2.0.10.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alexscaves-2.0.10.jar",
+                              "sha256":  "6fad35bf07fcb977aaa32d3fe05bf122150c6a30ed16b057385040207a3b788f",
+                              "size":  74900204,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/alexsmobs-1.22.17.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alexsmobs-1.22.17.jar",
+                              "sha256":  "6e502855f79e4c9f2a11d560a9b88a3ab295aa378c44b0f0a0dd95f95d0301a6",
+                              "size":  26620546,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/alltheleaks-1.1.9+1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/alltheleaks-1.1.9%2B1.21.1-neoforge.jar",
+                              "sha256":  "94c8e671c99ad3b098678cc1947594f7723e294c7692a4d0f9126a4d85a756e6",
+                              "size":  536836,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/appleskin-neoforge-mc1.21-3.0.9.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/appleskin-neoforge-mc1.21-3.0.9.jar",
+                              "sha256":  "38b48dd6231341c9f964ce6e42c57ec866c6cc8f72bec938390a59bafb3922df",
+                              "size":  75804,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/architectury-13.0.8-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/architectury-13.0.8-neoforge.jar",
+                              "sha256":  "5ec578f814e8cca87aeffa6e424032e78d9ea5ea6b603dd834c2dc13c31141ee",
+                              "size":  584004,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/BadOptimizations-2.4.1-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BadOptimizations-2.4.1-1.21.1.jar",
+                              "sha256":  "22e2467892d3706f43d1cf2aa637785bb8601c20b0098a82ab956e6a8fc4d2ba",
+                              "size":  283566,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/BetterPingDisplay-1.21.1-1.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BetterPingDisplay-1.21.1-1.1.jar",
+                              "sha256":  "f8388de4831ca70f3e94d98d4655278b514f8589234fa92df0d6b2ff1dff321b",
+                              "size":  13871,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/BiomesOPlenty-neoforge-1.21.1-21.1.0.13.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/BiomesOPlenty-neoforge-1.21.1-21.1.0.13.jar",
+                              "sha256":  "07f449b7766845883523ffadb8fb706ec011c1212aa378b48bea5841188f0b04",
+                              "size":  22338082,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/blockui-1.0.211-1.21.1-snapshot.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/blockui-1.0.211-1.21.1-snapshot.jar",
+                              "sha256":  "5dfffc80c057b4d36123bd5f5cad9f32f86896a9dd993ea4a3ecad315cabd77e",
+                              "size":  468147,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/bookshelf-neoforge-1.21.1-21.1.81.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/bookshelf-neoforge-1.21.1-21.1.81.jar",
+                              "sha256":  "19e88d40da2b6a114c2b808f7fb469d96e66a5379df0a8a43fcb7834498b3e76",
+                              "size":  328813,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/c2me-neoforge-mc1.21.1-0.3.0+alpha.0.93.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/c2me-neoforge-mc1.21.1-0.3.0%2Balpha.0.93.jar",
+                              "sha256":  "2735b16e136e51c03c9a8211fbecaf9d571a28475981223c60662465664f5322",
+                              "size":  4510749,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/carryon-neoforge-1.21.1-2.2.4.4.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/carryon-neoforge-1.21.1-2.2.4.4.jar",
+                              "sha256":  "ad69537be8be8b433227792e43f8df7b4d3cef7e359255d471a44e776ad8dd57",
+                              "size":  357489,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/chat_heads-0.15.1-neoforge-1.21.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/chat_heads-0.15.1-neoforge-1.21.jar",
+                              "sha256":  "b1ed6a52efa3cb43e4c37e3982bc7b08116302511b8f675346f6aea6d3524e41",
+                              "size":  89272,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/ChatImage-1.4.7-1.21.0-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ChatImage-1.4.7-1.21.0-neoforge.jar",
+                              "sha256":  "baa65370bb0ae489a758e8fc85772181de0485ee76e044542a4d5b8f34357336",
+                              "size":  702438,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/citadel-1.21.1-2.7.6.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/citadel-1.21.1-2.7.6.jar",
+                              "sha256":  "9e12468c49e5a95b7adbf22b3b4d05bc55565989b89c40b985cd73bdfe63c3c2",
+                              "size":  3028943,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/cloth-config-15.0.140-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cloth-config-15.0.140-neoforge.jar",
+                              "sha256":  "65e722e0d98431a07c45f8bdd8d529a217cc8c175fde1740248bd5c1b4f3c0d4",
+                              "size":  1163890,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/cloth-config-15.0.140-neoforge-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cloth-config-15.0.140-neoforge-1.21.1.jar",
+                              "sha256":  "65e722e0d98431a07c45f8bdd8d529a217cc8c175fde1740248bd5c1b4f3c0d4",
+                              "size":  1163890,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Clumps-neoforge-1.21.1-19.0.0.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Clumps-neoforge-1.21.1-19.0.0.1.jar",
+                              "sha256":  "b524ccdace2ef8fd19f5b2074f7de1103ac5065c52553f064c00e098346c293e",
+                              "size":  18382,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/controlify-3.0.0+lts+1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/controlify-3.0.0%2Blts%2B1.21.1-neoforge.jar",
+                              "sha256":  "2d50c50d6efbf78e8670b7deb9817221a6152db29274d7244930a4c6673aafab",
+                              "size":  7981699,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Controlling-neoforge-1.21.1-19.0.5.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Controlling-neoforge-1.21.1-19.0.5.jar",
+                              "sha256":  "cc525fb6b030d9e4d33176983f278919e17b33935e2ca568929bdfa98f2b44a0",
+                              "size":  77555,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/coroutil-neoforge-1.21.0-1.3.8.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/coroutil-neoforge-1.21.0-1.3.8.jar",
+                              "sha256":  "9b32bcf2c793d33b93b5d4739c0dc4b64231025c7dc5fe40732b66d7cf4b2826",
+                              "size":  63981,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/create-1.21.1-6.0.10.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-1.21.1-6.0.10.jar",
+                              "sha256":  "ef87fe5709f1ba1f5b8bb20a2925b5afb4669e178fd6d8bf10c167759eefe37a",
+                              "size":  19123767,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/createaddition-1.5.11.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/createaddition-1.5.11.jar",
+                              "sha256":  "e9f597d3a057a05ce5636a3152f65180e362b8ff6a03d6702ef622619c2d15fd",
+                              "size":  1623047,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/create-aeronautics-bundled-1.21.1-1.2.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-aeronautics-bundled-1.21.1-1.2.1.jar",
+                              "sha256":  "5a8c6d168ec1b47ecee7f2e83a93accbca71544d2b14ca1ca1b1271855f26248",
+                              "size":  33030286,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/create-central-kitchen-2.4.0.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-central-kitchen-2.4.0.jar",
+                              "sha256":  "259a9b88d305780234bb2020359879406d74b945616d99a16871334d7aee1826",
+                              "size":  342464,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/CreateDragonsPlus-1.10.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/CreateDragonsPlus-1.10.1.jar",
+                              "sha256":  "a192bc7074232e6e6a4acc7620a66f28a1fa314235ef2648edae034b1434b428",
+                              "size":  759631,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/create-enchantment-industry-2.3.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create-enchantment-industry-2.3.1.jar",
+                              "sha256":  "6bd60393cf582568a09aa38f82fe6ea6e5928659d7befc6b0ee9f46025179064",
+                              "size":  684729,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/do_a_barrel_roll-neoforge-3.7.3+1.21.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/do_a_barrel_roll-neoforge-3.7.3%2B1.21.jar",
+                              "sha256":  "e56395ebb26318c11f3a9474bba14518f17f4f2028683eb0aa9cdc7dacf124e2",
+                              "size":  465787,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/domum-ornamentum-1.0.233-snapshot-main.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/domum-ornamentum-1.0.233-snapshot-main.jar",
+                              "sha256":  "7321f70c4bacc3f40aa6f2adf730b917554c51fe42513639c4f7550055956f70",
+                              "size":  1156594,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/dummmmmmy-1.21-2.0.12-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/dummmmmmy-1.21-2.0.12-neoforge.jar",
+                              "sha256":  "4d35c6cdc7a17d6175f116ec8b31ce5ebc740e5d1412ce32cc721b042b2f5298",
+                              "size":  219158,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/dynamic-fps-3.11.4+minecraft-1.21.0-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/dynamic-fps-3.11.4%2Bminecraft-1.21.0-neoforge.jar",
+                              "sha256":  "78cb67c9faeff5d1cb4da48d41e48ecc47baddaaec0f792e6edc8207aee0ab8e",
+                              "size":  220193,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/emotecraft-for-MC1.21.1-2.4.12-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/emotecraft-for-MC1.21.1-2.4.12-neoforge.jar",
+                              "sha256":  "8cff63e900acd55bb39d41978cc2a70a974e326e2038c30ff20ccfde4c953a43",
+                              "size":  861829,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/enchdesc-neoforge-1.21.1-21.1.9.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/enchdesc-neoforge-1.21.1-21.1.9.jar",
+                              "sha256":  "74d546ecb147da7e2cb53fe3115f6e062094329dcf15639b3da694cc00d3f843",
+                              "size":  81847,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/endersdelight-1.3.0.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/endersdelight-1.3.0.jar",
+                              "sha256":  "2210b5d3c7ce22ba8ffb6f70bb620c838a4b514a4cbd40a6a2b74b529199b5c0",
+                              "size":  152449,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/entityculling-neoforge-1.10.2-mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/entityculling-neoforge-1.10.2-mc1.21.1.jar",
+                              "sha256":  "20014df18edb983b2c8eb764e70209ef84a4ac5aefd29ef25502fb102b0306cd",
+                              "size":  1582824,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/FarmersDelight-1.21.1-1.3.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/FarmersDelight-1.21.1-1.3.2.jar",
+                              "sha256":  "8ff438d62e1fce61542945faae45975d823e04bd6e73a07a121ea05ce2f03de7",
+                              "size":  3163042,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/FarmersStructures-1.0.2-1.21.1_neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/FarmersStructures-1.0.2-1.21.1_neoforge.jar",
+                              "sha256":  "4c99583903ad7db011008a1c41c8d0464f2727d017e2ac543a1a1d027c9313f4",
+                              "size":  497259,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/fast-ip-ping-v1.0.11-mc1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/fast-ip-ping-v1.0.11-mc1.21.1-neoforge.jar",
+                              "sha256":  "c93500aa25eaa7bc473e753b8abf4234e7c46713d50bb82b30383ee47e646f5a",
+                              "size":  10413,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/ferritecore-7.0.3-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ferritecore-7.0.3-neoforge.jar",
+                              "sha256":  "d87ea28262715ebff45b8a82d493e6b468e7a4521bc021df5d88302196d030a8",
+                              "size":  121559,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/forgified-fabric-api-0.116.7+2.2.4+1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/forgified-fabric-api-0.116.7%2B2.2.4%2B1.21.1.jar",
+                              "sha256":  "68abf2864e957df26ac0cc3bd5352ee67880e052b47a80f22f28556c1179f18d",
+                              "size":  5569793,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/GlitchCore-neoforge-1.21.1-2.1.0.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/GlitchCore-neoforge-1.21.1-2.1.0.2.jar",
+                              "sha256":  "59d2a3fb3d6877e43018fd6a2b199d526074a864276a5f49091409a1cdc62fae",
+                              "size":  90717,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/IceAndFireCE-2.0-beta.15-1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/IceAndFireCE-2.0-beta.15-1.21.1-neoforge.jar",
+                              "sha256":  "93e0b3dae60bdc630431e3e1d7179eca291a55f93704edf631a44418b500875b",
+                              "size":  20933691,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/ImmediatelyFast-NeoForge-1.6.10+1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ImmediatelyFast-NeoForge-1.6.10%2B1.21.1.jar",
+                              "sha256":  "9fbb8dce1bb72feacdc3b75c6fcbf689865ad3793a19649443d76be20993ddd0",
+                              "size":  368598,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/iris-flywheel-compat-NeoForge-2.4.0.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/iris-flywheel-compat-NeoForge-2.4.0.jar",
+                              "sha256":  "f5351cf9a838ae1624fcda78a8734b52cfde20de824db30e3f00dd00b9128ec8",
+                              "size":  907133,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/iris-neoforge-1.8.12+mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/iris-neoforge-1.8.12%2Bmc1.21.1.jar",
+                              "sha256":  "3e3f94d2d5cdcb8145c4385d521974aa2d8669b2cc212351f70cf06488182e83",
+                              "size":  2438548,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Jade-1.21.1-NeoForge-15.10.5.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Jade-1.21.1-NeoForge-15.10.5.jar",
+                              "sha256":  "067bb4b007e1d6f6b79f0afe99c91252aa825472b99a76d33a60d24442f9e92d",
+                              "size":  725742,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/jei-1.21.1-neoforge-19.27.0.340.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/jei-1.21.1-neoforge-19.27.0.340.jar",
+                              "sha256":  "8aaf547432f1b4958239b036356b910692fe40f858c3073d996f56bbf7c99826",
+                              "size":  1529391,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/jupiter-2.3.7-1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/jupiter-2.3.7-1.21.1-neoforge.jar",
+                              "sha256":  "95af332af250f97fe2d9d288fe6b2057c266673a388348bf33756b0b693ace15",
+                              "size":  278988,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/JustEnoughResources-NeoForge-1.21.1-1.6.0.17.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/JustEnoughResources-NeoForge-1.21.1-1.6.0.17.jar",
+                              "sha256":  "7a47d69b5530704690d5a5f0726cd74a2d6c57df17dd4a8589c4ab5212f91460",
+                              "size":  292088,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/krypton_fnp-neoforge-1.21.1-0.2.28.1-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/krypton_fnp-neoforge-1.21.1-0.2.28.1-1.21.1.jar",
+                              "sha256":  "05ebe849611daafe533fc57ed9b5156edfa9157ced04d38a7860b1e2075984b9",
+                              "size":  1015871,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/lambdynamiclights-4.8.8+1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/lambdynamiclights-4.8.8%2B1.21.1.jar",
+                              "sha256":  "5c41d55ad9306f8d0a8c1b0174d71a3e333026b08adb6883653cd91ab6c5bea0",
+                              "size":  2017417,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/letsdo-vinery-neoforge-1.5.3.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/letsdo-vinery-neoforge-1.5.3.jar",
+                              "sha256":  "d0348d1bbf15cd7f8ec5821457887240150d073fb5f612bc70f9517515225d10",
+                              "size":  2001616,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/lithium-neoforge-0.15.3+mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/lithium-neoforge-0.15.3%2Bmc1.21.1.jar",
+                              "sha256":  "a6548862bd13ff8eea6747cf61df50c8374a16a22d067614e414ed600eee6d83",
+                              "size":  774148,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/minecolonies-1.1.1313-1.21.1-snapshot.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/minecolonies-1.1.1313-1.21.1-snapshot.jar",
+                              "sha256":  "0bc57201361f50b7c903db307cc95b2995fec0b32ab2e0448314e9a6c3655531",
+                              "size":  77431860,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/modernfix-neoforge-5.27.8+mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/modernfix-neoforge-5.27.8%2Bmc1.21.1.jar",
+                              "sha256":  "e505d7ae5078d67837dc4a8d037c8eb3f4911748ce1a5e8fc5f0398f5f699500",
+                              "size":  568759,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/moonlight-neoforge-1.21.1-3.0.12.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/moonlight-neoforge-1.21.1-3.0.12.jar",
+                              "sha256":  "4b54c0bae43f937f231ff21d4df4d4f6f0c69aad0f06c59ae137faf79bc0964c",
+                              "size":  1578553,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/MouseTweaks-neoforge-mc1.21-2.26.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/MouseTweaks-neoforge-mc1.21-2.26.1.jar",
+                              "sha256":  "68e6f4201c5de97b77929a7215c9552495696ca6a3bf3ae4eacc34e135f6cc8b",
+                              "size":  73938,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/multipiston-1.2.58-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/multipiston-1.2.58-1.21.1.jar",
+                              "sha256":  "7ca26db4648589b7f76694c249d5096c0c0afb7615fe6adf9f638c6c825c15e7",
+                              "size":  34139,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/MyNethersDelight-1.21.1-1.10.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/MyNethersDelight-1.21.1-1.10.2.jar",
+                              "sha256":  "002678f15ae0e61805d3bbd0bc8c7d7f683d63e6ab479ff8fb2518514134c4c2",
+                              "size":  825875,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/notenoughcrashes-neoforge-4.4.9+1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/notenoughcrashes-neoforge-4.4.9%2B1.21.1.jar",
+                              "sha256":  "5e26339287e4cd21e1be00d52088e3b5f0cab176eac967acd7404115c6ecd22f",
+                              "size":  598916,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/oceansdelight-neoforge-1.0.4-1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/oceansdelight-neoforge-1.0.4-1.21.1.jar",
+                              "sha256":  "30fec2263f77bcd4002995d9fc127a911c964317dbd0e3c54e348954d1722d38",
+                              "size":  117108,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/offlineskins-1.21.1-v1a-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/offlineskins-1.21.1-v1a-neoforge.jar",
+                              "sha256":  "e9927be7cba0bc7c7ce4705458e428491063026d18ecaa30f57513bd2b3d0052",
+                              "size":  99647,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/owo-lib-neoforge-0.12.15.5-beta.1-1.21.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/owo-lib-neoforge-0.12.15.5-beta.1-1.21.jar",
+                              "sha256":  "de6ed336bd80154b7241a7b3276694befc1c94550add8bcdfe7f82e5172fd13d",
+                              "size":  1221583,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/polymorph-neoforge-1.1.0+1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/polymorph-neoforge-1.1.0%2B1.21.1.jar",
+                              "sha256":  "bec8118978adeb052de9c4eaf9a595830621d82515a764f32f9c8a4dd52ab94b",
+                              "size":  174972,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/prickle-neoforge-1.21.1-21.1.11.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/prickle-neoforge-1.21.1-21.1.11.jar",
+                              "sha256":  "ccf46c442ed3c7fe41ad056f0940560829ec4dd88360985dfacd78f4614eb167",
+                              "size":  84812,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Quark-4.1-479.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Quark-4.1-479.jar",
+                              "sha256":  "e75c07635fc2d36c81c127d20b285681c73c3c9b73fff3f01daf2d2b22469da6",
+                              "size":  15598989,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/sable-neoforge-1.21.1-1.2.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sable-neoforge-1.21.1-1.2.2.jar",
+                              "sha256":  "15fb660a0d368204b37f3967bfcc48137397b7174ca2945c5635cc4539c755f8",
+                              "size":  12719293,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Searchables-neoforge-1.21.1-1.0.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Searchables-neoforge-1.21.1-1.0.2.jar",
+                              "sha256":  "ca193f0c69033d8f709f9e073a7c1ef4ea46714e5c2f94eb23ace12781c6aa68",
+                              "size":  77326,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/SereneSeasons-neoforge-1.21.1-10.1.0.3.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/SereneSeasons-neoforge-1.21.1-10.1.0.3.jar",
+                              "sha256":  "db5182afe9197044916d364b69cd70139457f92859b0bf4f4bb76c3f42360a65",
+                              "size":  159206,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/skinlayers3d-neoforge-1.11.1-mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/skinlayers3d-neoforge-1.11.1-mc1.21.1.jar",
+                              "sha256":  "c825d6acd41a983217f410c6d51c6557e3afc35131f6da0aa6dcd07e67cfa52c",
+                              "size":  1974380,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/sodium-neoforge-0.6.13+mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sodium-neoforge-0.6.13%2Bmc1.21.1.jar",
+                              "sha256":  "7acd7af2ef75ec883a6872c17494ead65e38025151eb08a1d60e36d34377f403",
+                              "size":  1162994,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/sophisticatedbackpacks-1.21.1-3.25.49.1791.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedbackpacks-1.21.1-3.25.49.1791.jar",
+                              "sha256":  "6fa4bca1297c26ffdcbb66c1e4936ca26f9f5222a6617fd60923e44ee3305bdc",
+                              "size":  1063233,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/sophisticatedcore-1.21.1-1.4.42.1892.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedcore-1.21.1-1.4.42.1892.jar",
+                              "sha256":  "e6c10244608652acbfb796fe44167e7ee84481b4e48ad016c9f4bc62f6ee4f2c",
+                              "size":  1612666,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/sophisticatedstorage-1.21.1-1.5.52.1756.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/sophisticatedstorage-1.21.1-1.5.52.1756.jar",
+                              "sha256":  "340af03ac63c927bfeb262dd8e7e32d3d3dd86f35010c84b883b4bee06bb09cc",
+                              "size":  1696879,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/spark-1.10.124-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/spark-1.10.124-neoforge.jar",
+                              "sha256":  "647e8a81afbe414dba1df4ba15fd06c5d32d4cb544e68828405e8e074c2e16db",
+                              "size":  3642581,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/structurize-1.0.828-1.21.1-snapshot.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/structurize-1.0.828-1.21.1-snapshot.jar",
+                              "sha256":  "bc05e724541f5bb11806ede846b8d05f29ea8d427d4839aecc2e594627f7088e",
+                              "size":  1064650,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/TerraBlender-neoforge-1.21.1-4.1.0.8.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/TerraBlender-neoforge-1.21.1-4.1.0.8.jar",
+                              "sha256":  "0c49b5ef447a7f09100e9a210888a7347fbda0aa75322063991f6063b25fe3f9",
+                              "size":  120365,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/ToughAsNails-neoforge-1.21.1-10.1.0.13.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ToughAsNails-neoforge-1.21.1-10.1.0.13.jar",
+                              "sha256":  "21fee226bbca6dca81d4453c63f642ad31228041e76b7a87574a8f3bdf37fa67",
+                              "size":  429636,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/towntalk-1.2.0.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/towntalk-1.2.0.jar",
+                              "sha256":  "98139f54cc0f6f4be6d7fa8927cd170df8b14545ae04643436dbd48517589eb4",
+                              "size":  52301863,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/trading_floor-3.0.16.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/trading_floor-3.0.16.jar",
+                              "sha256":  "f0aacddb1f8f191f13b79c603e52bd49a6d1cb918078d8a3bdcb2621c88b8d40",
+                              "size":  214343,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/twilightforest-1.21.1-4.8.3345-universal.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/twilightforest-1.21.1-4.8.3345-universal.jar",
+                              "sha256":  "493da16d10210f9f53a3c33b3d8fcb4ae9b14016ee420d753c894562bd9aba35",
+                              "size":  27154121,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/uranus-2.4.1-1.21.1-neoforge.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/uranus-2.4.1-1.21.1-neoforge.jar",
+                              "sha256":  "2156a9b353bccfb1f0bf703561a74146ea8803323c48e9b8aef5fab8d58e1d1e",
+                              "size":  847732,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/voicechat-neoforge-1.21.1-2.6.17.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/voicechat-neoforge-1.21.1-2.6.17.jar",
+                              "sha256":  "0981cdb58e540722d68ba444dc4396e2467a8f0b2f346de55c68282c5671d70a",
+                              "size":  4902096,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/watut-neoforge-1.21.0-1.2.7.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/watut-neoforge-1.21.0-1.2.7.jar",
+                              "sha256":  "b1aac4b9832e16439ee86f27814f7b6a42f2f6bea0ea6949dfffffcd0599d88c",
+                              "size":  432269,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/waveycapes-neoforge-1.9.2-mc1.21.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/waveycapes-neoforge-1.9.2-mc1.21.1.jar",
+                              "sha256":  "9dfd72fbbeaefeb61d3a8352233bdfb564453d029139c436f5f82095e7409649",
+                              "size":  1843422,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/xaerominimap-neoforge-1.21.1-25.3.13.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/xaerominimap-neoforge-1.21.1-25.3.13.jar",
+                              "sha256":  "05fb78259566983b1e66501f46d6695bfab087e9630f3b65e82677b88244a1c2",
+                              "size":  2138329,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsApi-1.21.1-NeoForge-5.1.6.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsApi-1.21.1-NeoForge-5.1.6.jar",
+                              "sha256":  "08e1d21690d3213a4c62de6b6cf79f3527afb2e72e0cad0e1848d46eb8f682ca",
+                              "size":  388678,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterDesertTemples-1.21.1-NeoForge-4.1.5.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterDesertTemples-1.21.1-NeoForge-4.1.5.jar",
+                              "sha256":  "2c3191ad447092cc7873a06e92f16bd3e2ff9dc31e93268b8893d06dd89e1fd6",
+                              "size":  905839,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterDungeons-1.21.1-NeoForge-5.1.4.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterDungeons-1.21.1-NeoForge-5.1.4.jar",
+                              "sha256":  "61816c3b7c9d92c6b44f93dce87ceb0a22827f20285d5d9c4d10d519d734de04",
+                              "size":  782160,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterEndIsland-1.21.1-NeoForge-3.1.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterEndIsland-1.21.1-NeoForge-3.1.2.jar",
+                              "sha256":  "8005f1ea798d09fc05dad07a21ed1f393a523a718197cdbd37b1ce6d9a17e4a4",
+                              "size":  398130,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterMineshafts-1.21.1-NeoForge-5.1.1.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterMineshafts-1.21.1-NeoForge-5.1.1.jar",
+                              "sha256":  "5625930dfb3240820d6e4ecf55fff0c39f70ce782fad117a4d418251184c7be0",
+                              "size":  493967,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterNetherFortresses-1.21.1-NeoForge-3.1.5.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterNetherFortresses-1.21.1-NeoForge-3.1.5.jar",
+                              "sha256":  "5450a64a7036237f449496837e08f3e5b3aa1d7974a10df43944172def75d8ff",
+                              "size":  609639,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterOceanMonuments-1.21.1-NeoForge-4.1.2.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterOceanMonuments-1.21.1-NeoForge-4.1.2.jar",
+                              "sha256":  "cdcf8fe0e08c75261048d43c6ed4898972d23e096dd04a2524c136f06416ab02",
+                              "size":  1025571,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/YungsBetterStrongholds-1.21.1-NeoForge-5.1.3.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/YungsBetterStrongholds-1.21.1-NeoForge-5.1.3.jar",
+                              "sha256":  "a9cab2fc01538368862365691f7d215309801aed0b390351681b6b60a1db7b58",
+                              "size":  461244,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "mods/Zeta-1.1-40.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/Zeta-1.1-40.jar",
+                              "sha256":  "4f17d1a2b9fd6d18ddb7697aa451db7fb154053b8648f79de279ae0d7e68a2fa",
+                              "size":  763725,
+                              "category":  "mod",
+                              "required":  true
+                          },
+                          {
+                              "path":  "neoforge-21.1.228.jar",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/neoforge-21.1.228.jar",
+                              "sha256":  "499f6897d1837516680f3114072d8106e11c9adcd933fe5cf051b551089b0c99",
+                              "size":  26836906,
+                              "category":  "loader",
+                              "required":  true
+                          },
+                          {
+                              "path":  "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
+                              "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
+                              "sha256":  "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
+                              "size":  1708817,
+                              "category":  "resourcepack",
+                              "required":  true
+                          }
+                      ],
+    "optionalShaders":  [
+                            {
+                                "path":  "shaderpacks/BSL_v10.1.3.zip",
+                                "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/BSL_v10.1.3.zip",
+                                "sha256":  "185774628b5259c36255183fc1adeb0f64f89235f7ea2c826fa327d1112687a8",
+                                "size":  1127026,
+                                "category":  "shaderpack",
+                                "required":  false
+                            },
+                            {
+                                "path":  "shaderpacks/Complementary Shaders .zip",
+                                "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/Complementary%20Shaders%20.zip",
+                                "sha256":  "3f1cd389e717b2e62f58edff222059b9c60de71b14bb49b517eb58318ce35b15",
+                                "size":  546925,
+                                "category":  "shaderpack",
+                                "required":  false
+                            },
+                            {
+                                "path":  "shaderpacks/Insanity-Shader-Universal-v1.650.zip",
+                                "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/Insanity-Shader-Universal-v1.650.zip",
+                                "sha256":  "ed0ece7500307584a7bba09a872fde39df78fcfa1b90f3e4fac36da60e96a511",
+                                "size":  1037373,
+                                "category":  "shaderpack",
+                                "required":  false
+                            },
+                            {
+                                "path":  "shaderpacks/iterationT3.2.0.zip",
+                                "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/shaderpacks/iterationT3.2.0.zip",
+                                "sha256":  "c0735d5f1de0edca2b1c155dae1c650ddb8d2d04a3ebdd3d2ff74dd7a19db116",
+                                "size":  42846966,
+                                "category":  "shaderpack",
+                                "required":  false
+                            }
+                        ],
+    "optionalEmotes":  [
+                           {
+                               "path":  "emotes.zip",
+                               "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/emotes.zip",
+                               "sha256":  "1a70026f22e1d44987b95377041870ac1cc10679d5f6b6e2b8032a3340df3584",
+                               "size":  49257931,
+                               "category":  "archive",
+                               "required":  false,
+                               "extractTo":  "emotes"
+                           }
+                       ],
+    "news":  [
+
+             ],
+    "changelog":  [
+
+                  ],
+    "launch":  {
+                   "mainClass":  "net.minecraft.client.main.Main",
+                   "classpath":  [
+                                     "neoforge-21.1.228.jar"
+                                 ],
+                   "jvmArgs":  [
+
+                               ],
+                   "gameArgs":  [
+                                    "--username",
+                                    "${player_name}",
+                                    "--version",
+                                    "${version_name}",
+                                    "--gameDir",
+                                    "${game_directory}",
+                                    "--uuid",
+                                    "${player_uuid}",
+                                    "--accessToken",
+                                    "0",
+                                    "--userType",
+                                    "legacy"
+                                ]
+               }
 }

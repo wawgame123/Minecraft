@@ -129,6 +129,7 @@ if ($LaunchClasspath.Count -eq 0) {
 
 $requiredFiles = New-Object System.Collections.Generic.List[object]
 $optionalShaders = New-Object System.Collections.Generic.List[object]
+$optionalEmotes = New-Object System.Collections.Generic.List[object]
 
 Get-ChildItem -LiteralPath $packAbsolute -Recurse -File |
     Sort-Object FullName |
@@ -154,7 +155,8 @@ Get-ChildItem -LiteralPath $packAbsolute -Recurse -File |
 
             if ($category -eq "archive") {
                 $entry.extractTo = "emotes"
-                $requiredFiles.Add([pscustomobject]$entry)
+                $entry.required = $false
+                $optionalEmotes.Add([pscustomobject]$entry)
             }
             elseif ($category -eq "shaderpack") {
                 $entry.required = $false
@@ -175,6 +177,7 @@ $manifest = [ordered]@{
     blueMapUrl = $BlueMapUrl
     requiredFiles = $requiredFiles
     optionalShaders = $optionalShaders
+    optionalEmotes = $optionalEmotes
     news = @()
     changelog = @()
     launch = [ordered]@{
@@ -204,3 +207,4 @@ Set-Content -LiteralPath $outputAbsolute -Value $json -Encoding UTF8
 Write-Output "Manifest written: $outputAbsolute"
 Write-Output "Required files: $($requiredFiles.Count)"
 Write-Output "Optional shaders: $($optionalShaders.Count)"
+Write-Output "Optional emotes: $($optionalEmotes.Count)"

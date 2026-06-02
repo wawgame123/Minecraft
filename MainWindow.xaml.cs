@@ -212,6 +212,7 @@ public partial class MainWindow : Window
 
         _settings.InstallDirectory = selectedInstallDirectory;
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
+        _settings.EnableEmotes = EmotesCheckBox.IsChecked == true;
         _settings.EnableGameConsole = GameConsoleCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
@@ -241,6 +242,7 @@ public partial class MainWindow : Window
         {
             InstallDirectoryBox.Text = _settings.InstallDirectory;
             ShadersCheckBox.IsChecked = _settings.EnableShaders;
+            EmotesCheckBox.IsChecked = _settings.EnableEmotes;
             GameConsoleCheckBox.IsChecked = _settings.EnableGameConsole;
             RamBox.Text = _settings.RamMb.ToString();
             SyncPlayerNameText(_settings.PlayerName);
@@ -509,6 +511,37 @@ public partial class MainWindow : Window
             MainStatusText.Text = "Настройки сохранены локально.";
             SidebarStatusText.Text = "Настройки сохранены";
             await LoadManifestAsync(repairMissingGameFiles: false);
+        });
+    }
+
+    private async void EmotesCheckBox_Click(object sender, RoutedEventArgs e)
+    {
+        if (_bindingSettings)
+        {
+            return;
+        }
+
+        await RunGuardedAsync(async () =>
+        {
+            await SaveSettingsFromUiAsync();
+            if (EmotesCheckBox.IsChecked == true)
+            {
+                await InstallEmotesAsync(reinstall: false);
+                return;
+            }
+
+            MainStatusText.Text = "Эмоции отключены. При запуске они не проверяются.";
+            SidebarStatusText.Text = "Эмоции отключены";
+        });
+    }
+
+    private async void ReinstallEmotesButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            EmotesCheckBox.IsChecked = true;
+            await SaveSettingsFromUiAsync();
+            await InstallEmotesAsync(reinstall: true);
         });
     }
 
@@ -1127,6 +1160,50 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
         UpdateLaunchReadinessStatus();
         MainStatusText.Text = "Сборка установлена. Теперь можно нажать \"Играть\".";
         SidebarStatusText.Text = "Установлено";
+    }
+
+    private async Task InstallEmotesAsync(bool reinstall)
+    {
+        if (_manifest is null)
+        {
+            await LoadManifestAsync(repairMissingGameFiles: false);
+        }
+
+        if (_manifest is null || _manifest.OptionalEmotes.Count == 0)
+        {
+            throw new InvalidOperationException("В manifest.json не найден архив эмоций.");
+        }
+
+        if (reinstall)
+        {
+            SetBusy(true, "Удаляю старые эмоции...");
+            _fileSyncService.ResetOptionalEmotes(_manifest, _settings);
+        }
+
+        SetBusy(true, reinstall ? "Переустанавливаю эмоции..." : "Устанавливаю эмоции...");
+        var progress = new Progress<string>(message => ProgressText.Text = message);
+        var statuses = await _fileSyncService.VerifyAndRepairAsync(
+            _manifest,
+            _settings,
+            downloadMissingFiles: true,
+            verifyHashes: true,
+            progress,
+            CurrentToken(),
+            includeEmotes: true,
+            forceExtractArchives: reinstall,
+            includeRequiredFiles: false);
+
+        var outdated = CountOutdated(statuses);
+        if (outdated > 0)
+        {
+            throw new InvalidOperationException($"Не удалось установить эмоции: {outdated} файлов не прошли проверку.");
+        }
+
+        _settings.EnableEmotes = true;
+        await _settingsService.SaveAsync(_settings);
+        MainStatusText.Text = reinstall ? "Эмоции переустановлены." : "Эмоции установлены.";
+        SidebarStatusText.Text = "Эмоции готовы";
+        ProgressText.Text = "Эмоции готовы";
     }
 
     private void UpdatePlayerPreview()

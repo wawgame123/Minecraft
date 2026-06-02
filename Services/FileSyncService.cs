@@ -24,12 +24,15 @@ public sealed class FileSyncService
         bool downloadMissingFiles,
         bool verifyHashes,
         IProgress<string>? progress,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool includeEmotes = false,
+        bool forceExtractArchives = false,
+        bool includeRequiredFiles = true)
     {
         Directory.CreateDirectory(settings.InstallDirectory);
         RemoveBlockedMods(settings.InstallDirectory, progress);
 
-        var files = GetManagedFiles(manifest, settings.EnableShaders).ToList();
+        var files = GetManagedFiles(manifest, settings.EnableShaders, includeEmotes, includeRequiredFiles).ToList();
         var statuses = new FileStatusItem[files.Count];
         var repairQueue = new ConcurrentBag<(int Index, ManifestFile File, string FullPath)>();
         var checkedCount = 0;
@@ -88,25 +91,40 @@ public sealed class FileSyncService
                 });
         }
 
-        await ExtractManagedArchivesAsync(files, settings.InstallDirectory, progress, cancellationToken);
+        await ExtractManagedArchivesAsync(files, settings.InstallDirectory, progress, cancellationToken, forceExtractArchives);
 
         progress?.Report("Проверка завершена");
         return statuses;
     }
 
-    public static IEnumerable<ManifestFile> GetManagedFiles(LauncherManifest manifest, bool includeShaders)
+    public static IEnumerable<ManifestFile> GetManagedFiles(
+        LauncherManifest manifest,
+        bool includeShaders,
+        bool includeEmotes = false,
+        bool includeRequiredFiles = true)
     {
-        foreach (var file in manifest.RequiredFiles.Where(file => file.Required))
+        if (includeRequiredFiles)
         {
-            yield return file;
+            foreach (var file in manifest.RequiredFiles.Where(file => file.Required))
+            {
+                yield return file;
+            }
         }
 
-        if (!includeShaders)
+        if (includeShaders)
+        {
+            foreach (var file in manifest.OptionalShaders)
+            {
+                yield return file;
+            }
+        }
+
+        if (!includeEmotes)
         {
             yield break;
         }
 
-        foreach (var file in manifest.OptionalShaders)
+        foreach (var file in manifest.OptionalEmotes)
         {
             yield return file;
         }
@@ -198,7 +216,8 @@ public sealed class FileSyncService
         IReadOnlyList<ManifestFile> files,
         string installDirectory,
         IProgress<string>? progress,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool forceExtractArchives)
     {
         var archives = files.Where(IsExtractableArchive).ToList();
         if (archives.Count == 0)
@@ -211,14 +230,14 @@ public sealed class FileSyncService
         foreach (var archive in archives)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            ExtractArchiveIfNeeded(archive, installDirectory);
+            ExtractArchiveIfNeeded(archive, installDirectory, forceExtractArchives);
             completed++;
             ReportPercent(progress, "Распаковка", completed, archives.Count);
             await Task.Yield();
         }
     }
 
-    private static void ExtractArchiveIfNeeded(ManifestFile file, string installDirectory)
+    private static void ExtractArchiveIfNeeded(ManifestFile file, string installDirectory, bool force)
     {
         var archivePath = ResolveInsideInstallDirectory(installDirectory, file.Path);
         if (!File.Exists(archivePath))
@@ -234,6 +253,7 @@ public sealed class FileSyncService
 
         if (Directory.Exists(targetDirectory)
             && File.Exists(markerPath)
+            && !force
             && string.Equals(File.ReadAllText(markerPath).Trim(), expectedMarker, StringComparison.OrdinalIgnoreCase))
         {
             return;
@@ -278,6 +298,39 @@ public sealed class FileSyncService
         }
 
         return builder.ToString();
+    }
+
+    public void ResetOptionalEmotes(LauncherManifest manifest, LauncherSettings settings)
+    {
+        foreach (var file in manifest.OptionalEmotes.Where(IsExtractableArchive))
+        {
+            DeleteInsideInstallDirectory(settings.InstallDirectory, file.Path, recursive: false);
+            DeleteInsideInstallDirectory(settings.InstallDirectory, file.ExtractTo!, recursive: true);
+            DeleteInsideInstallDirectory(
+                settings.InstallDirectory,
+                Path.Combine(".minivibe-state", "extracted", SafeMarkerName(file.Path) + ".sha256"),
+                recursive: false);
+        }
+    }
+
+    private static void DeleteInsideInstallDirectory(string installDirectory, string relativePath, bool recursive)
+    {
+        if (string.IsNullOrWhiteSpace(relativePath))
+        {
+            return;
+        }
+
+        var fullPath = ResolveInsideInstallDirectory(installDirectory, relativePath);
+        if (File.Exists(fullPath))
+        {
+            File.Delete(fullPath);
+            return;
+        }
+
+        if (recursive && Directory.Exists(fullPath))
+        {
+            Directory.Delete(fullPath, recursive: true);
+        }
     }
 
     private static string ResolveInsideInstallDirectory(string installDirectory, string relativePath)
