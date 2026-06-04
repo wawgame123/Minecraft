@@ -9,6 +9,8 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $project = Join-Path $root "installer\MinivibeInstaller.csproj"
 $publishDir = Join-Path $root "artifacts\installer"
+$selfContainedPublishDir = Join-Path $publishDir "self-contained"
+$noDotnetPublishDir = Join-Path $publishDir "no-dotnet"
 $launcherDir = Join-Path $root "launcher"
 
 function Assert-UnderRoot {
@@ -54,6 +56,8 @@ if (Test-Path -LiteralPath $publishDir) {
 }
 
 New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
+New-Item -ItemType Directory -Force -Path $selfContainedPublishDir | Out-Null
+New-Item -ItemType Directory -Force -Path $noDotnetPublishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 Invoke-Checked dotnet @(
@@ -70,10 +74,10 @@ Invoke-Checked dotnet @(
     "-p:DebugType=None",
     "-p:DebugSymbols=false",
     "-o",
-    $publishDir
+    $selfContainedPublishDir
 )
 
-$sourceExe = Join-Path $publishDir "MinivibeInstaller.exe"
+$sourceExe = Join-Path $selfContainedPublishDir "MinivibeInstaller.exe"
 if (-not (Test-Path -LiteralPath $sourceExe)) {
     throw "Single-file installer was not produced: $sourceExe"
 }
@@ -88,5 +92,38 @@ if (Test-Path -LiteralPath $installerPath) {
 Copy-Item -LiteralPath $sourceExe -Destination $installerPath -Force
 $hash = (Get-FileHash -LiteralPath $installerPath -Algorithm SHA256).Hash.ToLowerInvariant()
 
+Invoke-Checked dotnet @(
+    "publish",
+    $project,
+    "-c",
+    $Configuration,
+    "-r",
+    $Runtime,
+    "--self-contained",
+    "false",
+    "-p:PublishSingleFile=true",
+    "-p:DebugType=None",
+    "-p:DebugSymbols=false",
+    "-o",
+    $noDotnetPublishDir
+)
+
+$noDotnetSourceExe = Join-Path $noDotnetPublishDir "MinivibeInstaller.exe"
+if (-not (Test-Path -LiteralPath $noDotnetSourceExe)) {
+    throw "Framework-dependent single-file installer was not produced: $noDotnetSourceExe"
+}
+
+$noDotnetInstallerName = "MinivibeInstaller-$version-no-dotnet.exe"
+$noDotnetInstallerPath = Join-Path $launcherDir $noDotnetInstallerName
+Assert-UnderRoot -Path $noDotnetInstallerPath -Root $root
+if (Test-Path -LiteralPath $noDotnetInstallerPath) {
+    Remove-Item -LiteralPath $noDotnetInstallerPath -Force
+}
+
+Copy-Item -LiteralPath $noDotnetSourceExe -Destination $noDotnetInstallerPath -Force
+$noDotnetHash = (Get-FileHash -LiteralPath $noDotnetInstallerPath -Algorithm SHA256).Hash.ToLowerInvariant()
+
 Write-Output "Published installer: $installerPath"
 Write-Output "SHA256: $hash"
+Write-Output "Published no-dotnet installer: $noDotnetInstallerPath"
+Write-Output "No-dotnet SHA256: $noDotnetHash"

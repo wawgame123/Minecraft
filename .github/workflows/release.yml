@@ -28,11 +28,13 @@ jobs:
 
           - Исправлена автоочистка конфликтующих версий модов: если modId совпадает с manifest.json, но jar не тот, лаунчер заменит его файлом из GitHub.
           - Это чинит случаи вроде чужого Sodium/Sable из старой папки .minecraft, из-за которых игра падала на mixin-ошибках.
-          - Windows installer, Windows portable и experimental macOS сборки входят в релиз.
+          - В релиз входят два установщика: автономный с .NET внутри и маленький no-dotnet для ПК с установленным .NET.
+          - Windows portable и experimental macOS сборки тоже входят в релиз.
           NOTES
 
           ASSETS=(
             "launcher/MinivibeInstaller-$VERSION.exe"
+            "launcher/MinivibeInstaller-$VERSION-no-dotnet.exe"
             "launcher/Minivibe-$VERSION-WIN-portable.zip"
           )
 
