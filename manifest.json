@@ -874,7 +874,7 @@
     }
   ],
   "launch": {
-    "mainClass":  "cpw.mods.bootstraplauncher.BootstrapLauncher",
+    "mainClass": "net.minecraft.client.main.Main",
     "classpath": [
       "neoforge-21.1.228.jar"
     ],
