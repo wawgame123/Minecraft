@@ -543,6 +543,9 @@
                 <CheckBox x:Name="GameConsoleCheckBox"
                           Content="Показывать консоль Minecraft при запуске"
                           ToolTip="Выключите для максимального FPS. Включайте, когда нужно смотреть логи или краши."/>
+                <CheckBox x:Name="DownloadDetailsCheckBox"
+                          Content="Показывать имена скачиваемых файлов"
+                          ToolTip="Включайте для диагностики. В обычном режиме лаунчер показывает только проценты."/>
 
                 <TextBlock Text="RAM, МБ" Style="{StaticResource LabelStyle}"/>
                 <TextBox x:Name="RamBox"/>

@@ -1,5 +1,6 @@
 *.jar binary
 *.zip binary
+*.rar binary
 *.ico binary
 *.png binary
 *.dll binary

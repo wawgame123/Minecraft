@@ -3,6 +3,9 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Security.Cryptography;
+using SharpCompress.Archives;
+using SharpCompress.Common;
+using SharpCompress.Readers;
 using ServerLauncher.Models;
 
 namespace ServerLauncher.Services;
@@ -15,6 +18,8 @@ public sealed class FileSyncService
     public const string StatusCorrupt = "Поврежден";
     private const int MaxParallelChecks = 8;
     private const int MaxParallelDownloads = 16;
+    private const string EmotesArchiveFileName = "emotes.rar";
+    private const string EmotesArchiveUrl = "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/emotes.rar";
 
     private readonly HttpClient _httpClient = new();
 
@@ -82,6 +87,11 @@ public sealed class FileSyncService
                 },
                 async (item, token) =>
                 {
+                    if (settings.ShowDownloadDetails)
+                    {
+                        progress?.Report("Скачивание: " + item.File.Path);
+                    }
+
                     await DownloadFileAsync(item.File, item.FullPath, token);
                     var status = await CheckFileAsync(item.FullPath, item.File, verifyHashes: true, token);
                     statuses[item.Index].Status = status;
@@ -300,6 +310,101 @@ public sealed class FileSyncService
         return builder.ToString();
     }
 
+    public async Task InstallEmotesArchiveAsync(
+        LauncherSettings settings,
+        bool reinstall,
+        IProgress<string>? progress,
+        CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(settings.InstallDirectory);
+        var archivePath = ResolveInsideInstallDirectory(settings.InstallDirectory, EmotesArchiveFileName);
+        var targetDirectory = ResolveInsideInstallDirectory(settings.InstallDirectory, "emotes");
+
+        if (reinstall)
+        {
+            DeleteInsideInstallDirectory(settings.InstallDirectory, "emotes", recursive: true);
+            DeleteInsideInstallDirectory(settings.InstallDirectory, EmotesArchiveFileName, recursive: false);
+        }
+
+        if (!File.Exists(archivePath))
+        {
+            progress?.Report(settings.ShowDownloadDetails
+                ? "Скачивание: " + EmotesArchiveFileName
+                : "Скачивание эмоций 0%");
+            await DownloadFileWithoutHashAsync(EmotesArchiveUrl, archivePath, cancellationToken);
+            progress?.Report("Скачивание эмоций 100%");
+        }
+
+        progress?.Report("Распаковка эмоций 0%");
+        ExtractArchiveWithoutContentCheck(archivePath, targetDirectory);
+        progress?.Report("Распаковка эмоций 100%");
+    }
+
+    private async Task DownloadFileWithoutHashAsync(string url, string destinationPath, CancellationToken cancellationToken)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(destinationPath)!);
+        var tempPath = destinationPath + ".download";
+        try
+        {
+            await using (var source = await _httpClient.GetStreamAsync(url, cancellationToken))
+            await using (var target = File.Create(tempPath))
+            {
+                await source.CopyToAsync(target, cancellationToken);
+            }
+
+            File.Move(tempPath, destinationPath, overwrite: true);
+        }
+        catch
+        {
+            if (File.Exists(tempPath))
+            {
+                File.Delete(tempPath);
+            }
+
+            throw;
+        }
+    }
+
+    private static void ExtractArchiveWithoutContentCheck(string archivePath, string targetDirectory)
+    {
+        if (Directory.Exists(targetDirectory))
+        {
+            Directory.Delete(targetDirectory, recursive: true);
+        }
+
+        Directory.CreateDirectory(targetDirectory);
+        using var archive = ArchiveFactory.OpenArchive(archivePath, new ReaderOptions());
+        foreach (var entry in archive.Entries.Where(entry => !entry.IsDirectory))
+        {
+            var relativePath = NormalizeArchiveEntryPath(entry.Key);
+            if (string.IsNullOrWhiteSpace(relativePath))
+            {
+                continue;
+            }
+
+            var destination = Path.GetFullPath(Path.Combine(targetDirectory, relativePath));
+            var root = Path.GetFullPath(targetDirectory).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+            if (!destination.StartsWith(root, StringComparison.OrdinalIgnoreCase))
+            {
+                continue;
+            }
+
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            entry.WriteToFile(destination, new ExtractionOptions { Overwrite = true });
+        }
+    }
+
+    private static string NormalizeArchiveEntryPath(string? entryKey)
+    {
+        var relativePath = (entryKey ?? "").Replace('\\', '/').Trim('/');
+        if (relativePath.StartsWith("emotes/", StringComparison.OrdinalIgnoreCase))
+        {
+            relativePath = relativePath["emotes/".Length..];
+        }
+
+        return relativePath.Replace('/', Path.DirectorySeparatorChar);
+    }
+
     public void ResetOptionalEmotes(LauncherManifest manifest, LauncherSettings settings)
     {
         foreach (var file in manifest.OptionalEmotes.Where(IsExtractableArchive))
@@ -371,8 +476,7 @@ public sealed class FileSyncService
 
         foreach (var modPath in Directory.EnumerateFiles(modsDirectory, "*.jar", SearchOption.TopDirectoryOnly))
         {
-            var normalizedName = NormalizeModName(Path.GetFileNameWithoutExtension(modPath));
-            if (!normalizedName.Contains("moreculling", StringComparison.OrdinalIgnoreCase))
+            if (!IsBlockedModJar(modPath))
             {
                 continue;
             }
@@ -387,6 +491,55 @@ public sealed class FileSyncService
                 throw new InvalidOperationException($"Не удалось удалить несовместимый мод More Culling: {modPath}. {ex.Message}", ex);
             }
         }
+    }
+
+    private static bool IsBlockedModJar(string modPath)
+    {
+        var normalizedName = NormalizeModName(Path.GetFileNameWithoutExtension(modPath));
+        if (normalizedName.Contains("moreculling", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        try
+        {
+            using var archive = ZipFile.OpenRead(modPath);
+            foreach (var entry in archive.Entries)
+            {
+                var normalizedEntryName = NormalizeModName(entry.FullName);
+                if (normalizedEntryName.Contains("moreculling", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+
+                if (!IsModMetadataEntry(entry.FullName) || entry.Length <= 0 || entry.Length > 512 * 1024)
+                {
+                    continue;
+                }
+
+                using var reader = new StreamReader(entry.Open());
+                var metadata = NormalizeModName(reader.ReadToEnd());
+                if (metadata.Contains("moreculling", StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+        }
+        catch
+        {
+            return false;
+        }
+
+        return false;
+    }
+
+    private static bool IsModMetadataEntry(string entryName)
+    {
+        return string.Equals(entryName, "fabric.mod.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(entryName, "quilt.mod.json", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(entryName, "mcmod.info", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(entryName, "META-INF/mods.toml", StringComparison.OrdinalIgnoreCase)
+            || string.Equals(entryName, "META-INF/neoforge.mods.toml", StringComparison.OrdinalIgnoreCase);
     }
 
     private static string NormalizeModName(string value)

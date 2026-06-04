@@ -7,6 +7,7 @@ public sealed class LauncherSettings
     public bool EnableShaders { get; set; }
     public bool EnableEmotes { get; set; }
     public bool EnableGameConsole { get; set; }
+    public bool ShowDownloadDetails { get; set; }
     public int RamMb { get; set; } = 4096;
     public string JavaPath { get; set; } = "";
     public string PlayerName { get; set; } = "";

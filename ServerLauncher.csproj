@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>Minivibe</AssemblyName>
     <Product>minivibe</Product>
-    <Version>0.2.8</Version>
+    <Version>0.2.9</Version>
     <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
     <ApplicationIcon>Assets\launcher-icon.ico</ApplicationIcon>
@@ -36,5 +36,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3967.48" />
+    <PackageReference Include="SharpCompress" Version="0.49.1" />
   </ItemGroup>
 </Project>

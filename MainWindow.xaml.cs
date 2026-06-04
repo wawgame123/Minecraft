@@ -214,6 +214,7 @@ public partial class MainWindow : Window
         _settings.EnableShaders = ShadersCheckBox.IsChecked == true;
         _settings.EnableEmotes = EmotesCheckBox.IsChecked == true;
         _settings.EnableGameConsole = GameConsoleCheckBox.IsChecked == true;
+        _settings.ShowDownloadDetails = DownloadDetailsCheckBox.IsChecked == true;
         _settings.PlayerName = PlayerNameBox.Text.Trim();
         _settings.SkinSourcePath = _selectedSkinPath ?? _settings.SkinSourcePath;
         _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
@@ -244,6 +245,7 @@ public partial class MainWindow : Window
             ShadersCheckBox.IsChecked = _settings.EnableShaders;
             EmotesCheckBox.IsChecked = _settings.EnableEmotes;
             GameConsoleCheckBox.IsChecked = _settings.EnableGameConsole;
+            DownloadDetailsCheckBox.IsChecked = _settings.ShowDownloadDetails;
             RamBox.Text = _settings.RamMb.ToString();
             SyncPlayerNameText(_settings.PlayerName);
             _selectedSkinPath = string.IsNullOrWhiteSpace(_settings.SkinSourcePath) ? null : _settings.SkinSourcePath;
@@ -1164,40 +1166,9 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
 
     private async Task InstallEmotesAsync(bool reinstall)
     {
-        if (_manifest is null)
-        {
-            await LoadManifestAsync(repairMissingGameFiles: false);
-        }
-
-        if (_manifest is null || _manifest.OptionalEmotes.Count == 0)
-        {
-            throw new InvalidOperationException("В manifest.json не найден архив эмоций.");
-        }
-
-        if (reinstall)
-        {
-            SetBusy(true, "Удаляю старые эмоции...");
-            _fileSyncService.ResetOptionalEmotes(_manifest, _settings);
-        }
-
         SetBusy(true, reinstall ? "Переустанавливаю эмоции..." : "Устанавливаю эмоции...");
         var progress = new Progress<string>(message => ProgressText.Text = message);
-        var statuses = await _fileSyncService.VerifyAndRepairAsync(
-            _manifest,
-            _settings,
-            downloadMissingFiles: true,
-            verifyHashes: true,
-            progress,
-            CurrentToken(),
-            includeEmotes: true,
-            forceExtractArchives: reinstall,
-            includeRequiredFiles: false);
-
-        var outdated = CountOutdated(statuses);
-        if (outdated > 0)
-        {
-            throw new InvalidOperationException($"Не удалось установить эмоции: {outdated} файлов не прошли проверку.");
-        }
+        await _fileSyncService.InstallEmotesArchiveAsync(_settings, reinstall, progress, CurrentToken());
 
         _settings.EnableEmotes = true;
         await _settingsService.SaveAsync(_settings);
