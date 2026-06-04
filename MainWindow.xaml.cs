@@ -36,6 +36,7 @@ public partial class MainWindow : Window
     private bool _mapInitialized;
     private string? _selectedSkinPath;
     private Process? _minecraftProcess;
+    private CancellationTokenSource? _visualSaveCts;
 
     public MainWindow()
     {
@@ -224,7 +225,10 @@ public partial class MainWindow : Window
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
-        _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
+        _settings.PanelOpacity = TransparencyPercentToOpacity(PanelOpacitySlider.Value);
+        _settings.SidebarOpacity = TransparencyPercentToOpacity(SidebarOpacitySlider.Value);
+        _settings.BackgroundEffectOpacity = PercentToRatio(BackgroundEffectOpacitySlider.Value);
+        UpdateOpacityValueLabels();
 
         if (int.TryParse(RamBox.Text.Trim(), out var ram))
         {
@@ -254,7 +258,10 @@ public partial class MainWindow : Window
             AutoUpdateCheckBox.IsChecked = _settings.EnableAutoUpdate;
             BindCustomColorBoxes();
             DynamicBackgroundCheckBox.IsChecked = _settings.DynamicBackground;
-            PanelOpacitySlider.Value = Math.Clamp(_settings.PanelOpacity, 0.72, 1);
+            PanelOpacitySlider.Value = OpacityToTransparencyPercent(_settings.PanelOpacity);
+            SidebarOpacitySlider.Value = OpacityToTransparencyPercent(_settings.SidebarOpacity);
+            BackgroundEffectOpacitySlider.Value = RatioToPercent(_settings.BackgroundEffectOpacity);
+            UpdateOpacityValueLabels();
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
             UpdateSkinStatus();
@@ -928,23 +935,88 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
         _visualControlsReady = true;
     }
 
-    private async void VisualSetting_Changed(object sender, RoutedEventArgs e)
+    private void VisualSetting_Changed(object sender, RoutedEventArgs e)
     {
         if (!_visualControlsReady || _bindingSettings)
         {
             return;
         }
 
-        await SaveVisualSettingsPreviewAsync();
+        ApplyVisualSettingsPreview();
+        QueueVisualSettingsSave();
     }
 
     private async Task SaveVisualSettingsPreviewAsync()
     {
+        ApplyVisualSettingsPreview();
+        await _settingsService.SaveAsync(_settings);
+    }
+
+    private void ApplyVisualSettingsPreview()
+    {
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
-        _settings.PanelOpacity = Math.Clamp(PanelOpacitySlider.Value, 0.72, 1);
+        _settings.PanelOpacity = TransparencyPercentToOpacity(PanelOpacitySlider.Value);
+        _settings.SidebarOpacity = TransparencyPercentToOpacity(SidebarOpacitySlider.Value);
+        _settings.BackgroundEffectOpacity = PercentToRatio(BackgroundEffectOpacitySlider.Value);
+        UpdateOpacityValueLabels();
         ApplyVisualSettings();
-        await _settingsService.SaveAsync(_settings);
+    }
+
+    private void QueueVisualSettingsSave()
+    {
+        _visualSaveCts?.Cancel();
+        var cts = new CancellationTokenSource();
+        _visualSaveCts = cts;
+        _ = SaveVisualSettingsDebouncedAsync(cts);
+    }
+
+    private async Task SaveVisualSettingsDebouncedAsync(CancellationTokenSource cts)
+    {
+        try
+        {
+            await Task.Delay(250, cts.Token);
+            await _settingsService.SaveAsync(_settings);
+        }
+        catch (OperationCanceledException)
+        {
+        }
+        finally
+        {
+            if (ReferenceEquals(_visualSaveCts, cts))
+            {
+                _visualSaveCts = null;
+            }
+
+            cts.Dispose();
+        }
+    }
+
+    private void UpdateOpacityValueLabels()
+    {
+        PanelOpacityValueText.Text = $"{Math.Round(PanelOpacitySlider.Value)}%";
+        SidebarOpacityValueText.Text = $"{Math.Round(SidebarOpacitySlider.Value)}%";
+        BackgroundEffectOpacityValueText.Text = $"{Math.Round(BackgroundEffectOpacitySlider.Value)}%";
+    }
+
+    private static double TransparencyPercentToOpacity(double value)
+    {
+        return 1d - Math.Clamp(value, 0, 28) / 100d;
+    }
+
+    private static double OpacityToTransparencyPercent(double value)
+    {
+        return Math.Clamp((1d - value) * 100d, 0, 28);
+    }
+
+    private static double PercentToRatio(double value)
+    {
+        return Math.Clamp(value, 0, 100) / 100d;
+    }
+
+    private static double RatioToPercent(double value)
+    {
+        return Math.Clamp(value, 0, 1) * 100d;
     }
 
     private void ApplyVisualSettings()
@@ -967,7 +1039,7 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
         var resources = Resources;
 
         resources["AppBackgroundBrush"] = new SolidColorBrush(background);
-        resources["SidebarBrush"] = new SolidColorBrush(sidebar);
+        resources["SidebarBrush"] = new SolidColorBrush(ColorWithOpacity(sidebar, _settings.SidebarOpacity));
         resources["SurfaceBrush"] = new SolidColorBrush(ColorWithOpacity(surface, _settings.PanelOpacity));
         resources["SurfaceAltBrush"] = new SolidColorBrush(surfaceAlt);
         resources["BorderBrush"] = new SolidColorBrush(border);
@@ -991,6 +1063,7 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
         };
 
         DynamicLayer.Visibility = _settings.DynamicBackground ? Visibility.Visible : Visibility.Collapsed;
+        DynamicLayer.Opacity = Math.Clamp(_settings.BackgroundEffectOpacity, 0, 1);
         ContentShell.Margin = new Thickness(26, 0, 0, 0);
     }
 
@@ -1154,7 +1227,9 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
     private static string CurrentLauncherVersion()
     {
         var version = typeof(MainWindow).Assembly.GetName().Version ?? new Version(0, 0, 0);
-        return $"{version.Major}.{version.Minor}.{version.Build}";
+        return version.Build == 0
+            ? $"{version.Major}.{version.Minor}"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private void UpdateLaunchReadinessStatus()

@@ -513,7 +513,7 @@ internal sealed class MacGameLaunchService
         LauncherSettings settings,
         MinecraftRuntime runtime)
     {
-        return value
+        var expanded = value
             .Replace("${game_directory}", settings.InstallDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_name}", settings.PlayerName, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_uuid}", OfflinePlayerUuid(settings.PlayerName), StringComparison.OrdinalIgnoreCase)
@@ -525,6 +525,25 @@ internal sealed class MacGameLaunchService
             .Replace("${version_name}", runtime.VersionId, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader}", manifest.Loader, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
+
+        return expanded.StartsWith("-DignoreList=", StringComparison.OrdinalIgnoreCase)
+            ? EnsureIgnoreListContainsClientJar(expanded, runtime.ClientJarPath)
+            : expanded;
+    }
+
+    private static string EnsureIgnoreListContainsClientJar(string argument, string clientJarPath)
+    {
+        var clientJarName = Path.GetFileName(clientJarPath);
+        if (string.IsNullOrWhiteSpace(clientJarName))
+        {
+            return argument;
+        }
+
+        var ignoreList = argument["-DignoreList=".Length..];
+        var entries = ignoreList.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return entries.Any(entry => string.Equals(entry, clientJarName, StringComparison.OrdinalIgnoreCase))
+            ? argument
+            : argument + "," + clientJarName;
     }
 
     private static string OfflinePlayerUuid(string playerName)
@@ -540,7 +559,9 @@ internal sealed class MacGameLaunchService
     private static string CurrentLauncherVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
-        return $"{version.Major}.{version.Minor}.{version.Build}";
+        return version.Build == 0
+            ? $"{version.Major}.{version.Minor}"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static string Quote(string value)

@@ -122,7 +122,7 @@ public sealed class FileSyncService
     {
         if (includeRequiredFiles)
         {
-            foreach (var file in manifest.RequiredFiles.Where(file => file.Required))
+            foreach (var file in manifest.RequiredFiles)
             {
                 yield return file;
             }

@@ -570,6 +570,11 @@
               <StackPanel>
                 <TextBlock Text="Визуал" FontSize="18" FontWeight="SemiBold"/>
 
+                <Expander Header="Параметры темы и прозрачности"
+                          IsExpanded="False"
+                          Foreground="{DynamicResource TextBrush}"
+                          Margin="0,10,0,0">
+                  <StackPanel Margin="0,8,0,0">
                 <TextBlock Text="Цвета HEX" Style="{StaticResource LabelStyle}"/>
                 <UniformGrid Columns="2" Margin="0,0,0,4">
                   <StackPanel Margin="0,0,6,6">
@@ -639,13 +644,53 @@
 
                 <CheckBox x:Name="DynamicBackgroundCheckBox" Content="Градиент" Click="VisualSetting_Changed"/>
 
-                <TextBlock Text="Плотность панелей" Style="{StaticResource LabelStyle}"/>
+                <DockPanel Margin="0,10,0,0">
+                  <TextBlock Text="Прозрачность панелей" Style="{StaticResource LabelStyle}"/>
+                  <TextBlock x:Name="PanelOpacityValueText" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                </DockPanel>
                 <Slider x:Name="PanelOpacitySlider"
-                        Minimum="0.72"
-                        Maximum="1"
-                        TickFrequency="0.04"
-                        IsSnapToTickEnabled="True"
+                        Minimum="0"
+                        Maximum="28"
+                        SmallChange="1"
+                        LargeChange="4"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="False"
+                        IsMoveToPointEnabled="True"
+                        AutoToolTipPlacement="TopLeft"
+                        AutoToolTipPrecision="0"
                         ValueChanged="VisualSetting_Changed"/>
+                <DockPanel Margin="0,10,0,0">
+                  <TextBlock Text="Прозрачность боковой панели" Style="{StaticResource LabelStyle}"/>
+                  <TextBlock x:Name="SidebarOpacityValueText" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                </DockPanel>
+                <Slider x:Name="SidebarOpacitySlider"
+                        Minimum="0"
+                        Maximum="28"
+                        SmallChange="1"
+                        LargeChange="4"
+                        TickFrequency="1"
+                        IsSnapToTickEnabled="False"
+                        IsMoveToPointEnabled="True"
+                        AutoToolTipPlacement="TopLeft"
+                        AutoToolTipPrecision="0"
+                        ValueChanged="VisualSetting_Changed"/>
+                <DockPanel Margin="0,10,0,0">
+                  <TextBlock Text="Видимость динамического фона" Style="{StaticResource LabelStyle}"/>
+                  <TextBlock x:Name="BackgroundEffectOpacityValueText" DockPanel.Dock="Right" Foreground="{DynamicResource MutedBrush}" FontSize="12"/>
+                </DockPanel>
+                <Slider x:Name="BackgroundEffectOpacitySlider"
+                        Minimum="0"
+                        Maximum="100"
+                        SmallChange="1"
+                        LargeChange="8"
+                        TickFrequency="5"
+                        IsSnapToTickEnabled="False"
+                        IsMoveToPointEnabled="True"
+                        AutoToolTipPlacement="TopLeft"
+                        AutoToolTipPrecision="0"
+                        ValueChanged="VisualSetting_Changed"/>
+                  </StackPanel>
+                </Expander>
               </StackPanel>
             </Border>
 

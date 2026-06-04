@@ -1,11 +1,13 @@
 ﻿{
-    "version":  "0.2.13",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.13-WIN-portable.zip",
-    "sha256":  "c7cd566a3f5260f9f6f1a7e174501193c5f305d609b43c40a288684ca01bf3f4",
+    "version":  "0.3",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3-WIN-portable.zip",
+    "sha256":  "354dedf8d00a79d06aa95739db517eb41a26609b9a239b7a73690f2527db8803",
     "mandatory":  false,
     "notes":  [
-                  "Лаунчер теперь блокирует повторный запуск Minecraft под тем же ником, пока предыдущий процесс еще жив.",
-                  "В консоль Minecraft добавлена диагностика запуска: ник, UUID, VersionId, MainClass и наличие NeoForge в classpath.",
-                  "Лаунчер удаляет устаревшие lock-файлы после краша, перезагрузки или переиспользования PID системой."
+                  "Исправлен запуск NeoForge: лаунчер больше не зависит от имени jar-файла профиля и ищет реальные client/universal артефакты лоадера.",
+                  "Папка игры может быть указана игроком вручную: поиск версий и libraries учитывает выбранный путь и его родителей.",
+                  "RAM теперь выделяется ровно по настройке пользователя.",
+                  "Добавлены плавные ползунки прозрачности панелей и видимости динамического фона.",
+                  "Моды из manifest requiredFiles теперь синхронизируются как обязательные."
               ]
 }

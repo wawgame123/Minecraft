@@ -59,12 +59,7 @@ public sealed class MinecraftRuntimeService
         AddLibraryDownloads(versionJson.Libraries, librariesRoot, workItems);
         if (loaderJson is not null)
         {
-            AddLibraryDownloads(
-                loaderJson.Libraries,
-                librariesRoot,
-                workItems,
-                loaderInstall?.VersionJarPath,
-                manifest.LoaderVersion);
+            AddLibraryDownloads(loaderJson.Libraries, librariesRoot, workItems);
         }
 
         await EnsureLibraryDownloadsAsync(workItems, progress, cancellationToken, settings.ShowDownloadDetails);
@@ -86,14 +81,13 @@ public sealed class MinecraftRuntimeService
             .Select(item => item.DestinationPath)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();
-        if (!string.IsNullOrWhiteSpace(loaderInstall?.VersionJarPath))
-        {
-            classpath.Add(loaderInstall.VersionJarPath);
-        }
+        var launchClientJarPath = !string.IsNullOrWhiteSpace(loaderInstall?.VersionJarPath)
+            ? loaderInstall.VersionJarPath
+            : clientJarPath;
 
         return new MinecraftRuntime(
             loaderJson?.Id ?? manifest.MinecraftVersion,
-            loaderInstall is null ? clientJarPath : "",
+            launchClientJarPath,
             classpath,
             nativesRoot,
             assetsRoot,
@@ -101,7 +95,8 @@ public sealed class MinecraftRuntimeService
             librariesRoot,
             loaderJson?.MainClass ?? "",
             ExtractStringArguments(loaderJson?.Arguments.Jvm),
-            ExtractStringArguments(loaderJson?.Arguments.Game));
+            ExtractStringArguments(loaderJson?.Arguments.Game),
+            loaderInstall?.ArtifactPaths ?? []);
     }
 
     private async Task<MinecraftVersionJson> LoadVersionJsonAsync(
@@ -166,53 +161,48 @@ public sealed class MinecraftRuntimeService
         var installedCandidate = await FindInstalledLoaderVersionAsync(minecraftRoot, settings.InstallDirectory, loaderVersionId, manifest.LoaderVersion, cancellationToken);
         var installedVersionRoot = installedCandidate?.VersionDirectory ?? Path.Combine(minecraftRoot, "versions", loaderVersionId);
         var installedVersionJsonPath = installedCandidate?.VersionJsonPath ?? Path.Combine(installedVersionRoot, loaderVersionId + ".json");
-        var installedVersionJarPath = installedCandidate?.VersionJarPath ?? Path.Combine(installedVersionRoot, loaderVersionId + ".jar");
-        var exactNeoForgeClientJarPath = Path.Combine(
+        var installedVersion = installedCandidate?.VersionJson ?? await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
+        var installedVersionJarPath = installedCandidate?.VersionJarPath ?? ResolveInstalledVersionJar(installedVersionRoot, installedVersionJsonPath, installedVersion, manifest.LoaderVersion);
+        var neoforgeArtifactPaths = FindNeoForgeRuntimeJars(minecraftRoot, settings.InstallDirectory, manifest.LoaderVersion);
+        var hasNeoForgeArtifactJar = neoforgeArtifactPaths.Count > 0;
+        var neoforgeClientJarPath = Path.Combine(
             minecraftRoot,
             "libraries",
             "net",
             "neoforged",
             "neoforge",
             manifest.LoaderVersion,
-            $"neoforge-{manifest.LoaderVersion}-client.jar");
-        var neoforgeClientJarPath = FindNeoForgeClientJar(minecraftRoot, settings.InstallDirectory, manifest.LoaderVersion) ?? exactNeoForgeClientJarPath;
-        var installedVersion = installedCandidate?.VersionJson ?? await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
-        var hasInstalledProfileJar = File.Exists(installedVersionJarPath);
-        var hasNeoForgeClientJar = File.Exists(neoforgeClientJarPath);
+            $"neoforge-{manifest.LoaderVersion}-universal.jar");
 
-        if (installedVersion is null || (!hasNeoForgeClientJar && !hasInstalledProfileJar))
+        if (installedVersion is null || !hasNeoForgeArtifactJar)
         {
             await RunNeoForgeInstallerAsync(javaPath, loaderRoot, manifest.LoaderVersion, minecraftRoot, settings, progress, cancellationToken);
             installedCandidate = await FindInstalledLoaderVersionAsync(minecraftRoot, settings.InstallDirectory, loaderVersionId, manifest.LoaderVersion, cancellationToken);
-            installedVersion = installedCandidate?.VersionJson ?? await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
             installedVersionRoot = installedCandidate?.VersionDirectory ?? installedVersionRoot;
-            installedVersionJarPath = installedCandidate?.VersionJarPath ?? installedVersionJarPath;
-            neoforgeClientJarPath = FindNeoForgeClientJar(minecraftRoot, settings.InstallDirectory, manifest.LoaderVersion) ?? exactNeoForgeClientJarPath;
-            hasInstalledProfileJar = File.Exists(installedVersionJarPath);
-            hasNeoForgeClientJar = File.Exists(neoforgeClientJarPath);
+            installedVersionJsonPath = installedCandidate?.VersionJsonPath ?? installedVersionJsonPath;
+            installedVersion = installedCandidate?.VersionJson ?? await TryReadInstalledLoaderVersionAsync(installedVersionJsonPath, cancellationToken);
+            installedVersionJarPath = installedCandidate?.VersionJarPath ?? ResolveInstalledVersionJar(installedVersionRoot, installedVersionJsonPath, installedVersion, manifest.LoaderVersion);
+            neoforgeArtifactPaths = FindNeoForgeRuntimeJars(minecraftRoot, settings.InstallDirectory, manifest.LoaderVersion);
+            hasNeoForgeArtifactJar = neoforgeArtifactPaths.Count > 0;
         }
 
-        if (!hasNeoForgeClientJar && !hasInstalledProfileJar)
+        if (!hasNeoForgeArtifactJar)
         {
             throw new InvalidOperationException($"NeoForge установлен не полностью: не найден {neoforgeClientJarPath}");
         }
 
         if (installedVersion is not null)
         {
-            var useLocalJar = !string.Equals(neoforgeClientJarPath, exactNeoForgeClientJarPath, StringComparison.OrdinalIgnoreCase)
-                ? neoforgeClientJarPath
-                : hasInstalledProfileJar && !hasNeoForgeClientJar
-                    ? installedVersionJarPath
-                    : null;
-
             return new LoaderInstall(
                 installedVersion,
-                VersionJarPath: useLocalJar);
+                VersionJarPath: installedVersionJarPath,
+                ArtifactPaths: neoforgeArtifactPaths);
         }
 
         return new LoaderInstall(
             installerVersionJson,
-            VersionJarPath: null);
+            VersionJarPath: installedVersionJarPath,
+            ArtifactPaths: neoforgeArtifactPaths);
     }
 
     private async Task<MinecraftVersionJson> LoadInstallerVersionJsonAsync(
@@ -317,18 +307,49 @@ public sealed class MinecraftRuntimeService
                     continue;
                 }
 
-                var jarPath = Path.ChangeExtension(jsonPath, ".jar");
-                if (!File.Exists(jarPath))
-                {
-                    jarPath = Directory.EnumerateFiles(directory, "*.jar", SearchOption.TopDirectoryOnly)
-                        .FirstOrDefault(path => LooksLikeNeoForgeJar(path, loaderVersion)) ?? jarPath;
-                }
+                var jarPath = ResolveInstalledVersionJar(directory, jsonPath, version, loaderVersion);
 
-                return new InstalledLoaderCandidate(version, directory, jsonPath, File.Exists(jarPath) ? jarPath : null);
+                return new InstalledLoaderCandidate(version, directory, jsonPath, jarPath);
             }
         }
 
         return null;
+    }
+
+    private static string? ResolveInstalledVersionJar(
+        string versionDirectory,
+        string versionJsonPath,
+        MinecraftVersionJson? version,
+        string loaderVersion)
+    {
+        var exactJarPath = Path.ChangeExtension(versionJsonPath, ".jar");
+        if (File.Exists(exactJarPath))
+        {
+            return exactJarPath;
+        }
+
+        if (!Directory.Exists(versionDirectory))
+        {
+            return null;
+        }
+
+        var candidates = Directory.EnumerateFiles(versionDirectory, "*.jar", SearchOption.TopDirectoryOnly)
+            .Where(path => !Path.GetFileName(path).Contains("installer", StringComparison.OrdinalIgnoreCase))
+            .ToList();
+
+        if (candidates.Count == 0)
+        {
+            return null;
+        }
+
+        var versionId = version?.Id ?? "";
+        return candidates
+            .OrderByDescending(path => !string.IsNullOrWhiteSpace(versionId)
+                && Path.GetFileNameWithoutExtension(path).Contains(versionId, StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(path => Path.GetFileNameWithoutExtension(path).Contains(loaderVersion, StringComparison.OrdinalIgnoreCase))
+            .ThenByDescending(LooksLikeMinecraftClientJar)
+            .ThenByDescending(path => new FileInfo(path).Length)
+            .FirstOrDefault();
     }
 
     private static IEnumerable<string> LoaderVersionDirectories(
@@ -361,29 +382,35 @@ public sealed class MinecraftRuntimeService
             || version.Libraries.Any(library => IsNeoForgeClientLibrary(library.Name, loaderVersion));
     }
 
-    private static string? FindNeoForgeClientJar(string minecraftRoot, string installDirectory, string loaderVersion)
+    private static IReadOnlyList<string> FindNeoForgeRuntimeJars(string minecraftRoot, string installDirectory, string loaderVersion)
     {
-        var exactPath = Path.Combine(
-            minecraftRoot,
-            "libraries",
-            "net",
-            "neoforged",
-            "neoforge",
-            loaderVersion,
-            $"neoforge-{loaderVersion}-client.jar");
-        if (File.Exists(exactPath))
+        var results = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+
+        void AddIfNeoForgeJar(string jarPath, bool allowNameMatch)
         {
-            return exactPath;
+            if (!File.Exists(jarPath) || !LooksLikeNeoForgeJar(jarPath, loaderVersion, allowNameMatch))
+            {
+                return;
+            }
+
+            var fullPath = Path.GetFullPath(jarPath);
+            if (seen.Add(fullPath))
+            {
+                results.Add(fullPath);
+            }
+        }
+
+        foreach (var artifactPath in StandardNeoForgeArtifactPaths(minecraftRoot, loaderVersion))
+        {
+            AddIfNeoForgeJar(artifactPath, allowNameMatch: true);
         }
 
         if (Directory.Exists(installDirectory))
         {
             foreach (var jarPath in Directory.EnumerateFiles(installDirectory, "*.jar", SearchOption.TopDirectoryOnly))
             {
-                if (LooksLikeNeoForgeJar(jarPath, loaderVersion))
-                {
-                    return jarPath;
-                }
+                AddIfNeoForgeJar(jarPath, allowNameMatch: false);
             }
         }
 
@@ -394,36 +421,35 @@ public sealed class MinecraftRuntimeService
                 continue;
             }
 
-            var namedMatch = Directory.EnumerateFiles(root, "*.jar", SearchOption.AllDirectories)
-                .FirstOrDefault(path => Path.GetFileName(path).Contains("neoforge", StringComparison.OrdinalIgnoreCase)
-                    && Path.GetFileName(path).Contains(loaderVersion, StringComparison.OrdinalIgnoreCase)
-                    && Path.GetFileName(path).Contains("client", StringComparison.OrdinalIgnoreCase));
-            if (namedMatch is not null)
-            {
-                return namedMatch;
-            }
-
             foreach (var jarPath in Directory.EnumerateFiles(root, "*.jar", SearchOption.AllDirectories))
             {
-                if (LooksLikeNeoForgeJar(jarPath, loaderVersion))
-                {
-                    return jarPath;
-                }
+                AddIfNeoForgeJar(jarPath, allowNameMatch: true);
             }
         }
 
-        return null;
+        return results;
+    }
+
+    private static IEnumerable<string> StandardNeoForgeArtifactPaths(string minecraftRoot, string loaderVersion)
+    {
+        var root = Path.Combine(
+            minecraftRoot,
+            "libraries",
+            "net",
+            "neoforged",
+            "neoforge",
+            loaderVersion);
+
+        yield return Path.Combine(root, $"neoforge-{loaderVersion}-client.jar");
+        yield return Path.Combine(root, $"neoforge-{loaderVersion}-universal.jar");
     }
 
     private static IEnumerable<string> NeoForgeJarSearchRoots(string minecraftRoot, string installDirectory)
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var path in new[]
+        foreach (var root in CandidateMinecraftRoots(minecraftRoot, installDirectory))
         {
-            Path.Combine(minecraftRoot, "libraries", "net", "neoforged", "neoforge")
-        })
-        {
-            var fullPath = Path.GetFullPath(path);
+            var fullPath = Path.GetFullPath(Path.Combine(root, "libraries", "net", "neoforged", "neoforge"));
             if (seen.Add(fullPath))
             {
                 yield return fullPath;
@@ -431,11 +457,26 @@ public sealed class MinecraftRuntimeService
         }
     }
 
-    private static bool LooksLikeNeoForgeJar(string jarPath, string loaderVersion)
+    private static IEnumerable<string> CandidateMinecraftRoots(string minecraftRoot, string installDirectory)
+    {
+        yield return minecraftRoot;
+
+        var current = new DirectoryInfo(installDirectory);
+        for (var depth = 0; current is not null && depth < 3; depth++)
+        {
+            yield return current.FullName;
+            current = current.Parent;
+        }
+    }
+
+    private static bool LooksLikeNeoForgeJar(string jarPath, string loaderVersion, bool allowNameMatch = true)
     {
         var fileName = Path.GetFileName(jarPath);
-        if (fileName.Contains("neoforge", StringComparison.OrdinalIgnoreCase)
-            && fileName.Contains(loaderVersion, StringComparison.OrdinalIgnoreCase))
+        if (allowNameMatch
+            && fileName.Contains("neoforge", StringComparison.OrdinalIgnoreCase)
+            && fileName.Contains(loaderVersion, StringComparison.OrdinalIgnoreCase)
+            && (fileName.Contains("client", StringComparison.OrdinalIgnoreCase)
+                || fileName.Contains("universal", StringComparison.OrdinalIgnoreCase)))
         {
             return true;
         }
@@ -443,7 +484,12 @@ public sealed class MinecraftRuntimeService
         try
         {
             using var archive = ZipFile.OpenRead(jarPath);
-            foreach (var entry in archive.Entries.Take(400))
+            if (archive.GetEntry("META-INF/neoforge.mods.toml") is not null)
+            {
+                return true;
+            }
+
+            foreach (var entry in archive.Entries)
             {
                 if (entry.FullName.Contains("net/neoforged/neoforge", StringComparison.OrdinalIgnoreCase)
                     || entry.FullName.Contains("META-INF/neoforge", StringComparison.OrdinalIgnoreCase))
@@ -458,6 +504,20 @@ public sealed class MinecraftRuntimeService
         }
 
         return false;
+    }
+
+    private static bool LooksLikeMinecraftClientJar(string jarPath)
+    {
+        try
+        {
+            using var archive = ZipFile.OpenRead(jarPath);
+            return archive.GetEntry("net/minecraft/client/main/Main.class") is not null
+                || archive.GetEntry("net/minecraft/client/Minecraft.class") is not null;
+        }
+        catch
+        {
+            return false;
+        }
     }
 
     private async Task RunNeoForgeInstallerAsync(
@@ -562,18 +622,10 @@ public sealed class MinecraftRuntimeService
     private static void AddLibraryDownloads(
         IEnumerable<MinecraftLibrary> libraries,
         string librariesRoot,
-        ICollection<RuntimeDownloadItem> workItems,
-        string? localNeoForgeProfileJar = null,
-        string loaderVersion = "")
+        ICollection<RuntimeDownloadItem> workItems)
     {
         foreach (var library in libraries.Where(IsAllowedOnCurrentOs))
         {
-            if (!string.IsNullOrWhiteSpace(localNeoForgeProfileJar)
-                && IsNeoForgeClientLibrary(library.Name, loaderVersion))
-            {
-                continue;
-            }
-
             var artifact = library.Downloads.Artifact;
 
             if (artifact is null && TryCreateArtifactFromName(library.Name, out var generatedArtifact))
@@ -929,7 +981,8 @@ public sealed class MinecraftRuntimeService
 
 internal sealed record LoaderInstall(
     MinecraftVersionJson VersionJson,
-    string? VersionJarPath);
+    string? VersionJarPath,
+    IReadOnlyList<string> ArtifactPaths);
 
 internal sealed record InstalledLoaderCandidate(
     MinecraftVersionJson VersionJson,
@@ -953,7 +1006,8 @@ public sealed record MinecraftRuntime(
     string LibrariesDirectory,
     string MainClass,
     IReadOnlyList<string> JvmArgs,
-    IReadOnlyList<string> GameArgs);
+    IReadOnlyList<string> GameArgs,
+    IReadOnlyList<string> LoaderArtifactFiles);
 
 internal sealed class MinecraftVersionManifest
 {

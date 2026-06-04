@@ -28,6 +28,8 @@ public sealed class LauncherSettings
     public string CustomGradientEndColor { get; set; } = "";
     public bool DynamicBackground { get; set; } = true;
     public double PanelOpacity { get; set; } = 0.92;
+    public double SidebarOpacity { get; set; } = 0.96;
+    public double BackgroundEffectOpacity { get; set; } = 0.55;
     public string? LastSeenLauncherVersion { get; set; }
 
     public static string DefaultInstallDirectory()

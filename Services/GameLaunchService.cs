@@ -67,6 +67,7 @@ public sealed class GameLaunchService
         {
             foreach (var runtimeFile in runtime.ClasspathFiles
                 .Append(runtime.ClientJarPath)
+                .Concat(runtime.LoaderArtifactFiles)
                 .Where(path => !string.IsNullOrWhiteSpace(path)))
             {
                 if (!File.Exists(runtimeFile))
@@ -170,8 +171,10 @@ public sealed class GameLaunchService
             $"Loader: {manifest.Loader} {manifest.LoaderVersion}",
             $"Runtime version: {runtime.VersionId}",
             $"Main class: {runtime.MainClass}",
-            $"NeoForge in classpath: {HasNeoForgeRuntime(manifest, runtime)}",
+            $"NeoForge runtime: {HasNeoForgeRuntime(manifest, runtime)}",
             $"Classpath files: {runtime.ClasspathFiles.Count}",
+            $"Loader artifact files: {runtime.LoaderArtifactFiles.Count}",
+            $"RAM: {Math.Clamp(settings.RamMb, 1024, 32768)} MB",
             $"Install directory: {settings.InstallDirectory}"
         });
     }
@@ -907,7 +910,7 @@ public sealed class GameLaunchService
         LauncherSettings settings,
         MinecraftRuntime runtime)
     {
-        return value
+        var expanded = value
             .Replace("${game_directory}", settings.InstallDirectory, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_name}", settings.PlayerName, StringComparison.OrdinalIgnoreCase)
             .Replace("${player_uuid}", OfflinePlayerUuid(settings.PlayerName), StringComparison.OrdinalIgnoreCase)
@@ -919,6 +922,25 @@ public sealed class GameLaunchService
             .Replace("${version_name}", runtime.VersionId, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader}", manifest.Loader, StringComparison.OrdinalIgnoreCase)
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
+
+        return expanded.StartsWith("-DignoreList=", StringComparison.OrdinalIgnoreCase)
+            ? EnsureIgnoreListContainsClientJar(expanded, runtime.ClientJarPath)
+            : expanded;
+    }
+
+    private static string EnsureIgnoreListContainsClientJar(string argument, string clientJarPath)
+    {
+        var clientJarName = Path.GetFileName(clientJarPath);
+        if (string.IsNullOrWhiteSpace(clientJarName))
+        {
+            return argument;
+        }
+
+        var ignoreList = argument["-DignoreList=".Length..];
+        var entries = ignoreList.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+        return entries.Any(entry => string.Equals(entry, clientJarName, StringComparison.OrdinalIgnoreCase))
+            ? argument
+            : argument + "," + clientJarName;
     }
 
     private static bool HasNeoForgeRuntime(LauncherManifest manifest, MinecraftRuntime runtime)
@@ -928,19 +950,14 @@ public sealed class GameLaunchService
             return true;
         }
 
-        return runtime.ClasspathFiles.Any(path => IsNeoForgeClasspathFile(path, manifest.LoaderVersion))
+        return runtime.LoaderArtifactFiles.Any(IsNeoForgeRuntimeFile)
             && runtime.VersionId.Contains("neoforge", StringComparison.OrdinalIgnoreCase)
             && !string.IsNullOrWhiteSpace(runtime.MainClass);
     }
 
-    private static bool IsNeoForgeClasspathFile(string path, string loaderVersion)
+    private static bool IsNeoForgeRuntimeFile(string path)
     {
-        var normalized = path.Replace('\\', '/');
-        var fileName = Path.GetFileName(path);
-        return normalized.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
-            && normalized.Contains(loaderVersion, StringComparison.OrdinalIgnoreCase)
-            && (normalized.Contains("/net/neoforged/neoforge/", StringComparison.OrdinalIgnoreCase)
-                || fileName.Contains("neoforge", StringComparison.OrdinalIgnoreCase));
+        return path.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) && File.Exists(path);
     }
 
     private static string OfflinePlayerUuid(string playerName)
@@ -987,7 +1004,9 @@ public sealed class GameLaunchService
     private static string CurrentLauncherVersion()
     {
         var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
-        return $"{version.Major}.{version.Minor}.{version.Build}";
+        return version.Build == 0
+            ? $"{version.Major}.{version.Minor}"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static string Quote(string value)

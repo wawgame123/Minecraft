@@ -24,11 +24,13 @@ jobs:
           VERSION="${TAG_NAME#v}"
 
           cat > release-notes.md <<'NOTES'
-          BUGFIX
+          minivibe 0.3
 
-          - Лаунчер теперь блокирует повторный запуск Minecraft под тем же ником, пока предыдущий процесс еще жив.
-          - В консоль Minecraft добавлена диагностика запуска: ник, UUID, VersionId, MainClass и наличие NeoForge в classpath.
-          - Лаунчер удаляет устаревшие lock-файлы после краша, перезагрузки или переиспользования PID системой.
+          - Исправлен запуск NeoForge без привязки к имени jar-файла профиля.
+          - Поиск версии, libraries и NeoForge-артефактов учитывает выбранную игроком папку игры.
+          - RAM выделяется ровно по настройке пользователя.
+          - Добавлены плавные настройки прозрачности панелей и видимости динамического фона.
+          - Все моды из manifest requiredFiles синхронизируются как обязательные.
           - В релиз входят два установщика: автономный с .NET внутри и маленький no-dotnet для ПК с установленным .NET.
           - Windows portable и experimental macOS сборки тоже входят в релиз.
           NOTES
@@ -44,8 +46,8 @@ jobs:
           fi
 
           if gh release view "$TAG_NAME" > /dev/null 2>&1; then
-            gh release edit "$TAG_NAME" --title "minivibe $TAG_NAME BUGFIX" --notes-file release-notes.md
+            gh release edit "$TAG_NAME" --title "minivibe $TAG_NAME" --notes-file release-notes.md
             gh release upload "$TAG_NAME" "${ASSETS[@]}" --clobber
           else
-            gh release create "$TAG_NAME" "${ASSETS[@]}" --title "minivibe $TAG_NAME BUGFIX" --notes-file release-notes.md
+            gh release create "$TAG_NAME" "${ASSETS[@]}" --title "minivibe $TAG_NAME" --notes-file release-notes.md
           fi
