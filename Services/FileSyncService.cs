@@ -520,14 +520,16 @@ public sealed class FileSyncService
         foreach (var modPath in Directory.EnumerateFiles(modsDirectory, "*.jar", SearchOption.TopDirectoryOnly))
         {
             var actual = ReadModJarIdentity(modPath);
-            if (actual is null || !expectedMods.TryGetValue(actual.Id, out var expected))
+            if (actual is null || !expectedMods.TryGetValue(actual.Id, out var expectedMatches))
             {
                 continue;
             }
 
             var relativePath = Path.GetRelativePath(installDirectory, modPath).Replace('\\', '/');
-            var sameManifestPath = string.Equals(relativePath, expected.ManifestPath, StringComparison.OrdinalIgnoreCase);
-            var versionMismatch = sameManifestPath
+            var expected = expectedMatches
+                .FirstOrDefault(match => string.Equals(relativePath, match.ManifestPath, StringComparison.OrdinalIgnoreCase));
+            var sameManifestPath = expected is not null;
+            var versionMismatch = expected is not null
                 && !string.IsNullOrWhiteSpace(expected.Version)
                 && !string.IsNullOrWhiteSpace(actual.Version)
                 && !string.Equals(actual.Version, expected.Version, StringComparison.OrdinalIgnoreCase);
@@ -549,9 +551,9 @@ public sealed class FileSyncService
         }
     }
 
-    private static Dictionary<string, ExpectedMod> BuildExpectedModMap(string installDirectory, IEnumerable<ManifestFile> managedFiles)
+    private static Dictionary<string, List<ExpectedMod>> BuildExpectedModMap(string installDirectory, IEnumerable<ManifestFile> managedFiles)
     {
-        var expectedMods = new Dictionary<string, ExpectedMod>(StringComparer.OrdinalIgnoreCase);
+        var expectedMods = new Dictionary<string, List<ExpectedMod>>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var file in managedFiles.Where(IsManagedModJar))
         {
@@ -566,7 +568,16 @@ public sealed class FileSyncService
             }
 
             var manifestPath = file.Path.Replace('\\', '/');
-            expectedMods[identity.Id] = new ExpectedMod(identity.Id, identity.Version, manifestPath);
+            if (!expectedMods.TryGetValue(identity.Id, out var expectedMatches))
+            {
+                expectedMatches = [];
+                expectedMods[identity.Id] = expectedMatches;
+            }
+
+            if (!expectedMatches.Any(match => string.Equals(match.ManifestPath, manifestPath, StringComparison.OrdinalIgnoreCase)))
+            {
+                expectedMatches.Add(new ExpectedMod(identity.Id, identity.Version, manifestPath));
+            }
         }
 
         return expectedMods;

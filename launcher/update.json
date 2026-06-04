@@ -1,10 +1,10 @@
 ﻿{
-    "version":  "0.2.11",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.11-WIN-portable.zip",
-    "sha256":  "dfc2d4f1779c74b06993720be726f9455bca6f3aec6627b7c4c5aa883a46dd8c",
+    "version":  "0.2.12",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.12-WIN-portable.zip",
+    "sha256":  "6e7819af25a68af68b5af413dc9d1829af5c9e05dae5a0be761cdcda71b484fe",
     "mandatory":  false,
     "notes":  [
-                  "Исправлен краш при поиске NeoForge: чужие или битые .json в выбранной папке версии теперь пропускаются.",
-                  "В опубликованные сборки больше не кладутся debug symbols, поэтому crash report не будет показывать путь к исходникам на машине сборки."
+                  "Исправлено повторное скачивание Cloth Config и других модов, если в manifest.json есть несколько файлов с одним modId.",
+                  "Автоочистка конфликтующих модов теперь учитывает все допустимые пути из manifest.json, а не только последний файл с таким modId."
               ]
 }
