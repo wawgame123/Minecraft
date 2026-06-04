@@ -35,6 +35,7 @@ public partial class MainWindow : Window
     private bool _syncingPlayerName;
     private bool _mapInitialized;
     private string? _selectedSkinPath;
+    private Process? _minecraftProcess;
 
     public MainWindow()
     {
@@ -390,6 +391,26 @@ public partial class MainWindow : Window
         await RunGuardedAsync(async () =>
         {
             await SaveSettingsFromUiAsync();
+            if (_minecraftProcess is not null && !_minecraftProcess.HasExited)
+            {
+                MainStatusText.Text = $"Minecraft уже запущен через minivibe. PID: {_minecraftProcess.Id}.";
+                SidebarStatusText.Text = "Игра уже запущена";
+                return;
+            }
+
+            var activeSession = _gameLaunchService.FindActiveSession(_settings);
+            if (activeSession is not null)
+            {
+                MainStatusText.Text = $"Minecraft уже запущен под ником {_settings.PlayerName}. PID: {activeSession.ProcessId}.";
+                SidebarStatusText.Text = "Ник уже в игре";
+                System.Windows.MessageBox.Show(
+                    $"Minecraft уже запущен под ником {_settings.PlayerName}.\n\nPID: {activeSession.ProcessId}\nПапка: {activeSession.InstallDirectory}\n\nЗакройте тот Minecraft перед повторным запуском.",
+                    "minivibe",
+                    MessageBoxButton.OK,
+                    MessageBoxImage.Information);
+                return;
+            }
+
             if (_manifest is null)
             {
                 await LoadManifestAsync(repairMissingGameFiles: false);
@@ -445,9 +466,16 @@ public partial class MainWindow : Window
                     Owner = this
                 };
                 logWindow.AppendLine("Запускаю Minecraft...");
+                logWindow.AppendLine(_gameLaunchService.BuildLaunchSummary(_manifest!, _settings, minecraftRuntime));
                 logWindow.Show();
             }
 
+            var launchedSettings = new LauncherSettings
+            {
+                PlayerName = _settings.PlayerName,
+                InstallDirectory = _settings.InstallDirectory
+            };
+            var launchedProcessId = 0;
             var process = _gameLaunchService.Start(
                 _manifest!,
                 _settings,
@@ -456,11 +484,17 @@ public partial class MainWindow : Window
                 errorReceived: logWindow is null ? null : line => logWindow.AppendLine("[ERR] " + line),
                 processExited: exitCode =>
                 {
+                    if (launchedProcessId != 0)
+                    {
+                        _gameLaunchService.ClearActiveSession(launchedSettings, launchedProcessId);
+                    }
+
                     logWindow?.MarkProcessExited(exitCode);
                     if (!Dispatcher.HasShutdownStarted)
                     {
                         Dispatcher.Invoke(() =>
                         {
+                            _minecraftProcess = null;
                             MainStatusText.Text = exitCode == 0
                                 ? "Minecraft закрыт."
                                 : _settings.EnableGameConsole
@@ -471,6 +505,9 @@ public partial class MainWindow : Window
                     }
                 });
 
+            launchedProcessId = process.Id;
+            _minecraftProcess = process;
+            _gameLaunchService.RegisterActiveSession(launchedSettings, process);
             logWindow?.SetProcessStarted(process.Id);
             MainStatusText.Text = _settings.EnableGameConsole
                 ? "Minecraft запущен."

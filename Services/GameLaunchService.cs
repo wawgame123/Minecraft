@@ -17,6 +17,11 @@ public sealed class GameLaunchService
     private const string PortableJavaFolderName = "java-21";
     private const string JavaDownloadUrl = "https://api.adoptium.net/v3/binary/latest/21/ga/windows/x64/jre/hotspot/normal/eclipse";
 
+    private static readonly string SessionDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
+        "Minivibe",
+        "Sessions");
+
     private readonly HttpClient _httpClient = new();
 
     public IReadOnlyList<string> ValidateReady(
@@ -71,7 +76,104 @@ public sealed class GameLaunchService
             }
         }
 
+        if (runtime is not null
+            && string.Equals(manifest.Loader, "neoforge", StringComparison.OrdinalIgnoreCase)
+            && !HasNeoForgeRuntime(manifest, runtime))
+        {
+            issues.Add($"NeoForge {manifest.LoaderVersion} не попал в classpath. Лаунчер не будет запускать vanilla-профиль для NeoForge-сервера.");
+        }
+
         return issues;
+    }
+
+    public ActiveGameSession? FindActiveSession(LauncherSettings settings)
+    {
+        var path = SessionLockPath(settings.PlayerName);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            var lines = File.ReadAllLines(path);
+            if (lines.Length < 1 || !int.TryParse(lines[0], out var processId))
+            {
+                File.Delete(path);
+                return null;
+            }
+
+            var process = Process.GetProcessById(processId);
+            if (process.HasExited || !IsExpectedLockedProcess(process, lines.ElementAtOrDefault(1)))
+            {
+                File.Delete(path);
+                return null;
+            }
+
+            return new ActiveGameSession(processId, lines.ElementAtOrDefault(2) ?? "");
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch
+            {
+                // Stale locks are cleaned on the next launch attempt.
+            }
+
+            return null;
+        }
+    }
+
+    public void RegisterActiveSession(LauncherSettings settings, Process process)
+    {
+        Directory.CreateDirectory(SessionDirectory);
+        File.WriteAllLines(SessionLockPath(settings.PlayerName), new[]
+        {
+            process.Id.ToString(),
+            SafeProcessStartTicks(process).ToString(),
+            settings.InstallDirectory,
+            DateTimeOffset.Now.ToString("O")
+        });
+    }
+
+    public void ClearActiveSession(LauncherSettings settings, int processId)
+    {
+        var path = SessionLockPath(settings.PlayerName);
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            var firstLine = File.ReadLines(path).FirstOrDefault();
+            if (int.TryParse(firstLine, out var lockedProcessId) && lockedProcessId == processId)
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // The lock will be treated as stale once the process is gone.
+        }
+    }
+
+    public string BuildLaunchSummary(LauncherManifest manifest, LauncherSettings settings, MinecraftRuntime runtime)
+    {
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"Nick: {settings.PlayerName}",
+            $"UUID: {OfflinePlayerUuid(settings.PlayerName)}",
+            $"Loader: {manifest.Loader} {manifest.LoaderVersion}",
+            $"Runtime version: {runtime.VersionId}",
+            $"Main class: {runtime.MainClass}",
+            $"NeoForge in classpath: {HasNeoForgeRuntime(manifest, runtime)}",
+            $"Classpath files: {runtime.ClasspathFiles.Count}",
+            $"Install directory: {settings.InstallDirectory}"
+        });
     }
 
     public Process Start(
@@ -819,6 +921,28 @@ public sealed class GameLaunchService
             .Replace("${loader_version}", manifest.LoaderVersion, StringComparison.OrdinalIgnoreCase);
     }
 
+    private static bool HasNeoForgeRuntime(LauncherManifest manifest, MinecraftRuntime runtime)
+    {
+        if (!string.Equals(manifest.Loader, "neoforge", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return runtime.ClasspathFiles.Any(path => IsNeoForgeClasspathFile(path, manifest.LoaderVersion))
+            && runtime.VersionId.Contains("neoforge", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(runtime.MainClass);
+    }
+
+    private static bool IsNeoForgeClasspathFile(string path, string loaderVersion)
+    {
+        var normalized = path.Replace('\\', '/');
+        var fileName = Path.GetFileName(path);
+        return normalized.EndsWith(".jar", StringComparison.OrdinalIgnoreCase)
+            && normalized.Contains(loaderVersion, StringComparison.OrdinalIgnoreCase)
+            && (normalized.Contains("/net/neoforged/neoforge/", StringComparison.OrdinalIgnoreCase)
+                || fileName.Contains("neoforge", StringComparison.OrdinalIgnoreCase));
+    }
+
     private static string OfflinePlayerUuid(string playerName)
     {
         var hash = MD5.HashData(Encoding.UTF8.GetBytes("OfflinePlayer:" + playerName));
@@ -827,6 +951,37 @@ public sealed class GameLaunchService
 
         var hex = Convert.ToHexString(hash).ToLowerInvariant();
         return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
+    }
+
+    private static string SessionLockPath(string playerName)
+    {
+        var key = string.IsNullOrWhiteSpace(playerName)
+            ? "unknown"
+            : OfflinePlayerUuid(playerName.Trim());
+        return Path.Combine(SessionDirectory, key + ".pid");
+    }
+
+    private static bool IsExpectedLockedProcess(Process process, string? expectedStartTicks)
+    {
+        if (string.IsNullOrWhiteSpace(expectedStartTicks)
+            || !long.TryParse(expectedStartTicks, out var ticks))
+        {
+            return false;
+        }
+
+        return ticks > 0 && SafeProcessStartTicks(process) == ticks;
+    }
+
+    private static long SafeProcessStartTicks(Process process)
+    {
+        try
+        {
+            return process.StartTime.ToUniversalTime().Ticks;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     private static string CurrentLauncherVersion()
@@ -850,3 +1005,7 @@ public sealed class GameLaunchService
         return value.Trim('"');
     }
 }
+
+public sealed record ActiveGameSession(
+    int ProcessId,
+    string InstallDirectory);
