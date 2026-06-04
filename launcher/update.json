@@ -1,10 +1,10 @@
 ﻿{
-    "version":  "0.2.10",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.10-WIN-portable.zip",
-    "sha256":  "b5a47b6edb8fd378e11efb7fc0917e59e02fb7a6f05afd14c95a2f4e461bbdcd",
+    "version":  "0.2.11",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.11-WIN-portable.zip",
+    "sha256":  "dfc2d4f1779c74b06993720be726f9455bca6f3aec6627b7c4c5aa883a46dd8c",
     "mandatory":  false,
     "notes":  [
-                  "Исправлена автоочистка конфликтующих версий модов: если modId совпадает с manifest.json, но jar не тот, лаунчер заменит его файлом из GitHub.",
-                  "Это чинит случаи вроде чужого Sodium/Sable из старой папки .minecraft, из-за которых игра падала на mixin-ошибках."
+                  "Исправлен краш при поиске NeoForge: чужие или битые .json в выбранной папке версии теперь пропускаются.",
+                  "В опубликованные сборки больше не кладутся debug symbols, поэтому crash report не будет показывать путь к исходникам на машине сборки."
               ]
 }

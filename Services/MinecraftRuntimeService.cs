@@ -262,8 +262,25 @@ public sealed class MinecraftRuntimeService
             return null;
         }
 
-        await using var installedStream = File.OpenRead(installedVersionJsonPath);
-        var installedVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(installedStream, JsonOptions, cancellationToken);
+        MinecraftVersionJson? installedVersion;
+        try
+        {
+            await using var installedStream = File.OpenRead(installedVersionJsonPath);
+            installedVersion = await JsonSerializer.DeserializeAsync<MinecraftVersionJson>(installedStream, JsonOptions, cancellationToken);
+        }
+        catch (JsonException)
+        {
+            return null;
+        }
+        catch (InvalidOperationException)
+        {
+            return null;
+        }
+        catch (IOException)
+        {
+            return null;
+        }
+
         if (installedVersion is null
             || installedVersion.Libraries.Count == 0
             || string.IsNullOrWhiteSpace(installedVersion.MainClass))

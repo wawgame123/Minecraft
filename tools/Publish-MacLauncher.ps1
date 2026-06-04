@@ -66,6 +66,8 @@ foreach ($runtime in $Runtimes) {
         "true",
         "-p:PublishSingleFile=true",
         "-p:IncludeNativeLibrariesForSelfExtract=true",
+        "-p:DebugType=None",
+        "-p:DebugSymbols=false",
         "-o",
         $publishDir
     )

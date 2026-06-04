@@ -63,11 +63,11 @@ New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
 if ([string]::IsNullOrWhiteSpace($Runtime)) {
-    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-o", $publishDir)
+    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-p:DebugType=None", "-p:DebugSymbols=false", "-o", $publishDir)
     $zipName = "Minivibe-$version-WIN-portable.zip"
 }
 else {
-    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-o", $publishDir)
+    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-p:DebugType=None", "-p:DebugSymbols=false", "-o", $publishDir)
     $zipName = "Minivibe-$version-$Runtime-portable.zip"
 }
 
@@ -87,8 +87,8 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        ConvertFrom-Utf8Base64 "0JjRgdC/0YDQsNCy0LvQtdC90LAg0LDQstGC0L7QvtGH0LjRgdGC0LrQsCDQutC+0L3RhNC70LjQutGC0YPRjtGJ0LjRhSDQstC10YDRgdC40Lkg0LzQvtC00L7Qsjog0LXRgdC70LggbW9kSWQg0YHQvtCy0L/QsNC00LDQtdGCINGBIG1hbmlmZXN0Lmpzb24sINC90L4gamFyINC90LUg0YLQvtGCLCDQu9Cw0YPQvdGH0LXRgCDQt9Cw0LzQtdC90LjRgiDQtdCz0L4g0YTQsNC50LvQvtC8INC40LcgR2l0SHViLg=="
-        ConvertFrom-Utf8Base64 "0K3RgtC+INGH0LjQvdC40YIg0YHQu9GD0YfQsNC4INCy0YDQvtC00LUg0YfRg9C20L7Qs9C+IFNvZGl1bS9TYWJsZSDQuNC3INGB0YLQsNGA0L7QuSDQv9Cw0L/QutC4IC5taW5lY3JhZnQsINC40Lct0LfQsCDQutC+0YLQvtGA0YvRhSDQuNCz0YDQsCDQv9Cw0LTQsNC70LAg0L3QsCBtaXhpbi3QvtGI0LjQsdC60LDRhS4="
+        ConvertFrom-Utf8Base64 "0JjRgdC/0YDQsNCy0LvQtdC9INC60YDQsNGIINC/0YDQuCDQv9C+0LjRgdC60LUgTmVvRm9yZ2U6INGH0YPQttC40LUg0LjQu9C4INCx0LjRgtGL0LUgLmpzb24g0LIg0LLRi9Cx0YDQsNC90L3QvtC5INC/0LDQv9C60LUg0LLQtdGA0YHQuNC4INGC0LXQv9C10YDRjCDQv9GA0L7Qv9GD0YHQutCw0Y7RgtGB0Y8u"
+        ConvertFrom-Utf8Base64 "0JIg0L7Qv9GD0LHQu9C40LrQvtCy0LDQvdC90YvQtSDRgdCx0L7RgNC60Lgg0LHQvtC70YzRiNC1INC90LUg0LrQu9Cw0LTRg9GC0YHRjyBkZWJ1ZyBzeW1ib2xzLCDQv9C+0Y3RgtC+0LzRgyBjcmFzaCByZXBvcnQg0L3QtSDQsdGD0LTQtdGCINC/0L7QutCw0LfRi9Cy0LDRgtGMINC/0YPRgtGMINC6INC40YHRhdC+0LTQvdC40LrQsNC8INC90LAg0LzQsNGI0LjQvdC1INGB0LHQvtGA0LrQuC4="
     )
 }
 
