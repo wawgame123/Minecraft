@@ -15,14 +15,6 @@
       "required": true
     },
     {
-      "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
-      "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
-      "size": 1708817,
-      "category": "resourcepack",
-      "required": true
-    },
-    {
       "path": "mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/accessories_cclayer-9.3.1-beta.28-1.21.1-neoforge.jar",
       "sha256": "055e4ca4474ed4730b5f0d1d30f0fa052655bc70e7a3e9a9af08c24a5bc7107a",
@@ -813,6 +805,46 @@
       "size": 6557328,
       "category": "mod",
       "required": true
+    },
+    {
+      "path": "mods/cbc_at_Neoforge_1.21.1_0.1.4c.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cbc_at_Neoforge_1.21.1_0.1.4c.jar",
+      "sha256": "88fb40b3353308c90d68f4512b78b63fd7278d05915d9d8628cecab9508ee58f",
+      "size": 1438535,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "mods/createbigcannons-5.11.5\u002Bmc.1.21.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/createbigcannons-5.11.5%2Bmc.1.21.1.jar",
+      "sha256": "2c0576338ec400bef5ca373650e3e919eee602c002ce1b7b6eb0f69f3c67764a",
+      "size": 3765142,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "mods/create_radar-0.4.9.2-1.21.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/create_radar-0.4.9.2-1.21.1.jar",
+      "sha256": "79b0b1fa211d54c819fd32642ecc3f2ddd4d92ac348764e785a0a8c1901acfbe",
+      "size": 2991582,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "mods/ritchiesprojectilelib-2.1.2\u002Bmc.1.21.1-neoforge.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/ritchiesprojectilelib-2.1.2%2Bmc.1.21.1-neoforge.jar",
+      "sha256": "cc509060833736fb650aa4c36b1ce33a7eeeb9ca6e9f8e80a7c951c9e7487b24",
+      "size": 76369,
+      "category": "mod",
+      "required": true
+    },
+    {
+      "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
+      "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
+      "size": 1708817,
+      "category": "resourcepack",
+      "required": true
     }
   ],
   "optionalShaders": [
@@ -849,6 +881,7 @@
       "required": false
     }
   ],
+  "optionalEmotes": [],
   "changelog": [],
   "news": [
     {
