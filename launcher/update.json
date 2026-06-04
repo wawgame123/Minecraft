@@ -1,11 +1,10 @@
 ﻿{
-    "version":  "0.2.9",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.9-WIN-portable.zip",
-    "sha256":  "c11a03ee1742af482d78e37d4716dc198be9f00b07bc0ffad3d2b40a85f57150",
+    "version":  "0.2.10",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.2.10-WIN-portable.zip",
+    "sha256":  "b5a47b6edb8fd378e11efb7fc0917e59e02fb7a6f05afd14c95a2f4e461bbdcd",
     "mandatory":  false,
     "notes":  [
-                  "Добавлена настройка для показа имен скачиваемых файлов.",
-                  "Улучшен поиск существующего NeoForge и Minecraft assets/libraries, особенно если выбрана папка .minecraft/versions/neoforge-*.",
-                  "Эмоции теперь ставятся из emotes.rar без зависимости от manifest и без проверки содержимого архива."
+                  "Исправлена автоочистка конфликтующих версий модов: если modId совпадает с manifest.json, но jar не тот, лаунчер заменит его файлом из GitHub.",
+                  "Это чинит случаи вроде чужого Sodium/Sable из старой папки .minecraft, из-за которых игра падала на mixin-ошибках."
               ]
 }

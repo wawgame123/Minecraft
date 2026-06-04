@@ -1,5 +1,6 @@
 param(
-    [string]$Configuration = "Release"
+    [string]$Configuration = "Release",
+    [string]$Runtime = "win-x64"
 )
 
 Set-StrictMode -Version Latest
@@ -55,17 +56,37 @@ if (Test-Path -LiteralPath $publishDir) {
 New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
-Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--no-restore", "-o", $publishDir)
+Invoke-Checked dotnet @(
+    "publish",
+    $project,
+    "-c",
+    $Configuration,
+    "-r",
+    $Runtime,
+    "--self-contained",
+    "true",
+    "-p:PublishSingleFile=true",
+    "-p:EnableCompressionInSingleFile=true",
+    "-p:DebugType=None",
+    "-p:DebugSymbols=false",
+    "-o",
+    $publishDir
+)
 
-$zipName = "MinivibeInstaller-$version.zip"
-$zipPath = Join-Path $launcherDir $zipName
-Assert-UnderRoot -Path $zipPath -Root $root
-if (Test-Path -LiteralPath $zipPath) {
-    Remove-Item -LiteralPath $zipPath -Force
+$sourceExe = Join-Path $publishDir "MinivibeInstaller.exe"
+if (-not (Test-Path -LiteralPath $sourceExe)) {
+    throw "Single-file installer was not produced: $sourceExe"
 }
 
-Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
-$hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+$installerName = "MinivibeInstaller-$version.exe"
+$installerPath = Join-Path $launcherDir $installerName
+Assert-UnderRoot -Path $installerPath -Root $root
+if (Test-Path -LiteralPath $installerPath) {
+    Remove-Item -LiteralPath $installerPath -Force
+}
 
-Write-Output "Published installer: $zipPath"
+Copy-Item -LiteralPath $sourceExe -Destination $installerPath -Force
+$hash = (Get-FileHash -LiteralPath $installerPath -Algorithm SHA256).Hash.ToLowerInvariant()
+
+Write-Output "Published installer: $installerPath"
 Write-Output "SHA256: $hash"

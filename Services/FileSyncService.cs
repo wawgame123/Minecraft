@@ -3,6 +3,8 @@ using System.IO;
 using System.IO.Compression;
 using System.Net.Http;
 using System.Security.Cryptography;
+using System.Text.Json;
+using System.Text.RegularExpressions;
 using SharpCompress.Archives;
 using SharpCompress.Common;
 using SharpCompress.Readers;
@@ -20,6 +22,9 @@ public sealed class FileSyncService
     private const int MaxParallelDownloads = 16;
     private const string EmotesArchiveFileName = "emotes.rar";
     private const string EmotesArchiveUrl = "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/emotes.rar";
+    private static readonly Regex TomlModIdRegex = new(@"(?m)^\s*modId\s*=\s*[""'](?<value>[^""']+)[""']", RegexOptions.Compiled);
+    private static readonly Regex TomlVersionRegex = new(@"(?m)^\s*version\s*=\s*[""'](?<value>[^""']+)[""']", RegexOptions.Compiled);
+    private static readonly Regex VersionTokenRegex = new(@"^(?:v?\d|\d+\.\d|mc\d)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
     private readonly HttpClient _httpClient = new();
 
@@ -35,9 +40,11 @@ public sealed class FileSyncService
         bool includeRequiredFiles = true)
     {
         Directory.CreateDirectory(settings.InstallDirectory);
-        RemoveBlockedMods(settings.InstallDirectory, progress);
 
         var files = GetManagedFiles(manifest, settings.EnableShaders, includeEmotes, includeRequiredFiles).ToList();
+        RemoveBlockedMods(settings.InstallDirectory, progress);
+        RemoveOutdatedManagedMods(settings.InstallDirectory, files, progress);
+
         var statuses = new FileStatusItem[files.Count];
         var repairQueue = new ConcurrentBag<(int Index, ManifestFile File, string FullPath)>();
         var checkedCount = 0;
@@ -493,6 +500,218 @@ public sealed class FileSyncService
         }
     }
 
+    private static void RemoveOutdatedManagedMods(
+        string installDirectory,
+        IReadOnlyCollection<ManifestFile> managedFiles,
+        IProgress<string>? progress)
+    {
+        var modsDirectory = Path.Combine(installDirectory, "mods");
+        if (!Directory.Exists(modsDirectory))
+        {
+            return;
+        }
+
+        var expectedMods = BuildExpectedModMap(installDirectory, managedFiles);
+        if (expectedMods.Count == 0)
+        {
+            return;
+        }
+
+        foreach (var modPath in Directory.EnumerateFiles(modsDirectory, "*.jar", SearchOption.TopDirectoryOnly))
+        {
+            var actual = ReadModJarIdentity(modPath);
+            if (actual is null || !expectedMods.TryGetValue(actual.Id, out var expected))
+            {
+                continue;
+            }
+
+            var relativePath = Path.GetRelativePath(installDirectory, modPath).Replace('\\', '/');
+            var sameManifestPath = string.Equals(relativePath, expected.ManifestPath, StringComparison.OrdinalIgnoreCase);
+            var versionMismatch = sameManifestPath
+                && !string.IsNullOrWhiteSpace(expected.Version)
+                && !string.IsNullOrWhiteSpace(actual.Version)
+                && !string.Equals(actual.Version, expected.Version, StringComparison.OrdinalIgnoreCase);
+
+            if (sameManifestPath && !versionMismatch)
+            {
+                continue;
+            }
+
+            try
+            {
+                File.Delete(modPath);
+                progress?.Report($"Заменяю мод {actual.Id} на версию из manifest.json");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Не удалось удалить устаревший мод {actual.Id}: {modPath}. {ex.Message}", ex);
+            }
+        }
+    }
+
+    private static Dictionary<string, ExpectedMod> BuildExpectedModMap(string installDirectory, IEnumerable<ManifestFile> managedFiles)
+    {
+        var expectedMods = new Dictionary<string, ExpectedMod>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in managedFiles.Where(IsManagedModJar))
+        {
+            var expectedPath = ResolveInsideInstallDirectory(installDirectory, file.Path);
+            var identity = File.Exists(expectedPath)
+                ? ReadModJarIdentity(expectedPath)
+                : CreateFallbackIdentityFromFileName(expectedPath);
+
+            if (identity is null)
+            {
+                continue;
+            }
+
+            var manifestPath = file.Path.Replace('\\', '/');
+            expectedMods[identity.Id] = new ExpectedMod(identity.Id, identity.Version, manifestPath);
+        }
+
+        return expectedMods;
+    }
+
+    private static bool IsManagedModJar(ManifestFile file)
+    {
+        var path = file.Path.Replace('\\', '/');
+        return path.StartsWith("mods/", StringComparison.OrdinalIgnoreCase)
+            && path.EndsWith(".jar", StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static ModJarIdentity? ReadModJarIdentity(string jarPath)
+    {
+        try
+        {
+            using var archive = ZipFile.OpenRead(jarPath);
+            foreach (var entry in archive.Entries)
+            {
+                if (!IsModMetadataEntry(entry.FullName) || entry.Length <= 0 || entry.Length > 1024 * 1024)
+                {
+                    continue;
+                }
+
+                using var reader = new StreamReader(entry.Open());
+                var metadata = reader.ReadToEnd();
+                var identity = entry.FullName.EndsWith(".json", StringComparison.OrdinalIgnoreCase)
+                    ? ReadJsonModIdentity(metadata)
+                    : ReadTomlModIdentity(metadata);
+
+                if (identity is not null)
+                {
+                    return identity;
+                }
+            }
+        }
+        catch
+        {
+            return CreateFallbackIdentityFromFileName(jarPath);
+        }
+
+        return CreateFallbackIdentityFromFileName(jarPath);
+    }
+
+    private static ModJarIdentity? ReadJsonModIdentity(string metadata)
+    {
+        try
+        {
+            using var document = JsonDocument.Parse(metadata);
+            var root = document.RootElement;
+            if (root.ValueKind == JsonValueKind.Array && root.GetArrayLength() > 0)
+            {
+                root = root[0];
+            }
+
+            if (root.ValueKind != JsonValueKind.Object)
+            {
+                return null;
+            }
+
+            var id = GetJsonString(root, "id")
+                ?? GetJsonString(root, "modid")
+                ?? GetJsonString(root, "modId");
+            var version = GetJsonString(root, "version");
+
+            return CreateIdentity(id, version);
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static string? GetJsonString(JsonElement element, string propertyName)
+    {
+        return element.TryGetProperty(propertyName, out var property) && property.ValueKind == JsonValueKind.String
+            ? property.GetString()
+            : null;
+    }
+
+    private static ModJarIdentity? ReadTomlModIdentity(string metadata)
+    {
+        var id = TomlModIdRegex.Match(metadata).Groups["value"].Value;
+        var version = TomlVersionRegex.Match(metadata).Groups["value"].Value;
+        return CreateIdentity(id, version);
+    }
+
+    private static ModJarIdentity? CreateFallbackIdentityFromFileName(string path)
+    {
+        var fileName = Path.GetFileNameWithoutExtension(path);
+        var id = InferModIdFromFileName(fileName);
+        return CreateIdentity(id, version: "");
+    }
+
+    private static ModJarIdentity? CreateIdentity(string? id, string? version)
+    {
+        id = NormalizeModName(id ?? "");
+        if (string.IsNullOrWhiteSpace(id))
+        {
+            return null;
+        }
+
+        return new ModJarIdentity(id, version ?? "");
+    }
+
+    private static string InferModIdFromFileName(string fileName)
+    {
+        var normalized = fileName.Trim();
+        var packageCandidate = normalized
+            .Split('.', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .FirstOrDefault(part => part.Contains('-', StringComparison.Ordinal) || part.Contains('_', StringComparison.Ordinal));
+        if (!string.IsNullOrWhiteSpace(packageCandidate))
+        {
+            normalized = packageCandidate;
+        }
+
+        var parts = normalized
+            .Split(['-', '_', '+'], StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .ToList();
+        var idParts = new List<string>();
+
+        foreach (var part in parts)
+        {
+            if (IsVersionOrLoaderToken(part))
+            {
+                break;
+            }
+
+            idParts.Add(part);
+        }
+
+        return NormalizeModName(idParts.Count == 0 ? normalized : string.Join("", idParts));
+    }
+
+    private static bool IsVersionOrLoaderToken(string token)
+    {
+        return token.Equals("neoforge", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("forge", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("fabric", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("quilt", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("common", StringComparison.OrdinalIgnoreCase)
+            || token.Equals("minecraft", StringComparison.OrdinalIgnoreCase)
+            || VersionTokenRegex.IsMatch(token);
+    }
+
     private static bool IsBlockedModJar(string modPath)
     {
         var normalizedName = NormalizeModName(Path.GetFileNameWithoutExtension(modPath));
@@ -562,3 +781,12 @@ public sealed class FileSyncService
         progress.Report($"{label} {Math.Clamp(percent, 0, 100)}%");
     }
 }
+
+internal sealed record ModJarIdentity(
+    string Id,
+    string Version);
+
+internal sealed record ExpectedMod(
+    string Id,
+    string Version,
+    string ManifestPath);
