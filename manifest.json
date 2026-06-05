@@ -855,6 +855,14 @@
       "required": true
     },
     {
+      "path": "mods/TotemFactory-1.1.1\u002Bmc1.21.1-NeoForge.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/TotemFactory-1.1.1%2Bmc1.21.1-NeoForge.jar",
+      "sha256": "f1669184eb6fbba2a7684197836806bd9a2d18c1c1424a8d140455ac4e53c77c",
+      "size": 280150,
+      "category": "mod",
+      "required": true
+    },
+    {
       "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
@@ -925,7 +933,7 @@
       "title": "\u041F\u0430\u0440\u0443 \u0430\u0434\u0434\u043E\u043D\u043E\u0432 \u043D\u0430 \u043A\u0440\u0438\u044D\u0439\u0442\u0435 ",
       "date": "2026-06-04",
       "kind": "text",
-      "text": "\u0410\u0434\u0434\u043E\u043D\u044B \u043D\u0430 \u0432\u0441\u044F\u043A\u0438\u0435 \u043F\u0440\u0438\u043A\u043E\u043B\u044B",
+      "text": "\u0410\u0434\u0434\u043E\u043D\u044B \u043D\u0430 \u0432\u0441\u044F\u043A\u0438\u0435 \u043F\u0440\u0438\u043A\u043E\u043B\u044B \u002B \u0430\u0432\u0442\u043E\u043C\u0430\u0442\u0438\u0437\u0430\u0446\u0438\u044F \u043A\u0440\u0430\u0444\u0442\u0430 \u0442\u043E\u0442\u0435\u043C\u043E\u0432",
       "url": ""
     }
   ],
