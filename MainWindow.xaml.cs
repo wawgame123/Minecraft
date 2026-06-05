@@ -34,7 +34,10 @@ public partial class MainWindow : Window
     private bool _bindingSettings;
     private bool _syncingPlayerName;
     private bool _mapInitialized;
+    private bool _busy;
+    private bool _launcherUpdateRequired;
     private string? _selectedSkinPath;
+    private string? _requiredLauncherVersion;
     private Process? _minecraftProcess;
     private CancellationTokenSource? _visualSaveCts;
 
@@ -66,6 +69,7 @@ public partial class MainWindow : Window
                 return;
             }
 
+            await RefreshLauncherUpdateGateAsync();
             await ShowPendingPatchNotesAsync();
             await LoadManifestAsync(repairMissingGameFiles: false);
             await LoadSkinPreviewAsync(_skinService.CachedSkinPath(_settings) ?? _settings.SkinSourcePath);
@@ -80,6 +84,7 @@ public partial class MainWindow : Window
             var update = await _launcherUpdateService.CheckAndPrepareUpdateAsync(_settings, progress, CurrentToken());
             if (update is not null)
             {
+                ApplyLauncherUpdateGate(update.Manifest);
                 System.Windows.MessageBox.Show(
                     $"Вышла новая версия лаунчера: {update.Manifest.Version}.{Environment.NewLine}{Environment.NewLine}После нажатия OK лаунчер будет перезапущен.",
                     "Обновление minivibe",
@@ -99,6 +104,39 @@ public partial class MainWindow : Window
         }
 
         return false;
+    }
+
+    private async Task RefreshLauncherUpdateGateAsync()
+    {
+        try
+        {
+            var update = await _launcherUpdateService.FindAvailableUpdateAsync(CurrentToken());
+            ApplyLauncherUpdateGate(update);
+        }
+        catch
+        {
+            UpdatePrimaryButtonState();
+        }
+    }
+
+    private void ApplyLauncherUpdateGate(LauncherUpdateManifest? update)
+    {
+        _launcherUpdateRequired = update is not null;
+        _requiredLauncherVersion = update?.Version;
+        if (_launcherUpdateRequired)
+        {
+            ShowLauncherUpdateRequiredStatus();
+        }
+
+        UpdatePrimaryButtonState();
+    }
+
+    private void ShowLauncherUpdateRequiredStatus()
+    {
+        var version = string.IsNullOrWhiteSpace(_requiredLauncherVersion) ? "новая версия" : $"версия {_requiredLauncherVersion}";
+        MainStatusText.Text = $"Доступна {version} лаунчера. Обновите minivibe перед запуском Minecraft.";
+        SidebarStatusText.Text = "Нужно обновить лаунчер";
+        ProgressText.Text = "Кнопка игры заблокирована до обновления лаунчера.";
     }
 
     private async Task ShowPendingPatchNotesAsync()
@@ -137,6 +175,37 @@ public partial class MainWindow : Window
         _manifest = await _manifestService.LoadAsync(LauncherEndpoints.ManifestUrl, CurrentToken());
         RenderManifest();
         await EnsureGameFilesReadyAsync(repairMissingGameFiles);
+    }
+
+    private async Task RefreshNewsAsync()
+    {
+        SetBusy(true, "Обновляю новости...");
+        var selectedNewsKey = NewsIdentity(NewsList.SelectedItem as NewsItem);
+        _manifest = await _manifestService.LoadAsync(LauncherEndpoints.ManifestUrl, CurrentToken());
+        RenderManifest(selectedNewsKey);
+        ProgressText.Text = "Новости обновлены.";
+    }
+
+    private async Task RefreshNewsGuardedAsync()
+    {
+        if (_busy)
+        {
+            return;
+        }
+
+        try
+        {
+            await RefreshNewsAsync();
+        }
+        catch (Exception ex)
+        {
+            await _bugReportService.HandleAsync(ex, "News refresh", _settings, _manifest);
+            ProgressText.Text = "Не удалось обновить новости.";
+        }
+        finally
+        {
+            SetBusy(false, ProgressText.Text);
+        }
     }
 
     private async Task EnsureGameFilesReadyAsync(bool repairMissingFiles)
@@ -272,7 +341,7 @@ public partial class MainWindow : Window
         }
     }
 
-    private void RenderManifest()
+    private void RenderManifest(string? selectedNewsKey = null)
     {
         if (_manifest is null)
         {
@@ -292,17 +361,31 @@ public partial class MainWindow : Window
         SidebarStatusText.Text = "Manifest загружен";
 
         HomeChangelogList.ItemsSource = _manifest.Changelog.Take(4);
-        NewsList.ItemsSource = _manifest.News;
-        if (_manifest.News.Count > 0)
-        {
-            NewsList.SelectedIndex = 0;
-        }
-        else
-        {
-            RenderNewsItem(null);
-        }
+        RenderNewsList(selectedNewsKey);
 
         RenderMapLink();
+    }
+
+    private void RenderNewsList(string? selectedNewsKey)
+    {
+        NewsList.ItemsSource = _manifest?.News;
+        if (_manifest is null || _manifest.News.Count == 0)
+        {
+            RenderNewsItem(null);
+            return;
+        }
+
+        var selectedItem = _manifest.News.FirstOrDefault(item => NewsIdentity(item) == selectedNewsKey)
+            ?? _manifest.News[0];
+        NewsList.SelectedItem = selectedItem;
+        RenderNewsItem(selectedItem);
+    }
+
+    private static string? NewsIdentity(NewsItem? item)
+    {
+        return item is null
+            ? null
+            : string.Join("|", item.Title, item.Date, item.Kind, item.Url, item.Text);
     }
 
     private void NewsList_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -398,6 +481,12 @@ public partial class MainWindow : Window
         await RunGuardedAsync(async () =>
         {
             await SaveSettingsFromUiAsync();
+            await RefreshLauncherUpdateGateAsync();
+            if (_launcherUpdateRequired)
+            {
+                return;
+            }
+
             if (_minecraftProcess is not null && !_minecraftProcess.HasExited)
             {
                 MainStatusText.Text = $"Minecraft уже запущен через minivibe. PID: {_minecraftProcess.Id}.";
@@ -545,6 +634,7 @@ public partial class MainWindow : Window
         await RunGuardedAsync(async () =>
         {
             await SaveSettingsFromUiAsync();
+            await RefreshLauncherUpdateGateAsync();
             await LoadManifestAsync(repairMissingGameFiles: false);
         });
     }
@@ -907,7 +997,16 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
     }
 
     private void HomeNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(HomePanel);
-    private void NewsNavButton_Click(object sender, RoutedEventArgs e) => ShowPanel(NewsPanel);
+    private async void NewsNavButton_Click(object sender, RoutedEventArgs e)
+    {
+        ShowPanel(NewsPanel);
+        await RefreshNewsGuardedAsync();
+    }
+
+    private async void RefreshNewsButton_Click(object sender, RoutedEventArgs e)
+    {
+        await RefreshNewsGuardedAsync();
+    }
     private async void MapNavButton_Click(object sender, RoutedEventArgs e)
     {
         ShowPanel(MapPanel);
@@ -1350,20 +1449,27 @@ stage.addEventListener('pointerup',()=>{down=false;stage.classList.remove('dragg
 
     private void UpdatePrimaryButtonState()
     {
-        PlayButton.Content = _gameFilesReady ? "Играть" : "Установить";
+        PlayButton.Content = _launcherUpdateRequired
+            ? "Обновите лаунчер"
+            : _gameFilesReady
+                ? "Играть"
+                : "Установить";
+        PlayButton.IsEnabled = !_busy && !_launcherUpdateRequired;
+        if (_launcherUpdateRequired && !_busy)
+        {
+            ShowLauncherUpdateRequiredStatus();
+        }
     }
 
     private void SetBusy(bool busy, string message)
     {
+        _busy = busy;
         ProgressBar.IsIndeterminate = busy;
         ProgressText.Text = message;
-        PlayButton.IsEnabled = !busy;
         RepairButton.IsEnabled = !busy;
         RefreshManifestButton.IsEnabled = !busy;
-        if (!busy)
-        {
-            UpdatePrimaryButtonState();
-        }
+        RefreshNewsButton.IsEnabled = !busy;
+        UpdatePrimaryButtonState();
     }
 }
 

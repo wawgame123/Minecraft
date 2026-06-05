@@ -454,14 +454,12 @@ internal sealed class MacGameLaunchService
         var args = new List<string>
         {
             $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
-            "-XX:+UseG1GC",
-            "-XX:+ParallelRefProcEnabled",
-            "-XX:MaxGCPauseMillis=200",
             "-XX:+UnlockExperimentalVMOptions",
-            "-XX:+DisableExplicitGC",
+            "-XX:+UseG1GC",
             "-XX:G1NewSizePercent=20",
             "-XX:G1ReservePercent=20",
-            "-XX:InitiatingHeapOccupancyPercent=15",
+            "-XX:MaxGCPauseMillis=50",
+            "-XX:G1HeapRegionSize=32M",
             "-Djava.library.path=" + Quote(runtime.NativesDirectory),
             "-Dminecraft.launcher.brand=minivibe",
             "-Dminecraft.launcher.version=" + CurrentLauncherVersion()

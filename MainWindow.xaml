@@ -338,7 +338,14 @@
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
           </Grid.RowDefinitions>
-          <TextBlock Text="Новости" Style="{StaticResource SectionTitleStyle}"/>
+          <DockPanel>
+            <Button x:Name="RefreshNewsButton"
+                    Content="Обновить"
+                    DockPanel.Dock="Right"
+                    Style="{StaticResource SecondaryButtonStyle}"
+                    Click="RefreshNewsButton_Click"/>
+            <TextBlock Text="Новости" Style="{StaticResource SectionTitleStyle}"/>
+          </DockPanel>
           <Grid Grid.Row="1">
             <Grid.ColumnDefinitions>
               <ColumnDefinition Width="320"/>

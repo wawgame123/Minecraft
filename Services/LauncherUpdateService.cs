@@ -25,6 +25,17 @@ public sealed class LauncherUpdateService
 
     private readonly HttpClient _httpClient = new();
 
+    public async Task<LauncherUpdateManifest?> FindAvailableUpdateAsync(CancellationToken cancellationToken)
+    {
+        var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
+        if (update is null || string.IsNullOrWhiteSpace(update.Version) || string.IsNullOrWhiteSpace(update.Url))
+        {
+            return null;
+        }
+
+        return IsNewerThanCurrent(update.Version) ? update : null;
+    }
+
     public async Task<PreparedLauncherUpdate?> CheckAndPrepareUpdateAsync(
         LauncherSettings settings,
         IProgress<string>? progress,
@@ -36,14 +47,8 @@ public sealed class LauncherUpdateService
         }
 
         progress?.Report("Проверяю обновления лаунчера...");
-        var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
-        if (update is null || string.IsNullOrWhiteSpace(update.Version) || string.IsNullOrWhiteSpace(update.Url))
-        {
-            return null;
-        }
-
-        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
-        if (!Version.TryParse(update.Version, out var remoteVersion) || remoteVersion <= currentVersion)
+        var update = await FindAvailableUpdateAsync(cancellationToken);
+        if (update is null)
         {
             progress?.Report("Лаунчер актуален.");
             return null;
@@ -147,6 +152,26 @@ public sealed class LauncherUpdateService
         {
             return null;
         }
+    }
+
+    private static bool IsNewerThanCurrent(string remoteVersion)
+    {
+        if (!Version.TryParse(remoteVersion, out var parsedRemoteVersion))
+        {
+            return false;
+        }
+
+        var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return NormalizeVersion(parsedRemoteVersion) > NormalizeVersion(currentVersion);
+    }
+
+    private static Version NormalizeVersion(Version version)
+    {
+        return new Version(
+            version.Major,
+            version.Minor,
+            Math.Max(version.Build, 0),
+            Math.Max(version.Revision, 0));
     }
 
     private async Task DownloadFileAsync(string url, string destinationPath, CancellationToken cancellationToken)
