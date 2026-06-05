@@ -839,14 +839,6 @@
       "required": true
     },
     {
-      "path": "mods/snatched-1.2.0-neoforge-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/snatched-1.2.0-neoforge-1.21.1.jar",
-      "sha256": "801f6811430a59eadf9e490d10828630ccead0fea59b24daf5439c5699effba9",
-      "size": 1654245,
-      "category": "mod",
-      "required": true
-    },
-    {
       "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
