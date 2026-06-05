@@ -847,6 +847,14 @@
       "required": true
     },
     {
+      "path": "mods/tracks-neoforge-1.21.1-1.0.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/tracks-neoforge-1.21.1-1.0.1.jar",
+      "sha256": "b126b2522a129c13ebec6491b8602726bad9a3df201cf906468ba583796125c8",
+      "size": 166455,
+      "category": "mod",
+      "required": true
+    },
+    {
       "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
@@ -914,10 +922,10 @@
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/news/20260602-202056-minivibe_mods_guide_updated.html"
     },
     {
-      "title": "\u002B 2 \u0430\u0434\u043E\u043D\u0430 \u043D\u0430 \u043A\u0440\u0438\u044D\u0439\u0442",
+      "title": "\u041F\u0430\u0440\u0443 \u0430\u0434\u0434\u043E\u043D\u043E\u0432 \u043D\u0430 \u043A\u0440\u0438\u044D\u0439\u0442\u0435 ",
       "date": "2026-06-04",
       "kind": "text",
-      "text": "\u0410\u0434\u0434\u043E\u043D \u043D\u0430 \u043F\u0443\u0448\u043A\u0438, \u0438 \u043D\u0430 \u0440\u0430\u0434\u0430\u0440\u044B)",
+      "text": "\u0410\u0434\u0434\u043E\u043D\u044B \u043D\u0430 \u0432\u0441\u044F\u043A\u0438\u0435 \u043F\u0440\u0438\u043A\u043E\u043B\u044B",
       "url": ""
     }
   ],
