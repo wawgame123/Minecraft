@@ -27,12 +27,18 @@ public sealed class SkinService
         var uuidRoot = Path.Combine(skinsRoot, "uuid");
         Directory.CreateDirectory(uuidRoot);
 
+        var playerName = settings.PlayerName.Trim();
         var byUuid = Path.Combine(uuidRoot, uuid + ".png");
         var byUuidFlat = Path.Combine(skinsRoot, uuid + ".png");
-        var byName = Path.Combine(skinsRoot, settings.PlayerName + ".png");
+        var byName = Path.Combine(skinsRoot, playerName + ".png");
+        var byNameLower = Path.Combine(skinsRoot, playerName.ToLowerInvariant() + ".png");
         File.WriteAllBytes(byUuid, pngBytes);
         File.WriteAllBytes(byUuidFlat, pngBytes);
         File.WriteAllBytes(byName, pngBytes);
+        if (!string.Equals(byName, byNameLower, StringComparison.Ordinal))
+        {
+            File.WriteAllBytes(byNameLower, pngBytes);
+        }
         return byUuid;
     }
 
@@ -54,12 +60,22 @@ public sealed class SkinService
             return path;
         }
 
-        var flatPath = Path.Combine(
-            settings.InstallDirectory,
-            "cachedImages",
-            "skins",
-            OfflinePlayerUuid(settings.PlayerName) + ".png");
-        return File.Exists(flatPath) ? flatPath : null;
+        var skinsRoot = Path.Combine(settings.InstallDirectory, "cachedImages", "skins");
+        var flatPath = Path.Combine(skinsRoot, OfflinePlayerUuid(settings.PlayerName) + ".png");
+        if (File.Exists(flatPath))
+        {
+            return flatPath;
+        }
+
+        var playerName = settings.PlayerName.Trim();
+        var byName = Path.Combine(skinsRoot, playerName + ".png");
+        if (File.Exists(byName))
+        {
+            return byName;
+        }
+
+        var byNameLower = Path.Combine(skinsRoot, playerName.ToLowerInvariant() + ".png");
+        return File.Exists(byNameLower) ? byNameLower : null;
     }
 
     public async Task SaveOfflineSkinsConfigAsync(LauncherSettings settings, CancellationToken cancellationToken = default)
@@ -70,8 +86,8 @@ public sealed class SkinService
         var baseUrl = settings.SkinServerUrl.Trim().TrimEnd('/');
         var config = new OfflineSkinsConfig
         {
-            UseMojang = true,
-            UseCrafatar = true,
+            UseMojang = false,
+            UseCrafatar = false,
             UseCustomServer = false,
             HostCustomServer = "http://example.com",
             UseCustomServer2 = settings.EnableSkinServer && !string.IsNullOrWhiteSpace(baseUrl),
@@ -85,8 +101,16 @@ public sealed class SkinService
         };
 
         var configPath = Path.Combine(configRoot, "offlineskins.json");
-        await using var stream = File.Create(configPath);
-        await JsonSerializer.SerializeAsync(stream, config, JsonOptions, cancellationToken);
+        var configJson = JsonSerializer.Serialize(config, JsonOptions);
+        var existingConfigJson = File.Exists(configPath)
+            ? await File.ReadAllTextAsync(configPath, cancellationToken)
+            : "";
+        if (!string.Equals(existingConfigJson, configJson, StringComparison.Ordinal))
+        {
+            RefreshOfflineSkinCache(settings);
+        }
+
+        await File.WriteAllTextAsync(configPath, configJson, cancellationToken);
     }
 
     public async Task UploadSharedSkinAsync(
@@ -99,22 +123,77 @@ public sealed class SkinService
             throw new InvalidOperationException("Сначала подтвердите ник игрока.");
         }
 
-        var request = new SharedSkinUploadRequest(
-            settings.PlayerName,
-            Convert.ToBase64String(ReadSkinPngBytes(sourcePath)));
-        using var content = new StringContent(
-            JsonSerializer.Serialize(request),
-            Encoding.UTF8,
-            "application/json");
-
-        using var response = await _httpClient.PostAsync(LauncherSettings.SharedSkinUploadUrl, content, cancellationToken);
-        var body = await response.Content.ReadAsStringAsync(cancellationToken);
-        if (!response.IsSuccessStatusCode)
+        var skinBase64 = Convert.ToBase64String(ReadSkinPngBytes(sourcePath));
+        foreach (var playerName in UploadPlayerNameAliases(settings.PlayerName))
         {
-            var message = string.IsNullOrWhiteSpace(body)
-                ? $"HTTP {(int)response.StatusCode}"
-                : body;
-            throw new InvalidOperationException("Не удалось загрузить скин в общий каталог: " + message);
+            var request = new SharedSkinUploadRequest(playerName, skinBase64);
+            using var content = new StringContent(
+                JsonSerializer.Serialize(request),
+                Encoding.UTF8,
+                "application/json");
+
+            using var response = await _httpClient.PostAsync(LauncherSettings.SharedSkinUploadUrl, content, cancellationToken);
+            var body = await response.Content.ReadAsStringAsync(cancellationToken);
+            if (!response.IsSuccessStatusCode)
+            {
+                var message = string.IsNullOrWhiteSpace(body)
+                    ? $"HTTP {(int)response.StatusCode}"
+                    : body;
+                throw new InvalidOperationException("Не удалось загрузить скин в общий каталог: " + message);
+            }
+        }
+    }
+
+    private static IEnumerable<string> UploadPlayerNameAliases(string playerName)
+    {
+        var exact = playerName.Trim();
+        yield return exact;
+
+        var lower = exact.ToLowerInvariant();
+        if (!string.Equals(exact, lower, StringComparison.Ordinal))
+        {
+            yield return lower;
+        }
+    }
+
+    private static void RefreshOfflineSkinCache(LauncherSettings settings)
+    {
+        var skinsRoot = Path.Combine(settings.InstallDirectory, "cachedImages", "skins");
+        if (!Directory.Exists(skinsRoot))
+        {
+            return;
+        }
+
+        var root = Path.GetFullPath(skinsRoot);
+        var keep = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        if (!string.IsNullOrWhiteSpace(settings.PlayerName))
+        {
+            var playerName = settings.PlayerName.Trim();
+            var uuid = OfflinePlayerUuid(playerName);
+            keep.Add(Path.GetFullPath(Path.Combine(skinsRoot, "uuid", uuid + ".png")));
+            keep.Add(Path.GetFullPath(Path.Combine(skinsRoot, uuid + ".png")));
+            keep.Add(Path.GetFullPath(Path.Combine(skinsRoot, playerName + ".png")));
+            keep.Add(Path.GetFullPath(Path.Combine(skinsRoot, playerName.ToLowerInvariant() + ".png")));
+        }
+
+        foreach (var file in Directory.EnumerateFiles(skinsRoot, "*.png", SearchOption.AllDirectories))
+        {
+            var path = Path.GetFullPath(file);
+            if (!path.StartsWith(root, StringComparison.OrdinalIgnoreCase) || keep.Contains(path))
+            {
+                continue;
+            }
+
+            try
+            {
+                File.Delete(path);
+            }
+            catch (IOException)
+            {
+            }
+            catch (UnauthorizedAccessException)
+            {
+            }
         }
     }
 

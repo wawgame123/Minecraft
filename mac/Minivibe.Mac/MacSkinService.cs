@@ -18,8 +18,8 @@ internal sealed class MacSkinService
         var baseUrl = settings.SkinServerUrl.Trim().TrimEnd('/');
         var config = new OfflineSkinsConfig
         {
-            UseMojang = true,
-            UseCrafatar = true,
+            UseMojang = false,
+            UseCrafatar = false,
             UseCustomServer = false,
             HostCustomServer = "http://example.com",
             UseCustomServer2 = settings.EnableSkinServer && !string.IsNullOrWhiteSpace(baseUrl),
