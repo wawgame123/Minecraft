@@ -553,6 +553,25 @@ public partial class MainWindow : Window
                 ProgressText.Text = "Не удалось автоматически добавить сервер, запуск продолжается.";
             }
 
+            try
+            {
+                SetBusy(true, "Синхронизирую скины игроков...");
+                var skinProgress = new Progress<string>(message => ProgressText.Text = message);
+                var syncedSkins = await _skinService.SyncSharedSkinsAsync(_settings, skinProgress, CurrentToken());
+                ProgressText.Text = syncedSkins > 0
+                    ? $"Скины игроков обновлены: {syncedSkins}."
+                    : "Скины игроков уже готовы.";
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+                ProgressText.Text = "Не удалось обновить локальный кэш скинов, запуск продолжается.";
+            }
+
             SetBusy(true, "Запускаю Minecraft...");
             GameLogWindow? logWindow = null;
             if (_settings.EnableGameConsole)

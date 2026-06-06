@@ -11,8 +11,14 @@ namespace ServerLauncher.Services;
 
 public sealed class SkinService
 {
+    private const string SharedSkinsIndexUrl = "https://api.github.com/repos/wawgame123/Minecraft/contents/skins?ref=main";
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
     private readonly HttpClient _httpClient = new() { Timeout = TimeSpan.FromSeconds(45) };
+
+    public SkinService()
+    {
+        _httpClient.DefaultRequestHeaders.UserAgent.ParseAdd("minivibe-launcher");
+    }
 
     public string InstallSkin(LauncherSettings settings, string sourcePath)
     {
@@ -144,6 +150,95 @@ public sealed class SkinService
         }
     }
 
+    public async Task<int> SyncSharedSkinsAsync(
+        LauncherSettings settings,
+        IProgress<string>? progress = null,
+        CancellationToken cancellationToken = default)
+    {
+        if (!settings.EnableSkinServer)
+        {
+            return 0;
+        }
+
+        var skins = await LoadSharedSkinIndexAsync(cancellationToken);
+        var synced = 0;
+        foreach (var skin in skins)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            var playerName = Path.GetFileNameWithoutExtension(skin.Name).Trim();
+            if (!IsValidMinecraftName(playerName) || string.IsNullOrWhiteSpace(skin.DownloadUrl))
+            {
+                continue;
+            }
+
+            try
+            {
+                var pngBytes = await _httpClient.GetByteArrayAsync(skin.DownloadUrl, cancellationToken);
+                ValidateSkinPngBytes(pngBytes);
+                SaveSkinToOfflineCache(settings, playerName, pngBytes);
+                synced++;
+                progress?.Report($"Синхронизирую скины: {synced}/{skins.Count}");
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
+            }
+            catch
+            {
+                progress?.Report($"Не удалось обновить скин {playerName}, продолжаю...");
+            }
+        }
+
+        return synced;
+    }
+
+    private async Task<List<SharedSkinIndexItem>> LoadSharedSkinIndexAsync(CancellationToken cancellationToken)
+    {
+        await using var stream = await _httpClient.GetStreamAsync(SharedSkinsIndexUrl, cancellationToken);
+        var items = await JsonSerializer.DeserializeAsync<List<SharedSkinIndexItem>>(
+            stream,
+            JsonOptions,
+            cancellationToken);
+        return items?
+            .Where(item =>
+                string.Equals(item.Type, "file", StringComparison.OrdinalIgnoreCase) &&
+                item.Name.EndsWith(".png", StringComparison.OrdinalIgnoreCase))
+            .ToList() ?? [];
+    }
+
+    private static void SaveSkinToOfflineCache(LauncherSettings settings, string playerName, byte[] pngBytes)
+    {
+        var skinsRoot = Path.Combine(settings.InstallDirectory, "cachedImages", "skins");
+        var uuidRoot = Path.Combine(skinsRoot, "uuid");
+        Directory.CreateDirectory(uuidRoot);
+
+        var paths = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var alias in OfflineCachePlayerNameAliases(playerName))
+        {
+            var uuid = OfflinePlayerUuid(alias);
+            paths.Add(Path.Combine(uuidRoot, uuid + ".png"));
+            paths.Add(Path.Combine(skinsRoot, uuid + ".png"));
+            paths.Add(Path.Combine(skinsRoot, alias + ".png"));
+        }
+
+        foreach (var path in paths)
+        {
+            File.WriteAllBytes(path, pngBytes);
+        }
+    }
+
+    private static IEnumerable<string> OfflineCachePlayerNameAliases(string playerName)
+    {
+        var exact = playerName.Trim();
+        yield return exact;
+
+        var lower = exact.ToLowerInvariant();
+        if (!string.Equals(exact, lower, StringComparison.Ordinal))
+        {
+            yield return lower;
+        }
+    }
+
     private static IEnumerable<string> UploadPlayerNameAliases(string playerName)
     {
         var exact = playerName.Trim();
@@ -234,6 +329,31 @@ public sealed class SkinService
         return frame;
     }
 
+    private static void ValidateSkinPngBytes(byte[] pngBytes)
+    {
+        using var stream = new MemoryStream(pngBytes);
+        var decoder = BitmapDecoder.Create(stream, BitmapCreateOptions.PreservePixelFormat, BitmapCacheOption.OnLoad);
+        var frame = decoder.Frames[0];
+        if (frame.PixelWidth != 64 || frame.PixelHeight is not (32 or 64))
+        {
+            throw new InvalidOperationException("Скин должен быть PNG размером 64x64 или 64x32.");
+        }
+    }
+
+    private static bool IsValidMinecraftName(string playerName)
+    {
+        if (playerName.Length is < 3 or > 16)
+        {
+            return false;
+        }
+
+        return playerName.All(static ch =>
+            ch is >= 'A' and <= 'Z' ||
+            ch is >= 'a' and <= 'z' ||
+            ch is >= '0' and <= '9' ||
+            ch == '_');
+    }
+
     public static string OfflinePlayerUuid(string playerName)
     {
         var hash = MD5.HashData(Encoding.UTF8.GetBytes("OfflinePlayer:" + playerName));
@@ -274,4 +394,16 @@ public sealed class SkinService
     private sealed record SharedSkinUploadRequest(
         [property: JsonPropertyName("playerName")] string PlayerName,
         [property: JsonPropertyName("skinBase64")] string SkinBase64);
+
+    private sealed class SharedSkinIndexItem
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; set; } = "";
+
+        [JsonPropertyName("download_url")]
+        public string DownloadUrl { get; set; } = "";
+
+        [JsonPropertyName("type")]
+        public string Type { get; set; } = "";
+    }
 }
