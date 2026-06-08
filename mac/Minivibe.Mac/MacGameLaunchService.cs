@@ -15,6 +15,12 @@ internal sealed class MacGameLaunchService
 {
     private const int RequiredJavaMajorVersion = 21;
     private const string PortableJavaFolderName = "java-21";
+    private static readonly string SessionDirectory = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+        "Library",
+        "Application Support",
+        "Minivibe",
+        "Sessions");
 
     private readonly HttpClient _httpClient = new();
 
@@ -25,9 +31,13 @@ internal sealed class MacGameLaunchService
     {
         var issues = new List<string>();
 
-        if (!IsValidMinecraftName(settings.PlayerName))
+        if (string.IsNullOrWhiteSpace(settings.PlayerName))
         {
-            issues.Add("Введите ник 3-16 символов: латиница, цифры или _.");
+            issues.Add("Введите ник игрока.");
+        }
+        else if (!IsValidMinecraftName(settings.PlayerName))
+        {
+            issues.Add("Ник должен быть 3-16 символов: латиница, цифры или _.");
         }
 
         if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
@@ -43,10 +53,21 @@ internal sealed class MacGameLaunchService
             issues.Add("В manifest.json не заполнен launch.mainClass.");
         }
 
+        var shouldValidateManifestClasspath = runtime is null || string.IsNullOrWhiteSpace(runtime.MainClass);
+        foreach (var relativePath in manifest.Launch.Classpath.Where(path => shouldValidateManifestClasspath && !string.IsNullOrWhiteSpace(path)))
+        {
+            var fullPath = Path.Combine(settings.InstallDirectory, relativePath.Replace('/', Path.DirectorySeparatorChar));
+            if (!File.Exists(fullPath))
+            {
+                issues.Add($"Не найден файл classpath: {relativePath}");
+            }
+        }
+
         if (runtime is not null)
         {
             foreach (var runtimeFile in runtime.ClasspathFiles
                 .Append(runtime.ClientJarPath)
+                .Concat(runtime.LoaderArtifactFiles)
                 .Where(path => !string.IsNullOrWhiteSpace(path)))
             {
                 if (!File.Exists(runtimeFile))
@@ -56,7 +77,106 @@ internal sealed class MacGameLaunchService
             }
         }
 
+        if (runtime is not null
+            && string.Equals(manifest.Loader, "neoforge", StringComparison.OrdinalIgnoreCase)
+            && !HasNeoForgeRuntime(manifest, runtime))
+        {
+            issues.Add($"NeoForge {manifest.LoaderVersion} не попал в classpath. Лаунчер не будет запускать vanilla-профиль для NeoForge-сервера.");
+        }
+
         return issues;
+    }
+
+    public MacActiveGameSession? FindActiveSession(LauncherSettings settings)
+    {
+        var path = SessionLockPath(settings.PlayerName);
+        if (!File.Exists(path))
+        {
+            return null;
+        }
+
+        try
+        {
+            var lines = File.ReadAllLines(path);
+            if (lines.Length < 1 || !int.TryParse(lines[0], out var processId))
+            {
+                File.Delete(path);
+                return null;
+            }
+
+            var process = Process.GetProcessById(processId);
+            if (process.HasExited || !IsExpectedLockedProcess(process, lines.ElementAtOrDefault(1)))
+            {
+                File.Delete(path);
+                return null;
+            }
+
+            return new MacActiveGameSession(processId, lines.ElementAtOrDefault(2) ?? "");
+        }
+        catch
+        {
+            try
+            {
+                File.Delete(path);
+            }
+            catch
+            {
+                // Stale locks are cleaned on the next launch attempt.
+            }
+
+            return null;
+        }
+    }
+
+    public void RegisterActiveSession(LauncherSettings settings, Process process)
+    {
+        Directory.CreateDirectory(SessionDirectory);
+        File.WriteAllLines(SessionLockPath(settings.PlayerName), new[]
+        {
+            process.Id.ToString(),
+            SafeProcessStartTicks(process).ToString(),
+            settings.InstallDirectory,
+            DateTimeOffset.Now.ToString("O")
+        });
+    }
+
+    public void ClearActiveSession(LauncherSettings settings, int processId)
+    {
+        var path = SessionLockPath(settings.PlayerName);
+        if (!File.Exists(path))
+        {
+            return;
+        }
+
+        try
+        {
+            var firstLine = File.ReadLines(path).FirstOrDefault();
+            if (int.TryParse(firstLine, out var lockedProcessId) && lockedProcessId == processId)
+            {
+                File.Delete(path);
+            }
+        }
+        catch
+        {
+            // The lock will be treated as stale once the process is gone.
+        }
+    }
+
+    public string BuildLaunchSummary(LauncherManifest manifest, LauncherSettings settings, MinecraftRuntime runtime)
+    {
+        return string.Join(Environment.NewLine, new[]
+        {
+            $"Nick: {settings.PlayerName}",
+            $"UUID: {OfflinePlayerUuid(settings.PlayerName)}",
+            $"Loader: {manifest.Loader} {manifest.LoaderVersion}",
+            $"Runtime version: {runtime.VersionId}",
+            $"Main class: {runtime.MainClass}",
+            $"NeoForge runtime: {HasNeoForgeRuntime(manifest, runtime)}",
+            $"Classpath files: {runtime.ClasspathFiles.Count}",
+            $"Loader artifact files: {runtime.LoaderArtifactFiles.Count}",
+            $"RAM: {Math.Clamp(settings.RamMb, 1024, 32768)} MB",
+            $"Install directory: {settings.InstallDirectory}"
+        });
     }
 
     public Process Start(
@@ -446,9 +566,19 @@ internal sealed class MacGameLaunchService
         LauncherSettings settings,
         MinecraftRuntime runtime)
     {
+        var useRuntimeLaunch = !string.IsNullOrWhiteSpace(runtime.MainClass);
+        List<string> manifestClasspath = useRuntimeLaunch
+            ? []
+            : manifest.Launch.Classpath
+                .Select(path => Path.Combine(settings.InstallDirectory, path.Replace('/', Path.DirectorySeparatorChar)))
+                .ToList();
+        IEnumerable<string> runtimeClientJar = string.IsNullOrWhiteSpace(runtime.ClientJarPath)
+            ? []
+            : new[] { runtime.ClientJarPath };
         var classpath = runtime.ClasspathFiles
-            .Concat(string.IsNullOrWhiteSpace(runtime.ClientJarPath) ? [] : new[] { runtime.ClientJarPath })
-            .Distinct(StringComparer.Ordinal)
+            .Concat(runtimeClientJar)
+            .Concat(manifestClasspath)
+            .Distinct(StringComparer.OrdinalIgnoreCase)
             .Select(Quote);
 
         var args = new List<string>
@@ -469,7 +599,7 @@ internal sealed class MacGameLaunchService
             args.Add(Quote(string.Join(Path.PathSeparator, classpath.Select(Unquote))));
         }
 
-        args.Add(!string.IsNullOrWhiteSpace(runtime.MainClass) ? runtime.MainClass : manifest.Launch.MainClass);
+        args.Add(useRuntimeLaunch ? runtime.MainClass : manifest.Launch.MainClass);
         var gameArgs = manifest.Launch.GameArgs
             .Concat(runtime.GameArgs)
             .Select(arg => ExpandToken(arg, manifest, settings, runtime))
@@ -538,6 +668,23 @@ internal sealed class MacGameLaunchService
             : argument + "," + clientJarName;
     }
 
+    private static bool HasNeoForgeRuntime(LauncherManifest manifest, MinecraftRuntime runtime)
+    {
+        if (!string.Equals(manifest.Loader, "neoforge", StringComparison.OrdinalIgnoreCase))
+        {
+            return true;
+        }
+
+        return runtime.LoaderArtifactFiles.Any(IsNeoForgeRuntimeFile)
+            && runtime.VersionId.Contains("neoforge", StringComparison.OrdinalIgnoreCase)
+            && !string.IsNullOrWhiteSpace(runtime.MainClass);
+    }
+
+    private static bool IsNeoForgeRuntimeFile(string path)
+    {
+        return path.EndsWith(".jar", StringComparison.OrdinalIgnoreCase) && File.Exists(path);
+    }
+
     private static string OfflinePlayerUuid(string playerName)
     {
         var hash = MD5.HashData(Encoding.UTF8.GetBytes("OfflinePlayer:" + playerName));
@@ -546,6 +693,37 @@ internal sealed class MacGameLaunchService
 
         var hex = Convert.ToHexString(hash).ToLowerInvariant();
         return $"{hex[..8]}-{hex[8..12]}-{hex[12..16]}-{hex[16..20]}-{hex[20..]}";
+    }
+
+    private static string SessionLockPath(string playerName)
+    {
+        var key = string.IsNullOrWhiteSpace(playerName)
+            ? "unknown"
+            : OfflinePlayerUuid(playerName.Trim());
+        return Path.Combine(SessionDirectory, key + ".pid");
+    }
+
+    private static bool IsExpectedLockedProcess(Process process, string? expectedStartTicks)
+    {
+        if (string.IsNullOrWhiteSpace(expectedStartTicks)
+            || !long.TryParse(expectedStartTicks, out var ticks))
+        {
+            return false;
+        }
+
+        return ticks > 0 && SafeProcessStartTicks(process) == ticks;
+    }
+
+    private static long SafeProcessStartTicks(Process process)
+    {
+        try
+        {
+            return process.StartTime.ToUniversalTime().Ticks;
+        }
+        catch
+        {
+            return 0;
+        }
     }
 
     private static string CurrentLauncherVersion()
@@ -563,7 +741,7 @@ internal sealed class MacGameLaunchService
 
     private static string QuoteIfNeededArgument(string value)
     {
-        return value.Contains(' ') ? Quote(value) : value;
+        return value.Contains(' ') || value.Contains('\\') ? Quote(value) : value;
     }
 
     private static string Unquote(string value)
@@ -571,3 +749,7 @@ internal sealed class MacGameLaunchService
         return value.Trim('"');
     }
 }
+
+internal sealed record MacActiveGameSession(
+    int ProcessId,
+    string InstallDirectory);

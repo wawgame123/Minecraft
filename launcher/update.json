@@ -1,7 +1,7 @@
 ﻿{
-    "version":  "0.3.3",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.3-WIN-portable.zip",
-    "sha256":  "e6efa5c95ea86824292c7823c0bce402aea91fd33fae9c3b71127421f1d7857f",
+    "version":  "0.3.4",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.4-WIN-portable.zip",
+    "sha256":  "d59b0f30c3a5bd3bd89397ea0c4dd9e24f2001989d1c1d8d9cb1b4dcd21bee59",
     "mandatory":  false,
     "notes":  [
                   "Лаунчер перед запуском Minecraft синхронизирует все GitHub-скины в локальный кэш OfflineSkins.",
