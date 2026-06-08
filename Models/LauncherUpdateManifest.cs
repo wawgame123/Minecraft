@@ -18,4 +18,16 @@ public sealed class LauncherUpdateManifest
 
     [JsonPropertyName("notes")]
     public List<string> Notes { get; set; } = [];
+
+    [JsonPropertyName("platforms")]
+    public Dictionary<string, LauncherUpdateAsset> Platforms { get; set; } = [];
+}
+
+public sealed class LauncherUpdateAsset
+{
+    [JsonPropertyName("url")]
+    public string Url { get; set; } = "";
+
+    [JsonPropertyName("sha256")]
+    public string Sha256 { get; set; } = "";
 }

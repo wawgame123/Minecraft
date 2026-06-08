@@ -26,10 +26,9 @@ jobs:
           cat > release-notes.md <<NOTES
           minivibe $VERSION
 
-          - Исправлен запуск Minecraft/NeoForge на macOS: JVM получает -XstartOnFirstThread для LWJGL/GLFW.
-          - macOS-лаунчер теперь использует Java 21 для этой сборки и не подхватывает слишком новую Homebrew Java.
-          - Запуск macOS по-прежнему проверяет NeoForge runtime и не стартует vanilla-профиль, если NeoForge не попал в classpath.
-          - macOS-архивы содержат Run-Minivibe.command и сохраняют execute-bit для запуска после распаковки.
+          - Исправлено автообновление macOS-лаунчера: update manifest теперь содержит отдельные архивы для mac-arm64 и mac-x64.
+          - macOS-лаунчер скачивает подходящий архив, проверяет SHA-256, заменяет файлы рядом с текущим MinivibeMac и перезапускается.
+          - Старые macOS-сборки 0.3.5 и ниже нужно обновить вручную один раз, потому что в них еще не было механизма применения обновления.
           - Windows portable, два Windows-установщика и macOS arm64/x64 сборки входят в релиз.
           NOTES
 

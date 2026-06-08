@@ -29,8 +29,8 @@ internal sealed class MacSettingsService
                 InstallDirectory = DefaultInstallDirectory(),
                 SkinServerUrl = LauncherSettings.DefaultSkinServerUrl,
                 EnableSkinServer = true,
-                EnableAutoUpdate = false,
-                LastSeenLauncherVersion = "0.3.5"
+                EnableAutoUpdate = true,
+                LastSeenLauncherVersion = "0.3.6"
             };
             await SaveAsync(settings);
             return settings;
@@ -45,6 +45,7 @@ internal sealed class MacSettingsService
 
         loaded.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
         loaded.EnableSkinServer = true;
+        loaded.EnableAutoUpdate = true;
         return loaded;
     }
 

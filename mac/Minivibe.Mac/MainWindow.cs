@@ -1,9 +1,13 @@
 using System.Diagnostics;
+using System.IO.Compression;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
@@ -720,6 +724,11 @@ public sealed class MainWindow : Window
         _settings = await _settingsService.LoadAsync();
         BindSettingsToUi();
         ApplyVisualSettings();
+        if (await CheckAndApplyLauncherUpdateAsync())
+        {
+            return;
+        }
+
         await RefreshLauncherUpdateGateAsync();
         await ShowPatchNotesIfNeededAsync();
         await LoadManifestAsync(repairMissingGameFiles: false);
@@ -1494,7 +1503,160 @@ public sealed class MainWindow : Window
             return null;
         }
 
-        return IsNewerThanCurrent(update.Version) ? update : null;
+        return IsNewerThanCurrent(update.Version) && ResolveMacUpdateAsset(update) is not null ? update : null;
+    }
+
+    private async Task<bool> CheckAndApplyLauncherUpdateAsync()
+    {
+        if (!_settings.EnableAutoUpdate)
+        {
+            return false;
+        }
+
+        LauncherUpdateManifest? update;
+        try
+        {
+            update = await FindAvailableLauncherUpdateAsync(CurrentToken());
+        }
+        catch
+        {
+            _progressText.Text = "Автообновление лаунчера недоступно, продолжаю запуск.";
+            return false;
+        }
+
+        if (update is null)
+        {
+            return false;
+        }
+
+        var asset = ResolveMacUpdateAsset(update);
+        if (asset is null)
+        {
+            return false;
+        }
+
+        SetBusy(true, $"Скачиваю обновление лаунчера {update.Version}...");
+        var prepared = await PrepareMacLauncherUpdateAsync(update, asset, CurrentToken());
+        _progressText.Text = "Обновление скачано. Перезапускаю лаунчер...";
+        StartMacUpdaterScript(prepared.ExtractPath, prepared.TargetDirectory, prepared.ProcessId);
+        if (Application.Current?.ApplicationLifetime is IClassicDesktopStyleApplicationLifetime desktop)
+        {
+            desktop.Shutdown();
+        }
+        else
+        {
+            Close();
+        }
+
+        return true;
+    }
+
+    private async Task<PreparedMacLauncherUpdate> PrepareMacLauncherUpdateAsync(
+        LauncherUpdateManifest update,
+        LauncherUpdateAsset asset,
+        CancellationToken cancellationToken)
+    {
+        var updateRoot = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
+            "Library",
+            "Application Support",
+            "Minivibe",
+            "Updates",
+            update.Version,
+            MacUpdatePlatformKey());
+        Directory.CreateDirectory(updateRoot);
+
+        var zipPath = Path.Combine(updateRoot, "launcher-update.zip");
+        await DownloadFileAsync(asset.Url, zipPath, cancellationToken);
+
+        if (!string.IsNullOrWhiteSpace(asset.Sha256))
+        {
+            var actualHash = await ComputeSha256Async(zipPath, cancellationToken);
+            if (!string.Equals(actualHash, asset.Sha256, StringComparison.OrdinalIgnoreCase))
+            {
+                throw new InvalidOperationException("SHA-256 обновления macOS-лаунчера не совпал.");
+            }
+        }
+
+        var extractPath = Path.Combine(updateRoot, "extracted");
+        if (Directory.Exists(extractPath))
+        {
+            Directory.Delete(extractPath, true);
+        }
+
+        ZipFile.ExtractToDirectory(zipPath, extractPath);
+        var processPath = Environment.ProcessPath;
+        var targetDirectory = !string.IsNullOrWhiteSpace(processPath)
+            ? Path.GetDirectoryName(processPath) ?? AppContext.BaseDirectory
+            : AppContext.BaseDirectory;
+
+        return new PreparedMacLauncherUpdate(extractPath, targetDirectory, Environment.ProcessId);
+    }
+
+    private static LauncherUpdateAsset? ResolveMacUpdateAsset(LauncherUpdateManifest update)
+    {
+        return update.Platforms.TryGetValue(MacUpdatePlatformKey(), out var asset)
+            && !string.IsNullOrWhiteSpace(asset.Url)
+            ? asset
+            : null;
+    }
+
+    private static string MacUpdatePlatformKey()
+    {
+        return RuntimeInformation.ProcessArchitecture == Architecture.Arm64 ? "mac-arm64" : "mac-x64";
+    }
+
+    private async Task DownloadFileAsync(string url, string destinationPath, CancellationToken cancellationToken)
+    {
+        await using var source = await _updateHttpClient.GetStreamAsync(url, cancellationToken);
+        await using var target = File.Create(destinationPath);
+        await source.CopyToAsync(target, cancellationToken);
+    }
+
+    private static async Task<string> ComputeSha256Async(string path, CancellationToken cancellationToken)
+    {
+        await using var stream = File.OpenRead(path);
+        var hash = await SHA256.HashDataAsync(stream, cancellationToken);
+        return Convert.ToHexString(hash).ToLowerInvariant();
+    }
+
+    private static void StartMacUpdaterScript(string sourceDirectory, string targetDirectory, int processId)
+    {
+        var scriptPath = Path.Combine(Path.GetTempPath(), $"minivibe-updater-{Guid.NewGuid():N}.sh");
+        var script = $$"""
+        #!/bin/sh
+        set -eu
+        source={{ShellQuote(sourceDirectory)}}
+        target={{ShellQuote(targetDirectory)}}
+        pid={{processId}}
+        attempts=0
+        while kill -0 "$pid" 2>/dev/null && [ "$attempts" -lt 300 ]; do
+          attempts=$((attempts + 1))
+          sleep 0.2
+        done
+        mkdir -p "$target"
+        cp -R "$source"/. "$target"/
+        chmod +x "$target/MinivibeMac" "$target/Run-Minivibe.command" 2>/dev/null || true
+        cd "$target"
+        if [ -x "$target/MinivibeMac" ]; then
+          nohup "$target/MinivibeMac" >/dev/null 2>&1 &
+        elif [ -x "$target/Run-Minivibe.command" ]; then
+          nohup "$target/Run-Minivibe.command" >/dev/null 2>&1 &
+        fi
+        rm -f "$0"
+        """;
+        File.WriteAllText(scriptPath, script, Encoding.ASCII);
+        Process.Start(new ProcessStartInfo
+        {
+            FileName = "/bin/sh",
+            UseShellExecute = false,
+            ArgumentList = { scriptPath }
+        });
+    }
+
+    private static string ShellQuote(string value)
+    {
+        return "'" + value.Replace("'", "'\"'\"'", StringComparison.Ordinal) + "'";
     }
 
     private static bool IsNewerThanCurrent(string remoteVersion)
@@ -2143,6 +2305,11 @@ internal static class ButtonExtensions
         return button;
     }
 }
+
+internal sealed record PreparedMacLauncherUpdate(
+    string ExtractPath,
+    string TargetDirectory,
+    int ProcessId);
 
 internal sealed record ThemePalette(
     Color Background,
