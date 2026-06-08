@@ -30,6 +30,7 @@ jobs:
           - Скины сохраняются по нику, lower-case алиасу и offline UUID, чтобы OfflineSkins находил их стабильнее.
           - Если GitHub временно недоступен, запуск Minecraft продолжается со старым локальным кэшем.
           - Фиолетово-черные missing texture должны пропасть, потому что игра больше не зависит от скачивания скина в момент рендера.
+          - macOS архивы содержат Run-Minivibe.command и сохраняют execute-bit для запуска после распаковки.
           - Windows portable, два Windows-установщика и experimental macOS сборки входят в релиз.
           NOTES
 
