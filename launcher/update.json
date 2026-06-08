@@ -1,12 +1,12 @@
 ﻿{
-    "version":  "0.3.4",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.4-WIN-portable.zip",
-    "sha256":  "d59b0f30c3a5bd3bd89397ea0c4dd9e24f2001989d1c1d8d9cb1b4dcd21bee59",
+    "version":  "0.3.5",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.5-WIN-portable.zip",
+    "sha256":  "010d5686e6e548effd6322daf8faf9204361a199f575f2ebbbe04604b6c98a69",
     "mandatory":  false,
     "notes":  [
-                  "Лаунчер перед запуском Minecraft синхронизирует все GitHub-скины в локальный кэш OfflineSkins.",
-                  "Скины сохраняются по нику, lower-case алиасу и offline UUID, чтобы OfflineSkins находил их стабильнее.",
-                  "Если GitHub временно недоступен, запуск Minecraft продолжается со старым локальным кэшем.",
-                  "Фиолетово-черные missing texture должны пропасть, потому что игра больше не зависит от скачивания скина в момент рендера."
+                  "Исправлен запуск Minecraft/NeoForge на macOS: добавлен JVM-флаг -XstartOnFirstThread для LWJGL/GLFW.",
+                  "macOS-лаунчер теперь использует Java 21 для этой сборки и не подхватывает слишком новую Homebrew Java.",
+                  "Автообновление Windows-лаунчера подтянет версию 0.3.5 через этот manifest.",
+                  "macOS arm64/x64 сборки доступны в GitHub Release v0.3.5."
               ]
 }

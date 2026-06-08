@@ -14,6 +14,7 @@ namespace Minivibe.Mac;
 internal sealed class MacGameLaunchService
 {
     private const int RequiredJavaMajorVersion = 21;
+    private const int SupportedJavaMajorVersion = 21;
     private const string PortableJavaFolderName = "java-21";
     private static readonly string SessionDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
@@ -42,7 +43,7 @@ internal sealed class MacGameLaunchService
 
         if (string.IsNullOrWhiteSpace(TryResolveJava(settings)))
         {
-            issues.Add($"Java {RequiredJavaMajorVersion}+ не найдена.");
+            issues.Add($"Java {SupportedJavaMajorVersion} не найдена.");
         }
 
         var mainClass = !string.IsNullOrWhiteSpace(runtime?.MainClass)
@@ -281,11 +282,11 @@ internal sealed class MacGameLaunchService
         var javaPath = TryResolveJava(settings);
         if (!string.IsNullOrWhiteSpace(javaPath))
         {
-            progress?.Report($"Java {JavaMajorVersion(javaPath) ?? RequiredJavaMajorVersion} найдена.");
+            progress?.Report($"Java {JavaMajorVersion(javaPath) ?? SupportedJavaMajorVersion} найдена.");
             return javaPath;
         }
 
-        progress?.Report("Java 21 не найдена, скачиваю runtime для macOS...");
+        progress?.Report("Java 21 не найдена или версия Java не подходит, скачиваю runtime для macOS...");
         javaPath = await DownloadPortableJavaAsync(settings, progress, cancellationToken);
         progress?.Report("Java 21 готова.");
         return javaPath;
@@ -301,7 +302,12 @@ internal sealed class MacGameLaunchService
     private static string? TryResolveJava(LauncherSettings settings)
     {
         return JavaCandidates(settings)
-            .FirstOrDefault(candidate => JavaMajorVersion(candidate) >= RequiredJavaMajorVersion);
+            .FirstOrDefault(IsCompatibleJava);
+    }
+
+    private static bool IsCompatibleJava(string javaPath)
+    {
+        return JavaMajorVersion(javaPath) == SupportedJavaMajorVersion;
     }
 
     private static IEnumerable<string> JavaCandidates(LauncherSettings settings)
@@ -451,7 +457,7 @@ internal sealed class MacGameLaunchService
         var finalRoot = Path.Combine(runtimeRoot, PortableJavaFolderName);
         var finalJava = Path.Combine(finalRoot, "Contents", "Home", "bin", "java");
         var fallbackJava = Path.Combine(finalRoot, "bin", "java");
-        if (File.Exists(finalJava) && JavaMajorVersion(finalJava) >= RequiredJavaMajorVersion)
+        if (File.Exists(finalJava) && IsCompatibleJava(finalJava))
         {
             return finalJava;
         }
@@ -495,12 +501,12 @@ internal sealed class MacGameLaunchService
             }
 
             Directory.Move(home, finalRoot);
-            if (File.Exists(finalJava) && JavaMajorVersion(finalJava) >= RequiredJavaMajorVersion)
+            if (File.Exists(finalJava) && IsCompatibleJava(finalJava))
             {
                 return finalJava;
             }
 
-            if (File.Exists(fallbackJava) && JavaMajorVersion(fallbackJava) >= RequiredJavaMajorVersion)
+            if (File.Exists(fallbackJava) && IsCompatibleJava(fallbackJava))
             {
                 return fallbackJava;
             }
@@ -584,6 +590,7 @@ internal sealed class MacGameLaunchService
         var args = new List<string>
         {
             $"-Xmx{Math.Clamp(settings.RamMb, 1024, 32768)}M",
+            "-XstartOnFirstThread",
             "-Djava.library.path=" + Quote(runtime.NativesDirectory),
             "-Dminecraft.launcher.brand=minivibe",
             "-Dminecraft.launcher.version=" + CurrentLauncherVersion()
