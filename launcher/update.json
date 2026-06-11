@@ -1,26 +1,21 @@
 {
-  "version": "0.3.7",
-  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-WIN-portable.zip",
-  "sha256": "c68807ede34280b70ff40be5395b53076b52c133dfe66d8018640887b28516cc",
+  "version": "0.3.8",
+  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
+  "sha256": "67939343464922e7a178e30df719c2340fa434374d711bb85be7116be82cd511",
   "mandatory": false,
-  "notes": [
-    "Окно лаунчера автоматически уменьшается под рабочую область небольших экранов.",
-    "Поиск установленного NeoForge дополнительно проверяет JAR с именем версии и JAR с именем папки сборки.",
-    "Windows portable теперь публикуется self-contained и не требует отдельной установки .NET Runtime.",
-    "Исправлена компоновка установщика: кнопки выбора папки и установки полностью видны при DPI-масштабировании."
-  ],
+  "notes": [],
   "platforms": {
     "win-x64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-WIN-portable.zip",
-      "sha256": "c68807ede34280b70ff40be5395b53076b52c133dfe66d8018640887b28516cc"
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
+      "sha256": "67939343464922e7a178e30df719c2340fa434374d711bb85be7116be82cd511"
     },
     "mac-arm64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-MAC-arm64.zip",
-      "sha256": "1e54965b74d0a1f624798b8481a4fc8265594f4d1e9fc34fa4dd5561ff1668ea"
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-MAC-arm64.zip",
+      "sha256": "3632fd665dfccdfc06c6da6c0789927833ddeffa58c495aea562eb16f561fd3d"
     },
     "mac-x64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-MAC-x64.zip",
-      "sha256": "7b82861aeab536de4a5630a4bfe04a24cee8d04362179ca2a32d8086532ff57f"
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-MAC-x64.zip",
+      "sha256": "87b39206c6e6f801d7a2b55ecb96325ff784c2a35dfe05644faa8ac8268609e3"
     }
   }
 }
