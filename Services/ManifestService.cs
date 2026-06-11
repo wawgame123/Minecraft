@@ -16,14 +16,22 @@ public sealed class ManifestService
 
     private readonly HttpClient _httpClient = new();
 
-    public async Task<LauncherManifest> LoadAsync(string manifestUrl, CancellationToken cancellationToken)
+    public Task<LauncherManifest> LoadAsync(string manifestUrl, CancellationToken cancellationToken)
+    {
+        return LoadAsync(manifestUrl, cancellationToken, bypassCache: false);
+    }
+
+    public async Task<LauncherManifest> LoadAsync(
+        string manifestUrl,
+        CancellationToken cancellationToken,
+        bool bypassCache)
     {
         if (string.IsNullOrWhiteSpace(manifestUrl))
         {
             throw new InvalidOperationException("Внутренняя ссылка на manifest.json не настроена.");
         }
 
-        await using var stream = await OpenManifestStreamAsync(manifestUrl, cancellationToken);
+        await using var stream = await OpenManifestStreamAsync(manifestUrl, cancellationToken, bypassCache);
         var manifest = await JsonSerializer.DeserializeAsync<LauncherManifest>(stream, JsonOptions, cancellationToken);
 
         if (manifest is null)
@@ -34,7 +42,10 @@ public sealed class ManifestService
         return manifest;
     }
 
-    private async Task<Stream> OpenManifestStreamAsync(string manifestUrl, CancellationToken cancellationToken)
+    private async Task<Stream> OpenManifestStreamAsync(
+        string manifestUrl,
+        CancellationToken cancellationToken,
+        bool bypassCache)
     {
         if (File.Exists(manifestUrl))
         {
@@ -48,11 +59,30 @@ public sealed class ManifestService
 
         try
         {
-            return await _httpClient.GetStreamAsync(manifestUrl, cancellationToken);
+            var requestUrl = bypassCache ? AddCacheBuster(manifestUrl) : manifestUrl;
+            using var request = new HttpRequestMessage(HttpMethod.Get, requestUrl);
+            if (bypassCache)
+            {
+                request.Headers.CacheControl = new System.Net.Http.Headers.CacheControlHeaderValue
+                {
+                    NoCache = true,
+                    NoStore = true
+                };
+            }
+
+            using var response = await _httpClient.SendAsync(request, cancellationToken);
+            response.EnsureSuccessStatusCode();
+            return new MemoryStream(await response.Content.ReadAsByteArrayAsync(cancellationToken), writable: false);
         }
         catch (HttpRequestException ex)
         {
             throw new InvalidOperationException($"Не удалось загрузить manifest.json: {manifestUrl}. {ex.Message}", ex);
         }
+    }
+
+    private static string AddCacheBuster(string url)
+    {
+        var separator = url.Contains('?', StringComparison.Ordinal) ? '&' : '?';
+        return url + separator + "minivibe=" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
 }

@@ -82,13 +82,15 @@ public sealed class MainWindow : Window
     private readonly TextBlock _newsBodyText = new();
     private readonly Image _newsImage = new();
     private readonly Button _openNewsButton = new();
+    private readonly MacWebViewHost _newsWebView = new();
 
     private readonly Button _reloadMapButton = new();
     private readonly Button _openMapButton = new();
     private readonly TextBlock _mapStatusText = new();
     private readonly TextBlock _mapUrlText = new();
+    private readonly MacWebViewHost _mapWebView = new();
 
-    private readonly Image _skinPreviewImage = new();
+    private readonly MacWebViewHost _skinPreviewWebView = new();
     private readonly TextBlock _skinStatusText = new();
     private readonly Button _chooseSkinButton = new();
     private readonly Button _installSkinButton = new();
@@ -139,6 +141,7 @@ public sealed class MainWindow : Window
     private string? _selectedSkinPath;
     private Process? _minecraftProcess;
     private Button? _activeNavButton;
+    private CancellationTokenSource? _newsMediaCts;
 
     public MainWindow()
     {
@@ -157,6 +160,7 @@ public sealed class MainWindow : Window
         {
             _operationCts?.Cancel();
             _visualSaveCts?.Cancel();
+            _newsMediaCts?.Cancel();
             _newsHttpClient.Dispose();
             _updateHttpClient.Dispose();
         };
@@ -421,6 +425,8 @@ public sealed class MainWindow : Window
         _newsBodyText.TextWrapping = TextWrapping.Wrap;
         _newsImage.Stretch = Stretch.Uniform;
         _newsImage.MaxHeight = 420;
+        _newsWebView.Height = 460;
+        _newsWebView.IsVisible = false;
         _openNewsButton.Content = "Открыть в браузере";
         _openNewsButton.IsVisible = false;
         _openNewsButton.Click += (_, _) =>
@@ -441,6 +447,7 @@ public sealed class MainWindow : Window
                     RegisterPrimary(_newsTitleText),
                     RegisterMuted(_newsDateText),
                     _newsImage,
+                    _newsWebView,
                     RegisterPrimary(_newsBodyText),
                     SecondaryButton(_openNewsButton)
                 }
@@ -471,11 +478,18 @@ public sealed class MainWindow : Window
         header.Children.Add(PageTitle("Карта"));
         _mapPanel.Children.Add(header);
 
-        var card = Card(new StackPanel
+        _mapWebView.HorizontalAlignment = HorizontalAlignment.Stretch;
+        _mapWebView.VerticalAlignment = VerticalAlignment.Stretch;
+        var mapHost = new Grid
         {
-            HorizontalAlignment = HorizontalAlignment.Stretch,
+            MinHeight = 420,
+            Children = { _mapWebView }
+        };
+        var fallback = new StackPanel
+        {
+            HorizontalAlignment = HorizontalAlignment.Center,
             VerticalAlignment = VerticalAlignment.Center,
-            Spacing = 14,
+            Spacing = 12,
             Children =
             {
                 RegisterPrimary(new TextBlock
@@ -493,7 +507,11 @@ public sealed class MainWindow : Window
                     HorizontalAlignment = HorizontalAlignment.Center
                 }.WithClick(_ => OpenMap()))
             }
-        });
+        };
+        mapHost.Children.Add(fallback);
+        fallback.IsHitTestVisible = false;
+        fallback.Opacity = 0;
+        var card = Card(mapHost);
         card.Margin = new Thickness(0, 16, 0, 0);
         Grid.SetRow(card, 1);
         _mapPanel.Children.Add(card);
@@ -504,9 +522,8 @@ public sealed class MainWindow : Window
         _skinsPanel.RowDefinitions = new RowDefinitions("Auto,*");
         _skinsPanel.Children.Add(PageTitle("Скины"));
 
-        _skinPreviewImage.Width = 220;
-        _skinPreviewImage.Height = 220;
-        _skinPreviewImage.Stretch = Stretch.Uniform;
+        _skinPreviewWebView.Width = 280;
+        _skinPreviewWebView.Height = 420;
         _chooseSkinButton.Content = "Выбрать PNG/JPG";
         _chooseSkinButton.Click += async (_, _) => await RunGuardedAsync(ChooseSkinAsync);
         _installSkinButton.Content = "Сохранить скин";
@@ -524,7 +541,7 @@ public sealed class MainWindow : Window
                     Padding = new Thickness(16),
                     CornerRadius = new CornerRadius(8),
                     HorizontalAlignment = HorizontalAlignment.Center,
-                    Child = _skinPreviewImage
+                    Child = _skinPreviewWebView
                 },
                 new StackPanel
                 {
@@ -747,7 +764,7 @@ public sealed class MainWindow : Window
     {
         SetBusy(true, "Обновляю новости...");
         var selectedNewsKey = NewsIdentity(_newsList.SelectedItem as NewsItem);
-        _manifest = await _manifestService.LoadAsync(LauncherEndpoints.ManifestUrl, CurrentToken());
+        _manifest = await _manifestService.LoadAsync(LauncherEndpoints.ManifestUrl, CurrentToken(), bypassCache: true);
         RenderManifest(selectedNewsKey);
         _progressText.Text = "Новости обновлены.";
     }
@@ -1087,17 +1104,19 @@ public sealed class MainWindow : Window
         {
             if (!string.IsNullOrWhiteSpace(skinPath) && File.Exists(skinPath))
             {
-                _skinPreviewImage.Source = new Bitmap(skinPath);
+                var skinBytes = MacSkinService.ReadSkinPngBytes(skinPath);
+                var skinDataUrl = "data:image/png;base64," + Convert.ToBase64String(skinBytes);
+                _skinPreviewWebView.NavigateToString(SkinPreviewHtml.Build(skinDataUrl));
                 _skinStatusText.Text = $"Скин готов: {Path.GetFileName(skinPath)}";
                 return;
             }
 
-            _skinPreviewImage.Source = null;
+            _skinPreviewWebView.NavigateToString(SkinPreviewHtml.Empty());
             UpdateSkinStatus();
         }
         catch (Exception ex)
         {
-            _skinPreviewImage.Source = null;
+            _skinPreviewWebView.NavigateToString(SkinPreviewHtml.Empty());
             _skinStatusText.Text = "Не удалось открыть превью: " + ex.Message;
         }
     }
@@ -1257,8 +1276,13 @@ public sealed class MainWindow : Window
 
     private async void RenderNewsItem(NewsItem? item)
     {
+        _newsMediaCts?.Cancel();
+        _newsMediaCts?.Dispose();
+        _newsMediaCts = CancellationTokenSource.CreateLinkedTokenSource(CurrentToken());
+        var mediaToken = _newsMediaCts.Token;
         _newsImage.IsVisible = false;
         _newsImage.Source = null;
+        _newsWebView.IsVisible = false;
         _openNewsButton.IsVisible = false;
 
         if (item is null)
@@ -1279,9 +1303,15 @@ public sealed class MainWindow : Window
             _newsImage.IsVisible = true;
             try
             {
-                var imageBytes = await _newsHttpClient.GetByteArrayAsync(item.Url, CurrentToken());
+                var imageUrl = AddCacheBuster(item.Url);
+                var imageBytes = await _newsHttpClient.GetByteArrayAsync(imageUrl, mediaToken);
+                mediaToken.ThrowIfCancellationRequested();
                 using var imageStream = new MemoryStream(imageBytes);
                 _newsImage.Source = new Bitmap(imageStream);
+            }
+            catch (OperationCanceledException) when (mediaToken.IsCancellationRequested)
+            {
+                return;
             }
             catch (Exception ex)
             {
@@ -1294,9 +1324,9 @@ public sealed class MainWindow : Window
 
         if (kind == NewsItem.HtmlKind && !string.IsNullOrWhiteSpace(item.Url))
         {
-            _newsBodyText.Text = string.IsNullOrWhiteSpace(item.Text)
-                ? "HTML-новость откроется во внешнем браузере."
-                : item.Text;
+            _newsBodyText.Text = item.Text;
+            _newsWebView.IsVisible = true;
+            _newsWebView.Navigate(AddCacheBuster(item.Url));
             _openNewsButton.IsVisible = true;
             return;
         }
@@ -1316,9 +1346,10 @@ public sealed class MainWindow : Window
         }
 
         _mapUrlText.Text = Preferred3DMapUrl(_manifest.BlueMapUrl);
-        _mapStatusText.Text = "BlueMap открывается системным браузером macOS.";
+        _mapStatusText.Text = "BlueMap загружена внутри лаунчера.";
         _openMapButton.IsEnabled = true;
         _reloadMapButton.IsEnabled = true;
+        _mapWebView.Navigate(Preferred3DMapUrl(_manifest.BlueMapUrl));
     }
 
     private void OpenMap()
@@ -2259,6 +2290,17 @@ public sealed class MainWindow : Window
             : mapUrl;
     }
 
+    private static string AddCacheBuster(string url)
+    {
+        if (!Uri.TryCreate(url, UriKind.Absolute, out _))
+        {
+            return url;
+        }
+
+        var separator = url.Contains('?', StringComparison.Ordinal) ? '&' : '?';
+        return url + separator + "minivibe=" + DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+    }
+
     private static void OpenUrl(string target)
     {
         try
@@ -2284,6 +2326,15 @@ public sealed class MainWindow : Window
 
     private static string CurrentLauncherVersion()
     {
+        var informationalVersion = typeof(MainWindow).Assembly
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion?
+            .Split('+')[0];
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            return informationalVersion;
+        }
+
         var version = typeof(MainWindow).Assembly.GetName().Version ?? new Version(0, 0, 0);
         return version.Build == 0
             ? $"{version.Major}.{version.Minor}"

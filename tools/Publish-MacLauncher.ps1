@@ -1,6 +1,7 @@
 param(
     [string]$Configuration = "Release",
-    [string[]]$Runtimes = @("osx-arm64", "osx-x64")
+    [string[]]$Runtimes = @("osx-arm64", "osx-x64"),
+    [switch]$SkipUpdateManifest
 )
 
 Set-StrictMode -Version Latest
@@ -180,6 +181,11 @@ The launcher is self-contained and does not require installing .NET separately.
     }
     Write-Output "Published mac launcher: $zipPath"
     Write-Output "SHA256: $hash"
+}
+
+if ($SkipUpdateManifest) {
+    Write-Output "Skipped update manifest for prerelease build."
+    exit 0
 }
 
 if (-not (Test-Path -LiteralPath $updatePath)) {

@@ -30,7 +30,7 @@ internal sealed class MacSettingsService
                 SkinServerUrl = LauncherSettings.DefaultSkinServerUrl,
                 EnableSkinServer = true,
                 EnableAutoUpdate = true,
-                LastSeenLauncherVersion = "0.3.7"
+                LastSeenLauncherVersion = "0.3.8-beta.1"
             };
             await SaveAsync(settings);
             return settings;

@@ -26,26 +26,40 @@ jobs:
           cat > release-notes.md <<NOTES
           minivibe $VERSION
 
-          - Окно Windows-лаунчера автоматически уменьшается под рабочую область небольших экранов.
-          - Поиск установленного NeoForge дополнительно проверяет JAR с именем версии и JAR с именем папки сборки.
-          - Windows portable теперь self-contained и не требует отдельной установки .NET Runtime.
-          - Исправлена компоновка установщика при DPI-масштабировании: кнопки выбора папки и установки больше не обрезаются.
-          - Windows portable, два Windows-установщика и macOS arm64/x64 сборки входят в релиз.
+          - В macOS-лаунчер встроена BlueMap через системный WKWebView.
+          - Добавлено интерактивное 3D-превью скина внутри macOS-лаунчера.
+          - HTML-новости теперь открываются внутри лаунчера, а manifest и изображения обновляются без старого CDN-кэша.
+          - Beta-релизы устанавливаются только вручную и не публикуются в manifest автообновления.
           NOTES
 
-          ASSETS=(
-            "launcher/MinivibeInstaller-$VERSION.exe"
-            "launcher/MinivibeInstaller-$VERSION-no-dotnet.exe"
-            "launcher/Minivibe-$VERSION-WIN-portable.zip"
-          )
+          ASSETS=()
+
+          for asset in \
+            "launcher/MinivibeInstaller-$VERSION.exe" \
+            "launcher/MinivibeInstaller-$VERSION-no-dotnet.exe" \
+            "launcher/Minivibe-$VERSION-WIN-portable.zip"; do
+            if [ -f "$asset" ]; then
+              ASSETS+=("$asset")
+            fi
+          done
 
           if compgen -G "launcher/Minivibe-$VERSION-MAC-*.zip" > /dev/null; then
             ASSETS+=(launcher/Minivibe-"$VERSION"-MAC-*.zip)
           fi
 
+          if [ ${#ASSETS[@]} -eq 0 ]; then
+            echo "No release assets found for $VERSION"
+            exit 1
+          fi
+
+          PRERELEASE_ARGS=()
+          if [[ "$VERSION" == *-* ]]; then
+            PRERELEASE_ARGS+=(--prerelease)
+          fi
+
           if gh release view "$TAG_NAME" > /dev/null 2>&1; then
-            gh release edit "$TAG_NAME" --title "minivibe $TAG_NAME" --notes-file release-notes.md
+            gh release edit "$TAG_NAME" "${PRERELEASE_ARGS[@]}" --title "minivibe $TAG_NAME" --notes-file release-notes.md
             gh release upload "$TAG_NAME" "${ASSETS[@]}" --clobber
           else
-            gh release create "$TAG_NAME" "${ASSETS[@]}" --title "minivibe $TAG_NAME" --notes-file release-notes.md
+            gh release create "$TAG_NAME" "${ASSETS[@]}" "${PRERELEASE_ARGS[@]}" --title "minivibe $TAG_NAME" --notes-file release-notes.md
           fi

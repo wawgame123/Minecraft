@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>MinivibeMac</AssemblyName>
     <Product>minivibe mac</Product>
-    <Version>0.3.7</Version>
+    <Version>0.3.8-beta.1</Version>
     <RuntimeFrameworkVersion>10.0.8</RuntimeFrameworkVersion>
     <TargetLatestRuntimePatch>false</TargetLatestRuntimePatch>
   </PropertyGroup>
