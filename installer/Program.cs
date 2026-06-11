@@ -33,12 +33,12 @@ internal sealed class InstallerForm : Form
     public InstallerForm()
     {
         Text = "minivibe installer";
-        Width = 620;
-        Height = 350;
-        MinimumSize = new Size(580, 340);
+        ClientSize = new Size(680, 390);
+        MinimumSize = new Size(640, 390);
         StartPosition = FormStartPosition.CenterScreen;
-        FormBorderStyle = FormBorderStyle.FixedDialog;
-        MaximizeBox = false;
+        FormBorderStyle = FormBorderStyle.Sizable;
+        MaximizeBox = true;
+        AutoScaleMode = AutoScaleMode.Dpi;
         Icon = TryLoadIcon();
 
         var title = new Label
@@ -46,64 +46,106 @@ internal sealed class InstallerForm : Form
             Text = "Установка minivibe",
             AutoSize = true,
             Font = new Font(Font.FontFamily, 18, FontStyle.Bold),
-            Location = new Point(24, 22)
+            Margin = new Padding(0, 0, 0, 10)
         };
 
         var hint = new Label
         {
             Text = "Выберите папку установки лаунчера. По умолчанию используется %APPDATA%\\.minivibe.",
-            AutoSize = false,
-            Width = 550,
-            Height = 38,
-            Location = new Point(26, 62)
+            AutoSize = true,
+            Dock = DockStyle.Fill,
+            MaximumSize = new Size(620, 0),
+            Margin = new Padding(0, 0, 0, 12)
         };
 
         _installPathBox.Text = DefaultInstallPath();
-        _installPathBox.Location = new Point(26, 112);
-        _installPathBox.Width = 440;
+        _installPathBox.Dock = DockStyle.Fill;
+        _installPathBox.Margin = new Padding(0, 4, 10, 4);
 
         _browseButton.Text = "Выбрать";
-        _browseButton.Location = new Point(478, 110);
-        _browseButton.Width = 100;
+        _browseButton.AutoSize = true;
+        _browseButton.MinimumSize = new Size(130, 36);
+        _browseButton.Dock = DockStyle.Fill;
+        _browseButton.Margin = new Padding(0);
         _browseButton.Click += BrowseButton_Click;
 
         _desktopShortcutBox.Text = "Создать ярлык на рабочем столе";
         _desktopShortcutBox.Checked = true;
         _desktopShortcutBox.AutoSize = true;
-        _desktopShortcutBox.Location = new Point(26, 148);
+        _desktopShortcutBox.Margin = new Padding(0, 12, 0, 4);
 
         _launchAfterInstallBox.Text = "Запустить после установки";
         _launchAfterInstallBox.Checked = true;
         _launchAfterInstallBox.AutoSize = true;
-        _launchAfterInstallBox.Location = new Point(26, 174);
+        _launchAfterInstallBox.Margin = new Padding(0, 4, 0, 14);
 
-        _progressBar.Location = new Point(26, 206);
-        _progressBar.Width = 552;
+        _progressBar.Dock = DockStyle.Fill;
         _progressBar.Height = 18;
+        _progressBar.Margin = new Padding(0, 0, 0, 10);
 
         _statusLabel.Text = "Готово к установке.";
-        _statusLabel.AutoSize = false;
-        _statusLabel.Width = 410;
-        _statusLabel.Height = 24;
-        _statusLabel.Location = new Point(26, 236);
+        _statusLabel.AutoSize = true;
+        _statusLabel.Dock = DockStyle.Fill;
+        _statusLabel.AutoEllipsis = true;
+        _statusLabel.TextAlign = ContentAlignment.MiddleLeft;
+        _statusLabel.Margin = new Padding(0, 0, 12, 0);
 
         _installButton.Text = "Установить";
-        _installButton.Location = new Point(458, 268);
-        _installButton.Width = 120;
-        _installButton.Height = 32;
+        _installButton.AutoSize = true;
+        _installButton.MinimumSize = new Size(160, 42);
+        _installButton.Dock = DockStyle.Fill;
+        _installButton.Margin = new Padding(0);
         _installButton.Click += InstallButton_Click;
 
-        Controls.AddRange([
-            title,
-            hint,
-            _installPathBox,
-            _browseButton,
-            _desktopShortcutBox,
-            _launchAfterInstallBox,
-            _progressBar,
-            _statusLabel,
-            _installButton
-        ]);
+        var pathLayout = new TableLayoutPanel
+        {
+            AutoSize = true,
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            Margin = new Padding(0)
+        };
+        pathLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        pathLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        pathLayout.Controls.Add(_installPathBox, 0, 0);
+        pathLayout.Controls.Add(_browseButton, 1, 0);
+
+        var footerLayout = new TableLayoutPanel
+        {
+            AutoSize = true,
+            Dock = DockStyle.Fill,
+            ColumnCount = 2,
+            Margin = new Padding(0, 10, 0, 0)
+        };
+        footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        footerLayout.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
+        footerLayout.Controls.Add(_statusLabel, 0, 0);
+        footerLayout.Controls.Add(_installButton, 1, 0);
+
+        var rootLayout = new TableLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoScroll = true,
+            ColumnCount = 1,
+            RowCount = 8,
+            Padding = new Padding(26, 22, 26, 22)
+        };
+        rootLayout.ColumnStyles.Add(new ColumnStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        rootLayout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        rootLayout.Controls.Add(title, 0, 0);
+        rootLayout.Controls.Add(hint, 0, 1);
+        rootLayout.Controls.Add(pathLayout, 0, 2);
+        rootLayout.Controls.Add(_desktopShortcutBox, 0, 3);
+        rootLayout.Controls.Add(_launchAfterInstallBox, 0, 4);
+        rootLayout.Controls.Add(_progressBar, 0, 5);
+        rootLayout.Controls.Add(footerLayout, 0, 7);
+        Controls.Add(rootLayout);
     }
 
     private static string DefaultInstallPath()

@@ -54,7 +54,24 @@ public partial class MainWindow : Window
             }
         };
         ApplyVisualSettings();
+        SourceInitialized += (_, _) => FitWindowToWorkArea();
         Loaded += MainWindow_Loaded;
+    }
+
+    private void FitWindowToWorkArea()
+    {
+        var workArea = SystemParameters.WorkArea;
+        var availableWidth = Math.Max(480, workArea.Width - 16);
+        var availableHeight = Math.Max(360, workArea.Height - 16);
+
+        MinWidth = Math.Min(720, availableWidth);
+        MinHeight = Math.Min(480, availableHeight);
+        MaxWidth = workArea.Width;
+        MaxHeight = workArea.Height;
+        Width = Math.Min(1180, availableWidth);
+        Height = Math.Min(760, availableHeight);
+        Left = workArea.Left + Math.Max(0, (workArea.Width - Width) / 2);
+        Top = workArea.Top + Math.Max(0, (workArea.Height - Height) / 2);
     }
 
     private async void MainWindow_Loaded(object sender, RoutedEventArgs e)

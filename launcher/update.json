@@ -1,11 +1,26 @@
 {
-  "version": "0.3.6",
-  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.6-WIN-portable.zip",
-  "sha256": "e0ba5675400d5d58f80f81c0023740e488731533decf00f36d97649ba5529060",
+  "version": "0.3.7",
+  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-WIN-portable.zip",
+  "sha256": "c68807ede34280b70ff40be5395b53076b52c133dfe66d8018640887b28516cc",
   "mandatory": false,
   "notes": [
-    "\u0418\u0441\u043F\u0440\u0430\u0432\u043B\u0435\u043D\u043E \u0430\u0432\u0442\u043E\u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430: \u0442\u0435\u043F\u0435\u0440\u044C \u043E\u043D \u0432\u044B\u0431\u0438\u0440\u0430\u0435\u0442 \u043E\u0442\u0434\u0435\u043B\u044C\u043D\u044B\u0439 \u0430\u0440\u0445\u0438\u0432 \u0434\u043B\u044F Apple Silicon \u0438\u043B\u0438 Intel Mac.",
-    "macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u0435\u0442 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435, \u043F\u0440\u043E\u0432\u0435\u0440\u044F\u0435\u0442 SHA-256, \u0437\u0430\u043C\u0435\u043D\u044F\u0435\u0442 \u0444\u0430\u0439\u043B\u044B \u0440\u044F\u0434\u043E\u043C \u0441 \u0442\u0435\u043A\u0443\u0449\u0438\u043C MinivibeMac \u0438 \u043F\u0435\u0440\u0435\u0437\u0430\u043F\u0443\u0441\u043A\u0430\u0435\u0442\u0441\u044F.",
-    "\u0414\u043B\u044F \u0443\u0436\u0435 \u0443\u0441\u0442\u0430\u043D\u043E\u0432\u043B\u0435\u043D\u043D\u043E\u0439 macOS-\u0432\u0435\u0440\u0441\u0438\u0438 0.3.5 \u0438 \u043D\u0438\u0436\u0435 \u044D\u0442\u043E\u0442 \u043F\u0430\u0442\u0447 \u043D\u0443\u0436\u043D\u043E \u043F\u043E\u0441\u0442\u0430\u0432\u0438\u0442\u044C \u0432\u0440\u0443\u0447\u043D\u0443\u044E \u043E\u0434\u0438\u043D \u0440\u0430\u0437, \u0434\u0430\u043B\u044C\u0448\u0435 \u0430\u0432\u0442\u043E\u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0431\u0443\u0434\u0435\u0442 \u0440\u0430\u0431\u043E\u0442\u0430\u0442\u044C."
-  ]
+    "Окно лаунчера автоматически уменьшается под рабочую область небольших экранов.",
+    "Поиск установленного NeoForge дополнительно проверяет JAR с именем версии и JAR с именем папки сборки.",
+    "Windows portable теперь публикуется self-contained и не требует отдельной установки .NET Runtime.",
+    "Исправлена компоновка установщика: кнопки выбора папки и установки полностью видны при DPI-масштабировании."
+  ],
+  "platforms": {
+    "win-x64": {
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-WIN-portable.zip",
+      "sha256": "c68807ede34280b70ff40be5395b53076b52c133dfe66d8018640887b28516cc"
+    },
+    "mac-arm64": {
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-MAC-arm64.zip",
+      "sha256": "1e54965b74d0a1f624798b8481a4fc8265594f4d1e9fc34fa4dd5561ff1668ea"
+    },
+    "mac-x64": {
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.7-MAC-x64.zip",
+      "sha256": "7b82861aeab536de4a5630a4bfe04a24cee8d04362179ca2a32d8086532ff57f"
+    }
+  }
 }

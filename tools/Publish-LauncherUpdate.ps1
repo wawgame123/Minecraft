@@ -1,6 +1,6 @@
 param(
     [string]$Configuration = "Release",
-    [string]$Runtime = "",
+    [string]$Runtime = "win-x64",
     [string]$Repository = "wawgame123/Minecraft",
     [string]$Branch = "main"
 )
@@ -62,14 +62,24 @@ if (Test-Path -LiteralPath $publishDir) {
 New-Item -ItemType Directory -Force -Path $publishDir | Out-Null
 New-Item -ItemType Directory -Force -Path $launcherDir | Out-Null
 
-if ([string]::IsNullOrWhiteSpace($Runtime)) {
-    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "--self-contained", "false", "--no-restore", "-p:DebugType=None", "-p:DebugSymbols=false", "-o", $publishDir)
-    $zipName = "Minivibe-$version-WIN-portable.zip"
-}
-else {
-    Invoke-Checked dotnet @("publish", $project, "-c", $Configuration, "-r", $Runtime, "--self-contained", "false", "--no-restore", "-p:DebugType=None", "-p:DebugSymbols=false", "-o", $publishDir)
-    $zipName = "Minivibe-$version-$Runtime-portable.zip"
-}
+Invoke-Checked dotnet @(
+    "publish",
+    $project,
+    "-c",
+    $Configuration,
+    "-r",
+    $Runtime,
+    "--self-contained",
+    "true",
+    "-p:PublishSingleFile=true",
+    "-p:IncludeNativeLibrariesForSelfExtract=true",
+    "-p:EnableCompressionInSingleFile=true",
+    "-p:DebugType=None",
+    "-p:DebugSymbols=false",
+    "-o",
+    $publishDir
+)
+$zipName = "Minivibe-$version-WIN-portable.zip"
 
 $zipPath = Join-Path $launcherDir $zipName
 Assert-UnderRoot -Path $zipPath -Root $root
@@ -87,10 +97,10 @@ $update = [ordered]@{
     sha256 = $hash
     mandatory = $false
     notes = @(
-        ConvertFrom-Utf8Base64 "0JvQsNGD0L3Rh9C10YAg0L/QtdGA0LXQtCDQt9Cw0L/Rg9GB0LrQvtC8IE1pbmVjcmFmdCDRgdC40L3RhdGA0L7QvdC40LfQuNGA0YPQtdGCINCy0YHQtSBHaXRIdWIt0YHQutC40L3RiyDQsiDQu9C+0LrQsNC70YzQvdGL0Lkg0LrRjdGIIE9mZmxpbmVTa2lucy4="
-        ConvertFrom-Utf8Base64 "0KHQutC40L3RiyDRgdC+0YXRgNCw0L3Rj9GO0YLRgdGPINC/0L4g0L3QuNC60YMsIGxvd2VyLWNhc2Ug0LDQu9C40LDRgdGDINC4IG9mZmxpbmUgVVVJRCwg0YfRgtC+0LHRiyBPZmZsaW5lU2tpbnMg0L3QsNGF0L7QtNC40Lsg0LjRhSDRgdGC0LDQsdC40LvRjNC90LXQtS4="
-        ConvertFrom-Utf8Base64 "0JXRgdC70LggR2l0SHViINCy0YDQtdC80LXQvdC90L4g0L3QtdC00L7RgdGC0YPQv9C10L0sINC30LDQv9GD0YHQuiBNaW5lY3JhZnQg0L/RgNC+0LTQvtC70LbQsNC10YLRgdGPINGB0L4g0YHRgtCw0YDRi9C8INC70L7QutCw0LvRjNC90YvQvCDQutGN0YjQtdC8Lg=="
-        ConvertFrom-Utf8Base64 "0KTQuNC+0LvQtdGC0L7QstC+LdGH0LXRgNC90YvQtSBtaXNzaW5nIHRleHR1cmUg0LTQvtC70LbQvdGLINC/0YDQvtC/0LDRgdGC0YwsINC/0L7RgtC+0LzRgyDRh9GC0L4g0LjQs9GA0LAg0LHQvtC70YzRiNC1INC90LUg0LfQsNCy0LjRgdC40YIg0L7RgiDRgdC60LDRh9C40LLQsNC90LjRjyDRgdC60LjQvdCwINCyINC80L7QvNC10L3RgiDRgNC10L3QtNC10YDQsC4="
+        ConvertFrom-Utf8Base64 "0J7QutC90L4g0LvQsNGD0L3Rh9C10YDQsCDQsNCy0YLQvtC80LDRgtC40YfQtdGB0LrQuCDRg9C80LXQvdGM0YjQsNC10YLRgdGPINC/0L7QtCDRgNCw0LHQvtGH0YPRjiDQvtCx0LvQsNGB0YLRjCDQvdC10LHQvtC70YzRiNC40YUg0Y3QutGA0LDQvdC+0LIu"
+        ConvertFrom-Utf8Base64 "0J/QvtC40YHQuiDRg9GB0YLQsNC90L7QstC70LXQvdC90L7Qs9C+IE5lb0ZvcmdlINC00L7Qv9C+0LvQvdC40YLQtdC70YzQvdC+INC/0YDQvtCy0LXRgNGP0LXRgiBKQVIg0YEg0LjQvNC10L3QtdC8INCy0LXRgNGB0LjQuCDQuCBKQVIg0YEg0LjQvNC10L3QtdC8INC/0LDQv9C60Lgg0YHQsdC+0YDQutC4Lg=="
+        ConvertFrom-Utf8Base64 "V2luZG93cyBwb3J0YWJsZSDRgtC10L/QtdGA0Ywg0L/Rg9Cx0LvQuNC60YPQtdGC0YHRjyBzZWxmLWNvbnRhaW5lZCDQuCDQvdC1INGC0YDQtdCx0YPQtdGCINC+0YLQtNC10LvRjNC90L7QuSDRg9GB0YLQsNC90L7QstC60LggLk5FVCBSdW50aW1lLg=="
+        ConvertFrom-Utf8Base64 "0JjRgdC/0YDQsNCy0LvQtdC90LAg0LrQvtC80L/QvtC90L7QstC60LAg0YPRgdGC0LDQvdC+0LLRidC40LrQsDog0LrQvdC+0L/QutC4INCy0YvQsdC+0YDQsCDQv9Cw0L/QutC4INC4INGD0YHRgtCw0L3QvtCy0LrQuCDQv9C+0LvQvdC+0YHRgtGM0Y4g0LLQuNC00L3RiyDQv9GA0LggRFBJLdC80LDRgdGI0YLQsNCx0LjRgNC+0LLQsNC90LjQuC4="
     )
 }
 

@@ -333,6 +333,25 @@ public sealed class MinecraftRuntimeService
             return null;
         }
 
+        if (!string.IsNullOrWhiteSpace(version?.Id))
+        {
+            var versionIdJarPath = Path.Combine(versionDirectory, version.Id + ".jar");
+            if (File.Exists(versionIdJarPath))
+            {
+                return versionIdJarPath;
+            }
+        }
+
+        var folderName = new DirectoryInfo(versionDirectory).Name;
+        if (!string.IsNullOrWhiteSpace(folderName))
+        {
+            var folderNamedJarPath = Path.Combine(versionDirectory, folderName + ".jar");
+            if (File.Exists(folderNamedJarPath))
+            {
+                return folderNamedJarPath;
+            }
+        }
+
         var candidates = Directory.EnumerateFiles(versionDirectory, "*.jar", SearchOption.TopDirectoryOnly)
             .Where(path => !Path.GetFileName(path).Contains("installer", StringComparison.OrdinalIgnoreCase))
             .ToList();

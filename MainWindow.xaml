@@ -6,8 +6,8 @@
         Icon="Assets/launcher-icon.ico"
         Width="1180"
         Height="760"
-        MinWidth="980"
-        MinHeight="640"
+        MinWidth="720"
+        MinHeight="480"
         WindowStartupLocation="CenterScreen"
         FontFamily="Segoe UI"
         UseLayoutRounding="True"
@@ -203,7 +203,8 @@
       </Rectangle>
     </Grid>
 
-    <Grid Margin="22">
+    <Viewbox Stretch="Uniform" StretchDirection="DownOnly">
+    <Grid Width="1136" Height="716" Margin="22">
       <Grid.ColumnDefinitions>
         <ColumnDefinition Width="250"/>
         <ColumnDefinition Width="*"/>
@@ -716,5 +717,6 @@
         </Border>
       </Grid>
     </Grid>
+    </Viewbox>
   </Grid>
 </Window>

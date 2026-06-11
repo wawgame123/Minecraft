@@ -9,6 +9,8 @@ $ErrorActionPreference = "Stop"
 $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $project = Join-Path $root "mac\Minivibe.Mac\Minivibe.Mac.csproj"
 $launcherDir = Join-Path $root "launcher"
+$updatePath = Join-Path $launcherDir "update.json"
+$platforms = [ordered]@{}
 
 function Assert-UnderRoot {
     param(
@@ -172,6 +174,36 @@ The launcher is self-contained and does not require installing .NET separately.
     Assert-UnderRoot -Path $zipPath -Root $root
     New-ZipArchiveWithUnixPermissions -SourceDirectory $publishDir -DestinationPath $zipPath -ExecutableEntries @("MinivibeMac", "Run-Minivibe.command")
     $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
+    $platforms["mac-$arch"] = [ordered]@{
+        url = "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/$zipName"
+        sha256 = $hash
+    }
     Write-Output "Published mac launcher: $zipPath"
     Write-Output "SHA256: $hash"
 }
+
+if (-not (Test-Path -LiteralPath $updatePath)) {
+    throw "Launcher update manifest was not found: $updatePath"
+}
+
+$update = Get-Content -Raw -LiteralPath $updatePath | ConvertFrom-Json
+$allPlatforms = [ordered]@{
+    "win-x64" = [ordered]@{
+        url = [string]$update.url
+        sha256 = [string]$update.sha256
+    }
+}
+foreach ($entry in $platforms.GetEnumerator()) {
+    $allPlatforms[$entry.Key] = $entry.Value
+}
+
+$mergedUpdate = [ordered]@{
+    version = [string]$update.version
+    url = [string]$update.url
+    sha256 = [string]$update.sha256
+    mandatory = [bool]$update.mandatory
+    notes = @($update.notes)
+    platforms = $allPlatforms
+}
+$mergedUpdate | ConvertTo-Json -Depth 6 | Set-Content -LiteralPath $updatePath -Encoding UTF8
+Write-Output "Updated platform assets: $updatePath"
