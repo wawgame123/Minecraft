@@ -895,38 +895,6 @@
       "required": true
     },
     {
-      "path": "mods/seamless-loading-screen-2.2.1\u002B1.21-neoforge.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/seamless-loading-screen-2.2.1%2B1.21-neoforge.jar",
-      "sha256": "ab251f81080f4d0891d8576ab14b598f3e46b699a17baf58ffab7a9a2efeb395",
-      "size": 258077,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/seamlesssleep-neoforge-1.21-2.5.3.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/seamlesssleep-neoforge-1.21-2.5.3.jar",
-      "sha256": "01e92fdc4a3a72bcfd5432ccbdec2c14c6e2b7eb14b38f0db9b0251f3b4ea313",
-      "size": 148048,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/seamless-2.3.3-neoforge-1.21.1.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/seamless-2.3.3-neoforge-1.21.1.jar",
-      "sha256": "1ffa005a46f525a06d2a061c7ffe64232a705e2963d84599a65e1e370fae51c7",
-      "size": 660348,
-      "category": "mod",
-      "required": true
-    },
-    {
-      "path": "mods/cwb-neoforge-3.0.0\u002Bmc1.21.jar",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/cwb-neoforge-3.0.0%2Bmc1.21.jar",
-      "sha256": "be7144647bc160858e659f6793fcce993914443b9256c2df0369b1c616a2a5d4",
-      "size": 81843,
-      "category": "mod",
-      "required": true
-    },
-    {
       "path": "resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/resourcepacks/21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267.zip",
       "sha256": "21a20c434b3a5e63dcf9974a33d4eda042bcd620e7ef0a3c224dbc016f37d267",
