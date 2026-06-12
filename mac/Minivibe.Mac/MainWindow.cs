@@ -1698,7 +1698,14 @@ public sealed class MainWindow : Window
         }
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
-        return NormalizeVersion(parsedRemoteVersion) > NormalizeVersion(currentVersion);
+        var comparison = NormalizeVersion(parsedRemoteVersion).CompareTo(NormalizeVersion(currentVersion));
+        if (comparison != 0)
+        {
+            return comparison > 0;
+        }
+
+        return CurrentLauncherVersion().Contains('-', StringComparison.Ordinal)
+            && !remoteVersion.Contains('-', StringComparison.Ordinal);
     }
 
     private static Version NormalizeVersion(Version version)

@@ -3,7 +3,12 @@
   "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
   "sha256": "67939343464922e7a178e30df719c2340fa434374d711bb85be7116be82cd511",
   "mandatory": false,
-  "notes": [],
+  "notes": [
+    "В macOS-лаунчер встроена BlueMap через системный WKWebView.",
+    "Добавлено интерактивное 3D-превью скина внутри macOS-лаунчера.",
+    "HTML-новости теперь открываются внутри лаунчера.",
+    "Новости и изображения принудительно обновляются без устаревшего CDN-кэша."
+  ],
   "platforms": {
     "win-x64": {
       "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
