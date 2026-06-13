@@ -1,26 +1,48 @@
-{
-  "version": "0.3.8",
-  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
-  "sha256": "67939343464922e7a178e30df719c2340fa434374d711bb85be7116be82cd511",
-  "mandatory": false,
-  "notes": [
-    "\u0412 macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440 \u0432\u0441\u0442\u0440\u043E\u0435\u043D\u0430 BlueMap \u0447\u0435\u0440\u0435\u0437 \u0441\u0438\u0441\u0442\u0435\u043C\u043D\u044B\u0439 WKWebView.",
-    "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u043E \u0438\u043D\u0442\u0435\u0440\u0430\u043A\u0442\u0438\u0432\u043D\u043E\u0435 3D-\u043F\u0440\u0435\u0432\u044C\u044E \u0441\u043A\u0438\u043D\u0430 \u0432\u043D\u0443\u0442\u0440\u0438 macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430.",
-    "HTML-\u043D\u043E\u0432\u043E\u0441\u0442\u0438 \u0442\u0435\u043F\u0435\u0440\u044C \u043E\u0442\u043A\u0440\u044B\u0432\u0430\u044E\u0442\u0441\u044F \u0432\u043D\u0443\u0442\u0440\u0438 \u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430.",
-    "\u041D\u043E\u0432\u043E\u0441\u0442\u0438 \u0438 \u0438\u0437\u043E\u0431\u0440\u0430\u0436\u0435\u043D\u0438\u044F \u043F\u0440\u0438\u043D\u0443\u0434\u0438\u0442\u0435\u043B\u044C\u043D\u043E \u043E\u0431\u043D\u043E\u0432\u043B\u044F\u044E\u0442\u0441\u044F \u0431\u0435\u0437 \u0443\u0441\u0442\u0430\u0440\u0435\u0432\u0448\u0435\u0433\u043E CDN-\u043A\u044D\u0448\u0430."
-  ],
-  "platforms": {
-    "win-x64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-WIN-portable.zip",
-      "sha256": "67939343464922e7a178e30df719c2340fa434374d711bb85be7116be82cd511"
-    },
-    "mac-arm64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-MAC-arm64.zip",
-      "sha256": "3632fd665dfccdfc06c6da6c0789927833ddeffa58c495aea562eb16f561fd3d"
-    },
-    "mac-x64": {
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.3.8-MAC-x64.zip",
-      "sha256": "87b39206c6e6f801d7a2b55ecb96325ff784c2a35dfe05644faa8ac8268609e3"
-    }
-  }
+﻿{
+    "version":  "0.4.0",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-WIN-portable.zip",
+    "sha256":  "f8afd2945de06c057e252a489cf3b0f1fb79c42a508c750b950a6d56d83bd34c",
+    "mandatory":  false,
+    "notes":  [
+                  "Добавлены частичные обновления лаунчера: после перехода на 0.4.0 скачиваются только измененные файлы.",
+                  "Версии и патчноуты Windows и macOS разделены: изменения одной платформы больше не запускают обновление другой."
+              ],
+    "platforms":  {
+                      "win-x64":  {
+                                      "version":  "0.4.0",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-WIN-portable.zip",
+                                      "sha256":  "f8afd2945de06c057e252a489cf3b0f1fb79c42a508c750b950a6d56d83bd34c",
+                                      "notes":  [
+                                                    "Добавлены частичные обновления лаунчера: после перехода на 0.4.0 скачиваются только измененные файлы.",
+                                                    "Версии и патчноуты Windows и macOS разделены: изменения одной платформы больше не запускают обновление другой."
+                                                ],
+                                      "patches":  {
+
+                                                  }
+                                  },
+                      "mac-arm64":  {
+                                        "version":  "0.4.0",
+                                        "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-MAC-arm64.zip",
+                                        "sha256":  "07b0fd485311e637c93bcd5b47f120a23ba9029d8a3f1510b151c4dd730837d2",
+                                        "notes":  [
+                                                      "Добавлены частичные обновления macOS-лаунчера: после перехода на 0.4.0 скачиваются только измененные файлы.",
+                                                      "Версии и патчноуты macOS отделены от Windows: изменения Windows больше не запускают обновление на Mac."
+                                                  ],
+                                        "patches":  {
+
+                                                    }
+                                    },
+                      "mac-x64":  {
+                                      "version":  "0.4.0",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-MAC-x64.zip",
+                                      "sha256":  "d8596052f882f1b74097d299bdade229ffb88a5f057c5824a8d5b9a9b2d64076",
+                                      "notes":  [
+                                                    "Добавлены частичные обновления macOS-лаунчера: после перехода на 0.4.0 скачиваются только измененные файлы.",
+                                                    "Версии и патчноуты macOS отделены от Windows: изменения Windows больше не запускают обновление на Mac."
+                                                ],
+                                      "patches":  {
+
+                                                  }
+                                  }
+                  }
 }

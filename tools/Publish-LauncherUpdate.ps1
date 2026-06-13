@@ -12,6 +12,19 @@ $root = (Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")).Path
 $project = Join-Path $root "ServerLauncher.csproj"
 $publishDir = Join-Path $root "artifacts\publish\minivibe"
 $launcherDir = Join-Path $root "launcher"
+$updatePath = Join-Path $launcherDir "update.json"
+$existingUpdate = if (Test-Path -LiteralPath $updatePath) {
+    Get-Content -Raw -LiteralPath $updatePath | ConvertFrom-Json
+} else { $null }
+
+function Get-JsonPropertyValue($Object, [string]$Name) {
+    if ($null -eq $Object) { return $null }
+    $property = $Object.PSObject.Properties[$Name]
+    if ($null -eq $property) { return $null }
+    return $property.Value
+}
+
+$existingPlatforms = Get-JsonPropertyValue $existingUpdate "platforms"
 
 function Assert-UnderRoot {
     param(
@@ -46,6 +59,80 @@ function ConvertFrom-Utf8Base64([string]$Value) {
     [Text.Encoding]::UTF8.GetString([Convert]::FromBase64String($Value))
 }
 
+function Test-IsOlderVersion([string]$SourceVersion, [string]$TargetVersion) {
+    $source = $null
+    $target = $null
+    if (-not [Version]::TryParse($SourceVersion, [ref]$source)) { return $false }
+    if (-not [Version]::TryParse($TargetVersion, [ref]$target)) { return $false }
+    return $source -ge [Version]"0.4.0" -and $source -lt $target
+}
+
+function New-ChangedFilesPatch {
+    param(
+        [Parameter(Mandatory = $true)][string]$PreviousZip,
+        [Parameter(Mandatory = $true)][string]$NewDirectory,
+        [Parameter(Mandatory = $true)][string]$PatchZip
+    )
+
+    $workRoot = Join-Path $root "artifacts\patch\win-x64"
+    $previousDirectory = Join-Path $workRoot "previous"
+    $changedDirectory = Join-Path $workRoot "changed"
+    if (Test-Path -LiteralPath $PatchZip) {
+        Remove-Item -LiteralPath $PatchZip -Force
+    }
+    if (Test-Path -LiteralPath $workRoot) {
+        Remove-Item -LiteralPath $workRoot -Recurse -Force
+    }
+
+    New-Item -ItemType Directory -Force -Path $previousDirectory, $changedDirectory | Out-Null
+    Expand-Archive -LiteralPath $PreviousZip -DestinationPath $previousDirectory -Force
+    $previousFileCount = (Get-ChildItem -LiteralPath $previousDirectory -File -Recurse).Count
+    $newFileCount = (Get-ChildItem -LiteralPath $NewDirectory -File -Recurse).Count
+    if ($previousFileCount -le 10 -and $newFileCount -gt 10) {
+        Write-Output "Skipping patch from single-file package; the old client requires one full migration update."
+        return $false
+    }
+
+    $newRoot = [IO.Path]::GetFullPath($NewDirectory).TrimEnd('\', '/')
+    $newPaths = [System.Collections.Generic.HashSet[string]]::new([System.StringComparer]::OrdinalIgnoreCase)
+    foreach ($file in Get-ChildItem -LiteralPath $NewDirectory -File -Recurse) {
+        $relativePath = [IO.Path]::GetFullPath($file.FullName).Substring($newRoot.Length).TrimStart('\', '/')
+        [void]$newPaths.Add($relativePath.Replace('\', '/'))
+        $previousFile = Join-Path $previousDirectory $relativePath
+        $changed = -not (Test-Path -LiteralPath $previousFile)
+        if (-not $changed) {
+            $changed = (Get-FileHash -LiteralPath $file.FullName -Algorithm SHA256).Hash -ne
+                (Get-FileHash -LiteralPath $previousFile -Algorithm SHA256).Hash
+        }
+
+        if ($changed) {
+            $destination = Join-Path $changedDirectory $relativePath
+            New-Item -ItemType Directory -Force -Path (Split-Path -Parent $destination) | Out-Null
+            Copy-Item -LiteralPath $file.FullName -Destination $destination -Force
+        }
+    }
+
+    $previousRoot = [IO.Path]::GetFullPath($previousDirectory).TrimEnd('\', '/')
+    $removedPaths = @(
+        foreach ($file in Get-ChildItem -LiteralPath $previousDirectory -File -Recurse) {
+            $relativePath = [IO.Path]::GetFullPath($file.FullName).Substring($previousRoot.Length).TrimStart('\', '/').Replace('\', '/')
+            if ($relativePath -ne '.minivibe-delete.txt' -and -not $newPaths.Contains($relativePath)) {
+                $relativePath
+            }
+        }
+    )
+    if ($removedPaths.Count -gt 0) {
+        [IO.File]::WriteAllLines((Join-Path $changedDirectory '.minivibe-delete.txt'), $removedPaths, [Text.UTF8Encoding]::new($false))
+    }
+
+    if ((Get-ChildItem -LiteralPath $changedDirectory -File -Recurse).Count -eq 0) {
+        return $false
+    }
+
+    Compress-Archive -Path (Join-Path $changedDirectory "*") -DestinationPath $PatchZip -Force
+    return $true
+}
+
 [xml]$projectXml = Get-Content -Raw -LiteralPath $project
 $version = $projectXml.Project.PropertyGroup.Version
 if ([string]::IsNullOrWhiteSpace($version)) {
@@ -71,9 +158,6 @@ Invoke-Checked dotnet @(
     $Runtime,
     "--self-contained",
     "true",
-    "-p:PublishSingleFile=true",
-    "-p:IncludeNativeLibrariesForSelfExtract=true",
-    "-p:EnableCompressionInSingleFile=true",
     "-p:DebugType=None",
     "-p:DebugSymbols=false",
     "-o",
@@ -90,22 +174,53 @@ if (Test-Path -LiteralPath $zipPath) {
 Compress-Archive -Path (Join-Path $publishDir "*") -DestinationPath $zipPath -Force
 $hash = (Get-FileHash -LiteralPath $zipPath -Algorithm SHA256).Hash.ToLowerInvariant()
 $url = "https://raw.githubusercontent.com/$Repository/$Branch/launcher/$zipName"
+$patches = [ordered]@{}
+Get-ChildItem -LiteralPath $launcherDir -Filter "Minivibe-$version-FROM-*-WIN-patch.zip" -File |
+    Remove-Item -Force
+foreach ($previousPackage in Get-ChildItem -LiteralPath $launcherDir -Filter "Minivibe-*-WIN-portable.zip" -File) {
+    if ($previousPackage.Name -notmatch '^Minivibe-(?<version>.+)-WIN-portable\.zip$') { continue }
+    $sourceVersion = $Matches.version
+    if (-not (Test-IsOlderVersion -SourceVersion $sourceVersion -TargetVersion $version)) { continue }
+
+    $patchName = "Minivibe-$version-FROM-$sourceVersion-WIN-patch.zip"
+    $patchPath = Join-Path $launcherDir $patchName
+    if (New-ChangedFilesPatch -PreviousZip $previousPackage.FullName -NewDirectory $publishDir -PatchZip $patchPath) {
+        $patches[$sourceVersion] = [ordered]@{
+            url = "https://raw.githubusercontent.com/$Repository/$Branch/launcher/$patchName"
+            sha256 = (Get-FileHash -LiteralPath $patchPath -Algorithm SHA256).Hash.ToLowerInvariant()
+        }
+        Write-Output "Published patch: $patchPath"
+    }
+}
+
+$windowsNotes = @(
+    ConvertFrom-Utf8Base64 "0JTQvtCx0LDQstC70LXQvdGLINGH0LDRgdGC0LjRh9C90YvQtSDQvtCx0L3QvtCy0LvQtdC90LjRjyDQu9Cw0YPQvdGH0LXRgNCwOiDQv9C+0YHQu9C1INC/0LXRgNC10YXQvtC00LAg0L3QsCAwLjQuMCDRgdC60LDRh9C40LLQsNGO0YLRgdGPINGC0L7Qu9GM0LrQviDQuNC30LzQtdC90LXQvdC90YvQtSDRhNCw0LnQu9GLLg=="
+    ConvertFrom-Utf8Base64 "0JLQtdGA0YHQuNC4INC4INC/0LDRgtGH0L3QvtGD0YLRiyBXaW5kb3dzINC4IG1hY09TINGA0LDQt9C00LXQu9C10L3Rizog0LjQt9C80LXQvdC10L3QuNGPINC+0LTQvdC+0Lkg0L/Qu9Cw0YLRhNC+0YDQvNGLINCx0L7Qu9GM0YjQtSDQvdC1INC30LDQv9GD0YHQutCw0Y7RgiDQvtCx0L3QvtCy0LvQtdC90LjQtSDQtNGA0YPQs9C+0Lku"
+)
+$allPlatforms = [ordered]@{}
+if ($null -ne $existingPlatforms) {
+    foreach ($property in $existingPlatforms.PSObject.Properties) {
+        $allPlatforms[$property.Name] = $property.Value
+    }
+}
+$allPlatforms["win-x64"] = [ordered]@{
+    version = $version
+    url = $url
+    sha256 = $hash
+    notes = $windowsNotes
+    patches = $patches
+}
 
 $update = [ordered]@{
     version = $version
     url = $url
     sha256 = $hash
     mandatory = $false
-    notes = @(
-        ConvertFrom-Utf8Base64 "0JIgbWFjT1Mt0LvQsNGD0L3Rh9C10YAg0LLRgdGC0YDQvtC10L3QsCBCbHVlTWFwINGH0LXRgNC10Lcg0YHQuNGB0YLQtdC80L3Ri9C5IFdLV2ViVmlldy4="
-        ConvertFrom-Utf8Base64 "0JTQvtCx0LDQstC70LXQvdC+INC40L3RgtC10YDQsNC60YLQuNCy0L3QvtC1IDNELdC/0YDQtdCy0YzRjiDRgdC60LjQvdCwINCy0L3Rg9GC0YDQuCBtYWNPUy3Qu9Cw0YPQvdGH0LXRgNCwLg=="
-        ConvertFrom-Utf8Base64 "SFRNTC3QvdC+0LLQvtGB0YLQuCDRgtC10L/QtdGA0Ywg0L7RgtC60YDRi9Cy0LDRjtGC0YHRjyDQstC90YPRgtGA0Lgg0LvQsNGD0L3Rh9C10YDQsC4="
-        ConvertFrom-Utf8Base64 "0J3QvtCy0L7RgdGC0Lgg0Lgg0LjQt9C+0LHRgNCw0LbQtdC90LjRjyDQv9GA0LjQvdGD0LTQuNGC0LXQu9GM0L3QviDQvtCx0L3QvtCy0LvRj9GO0YLRgdGPINCx0LXQtyDRg9GB0YLQsNGA0LXQstGI0LXQs9C+IENETi3QutGN0YjQsC4="
-    )
+    notes = $windowsNotes
+    platforms = $allPlatforms
 }
 
-$updatePath = Join-Path $launcherDir "update.json"
-$update | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $updatePath -Encoding UTF8
+$update | ConvertTo-Json -Depth 10 | Set-Content -LiteralPath $updatePath -Encoding UTF8
 
 Write-Output "Published: $zipPath"
 Write-Output "Update manifest: $updatePath"

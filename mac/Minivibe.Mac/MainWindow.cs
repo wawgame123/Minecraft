@@ -1511,7 +1511,10 @@ public sealed class MainWindow : Window
         {
             var update = await FindAvailableLauncherUpdateAsync(CurrentToken());
             _launcherUpdateRequired = update is not null;
-            _requiredLauncherVersion = update?.Version;
+            var asset = update is null ? null : ResolveMacUpdateAsset(update);
+            _requiredLauncherVersion = update is null || asset is null
+                ? null
+                : ResolveAssetVersion(update, asset);
             if (_launcherUpdateRequired)
             {
                 ShowLauncherUpdateRequiredStatus();
@@ -1529,12 +1532,13 @@ public sealed class MainWindow : Window
     {
         await using var stream = await _updateHttpClient.GetStreamAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
         var update = await JsonSerializer.DeserializeAsync<LauncherUpdateManifest>(stream, cancellationToken: cancellationToken);
-        if (update is null || string.IsNullOrWhiteSpace(update.Version))
+        if (update is null)
         {
             return null;
         }
 
-        return IsNewerThanCurrent(update.Version) && ResolveMacUpdateAsset(update) is not null ? update : null;
+        var asset = ResolveMacUpdateAsset(update);
+        return asset is not null && IsNewerThanCurrent(ResolveAssetVersion(update, asset)) ? update : null;
     }
 
     private async Task<bool> CheckAndApplyLauncherUpdateAsync()
@@ -1566,7 +1570,13 @@ public sealed class MainWindow : Window
             return false;
         }
 
-        SetBusy(true, $"Скачиваю обновление лаунчера {update.Version}...");
+        var currentVersion = CurrentLauncherVersion();
+        var targetVersion = ResolveAssetVersion(update, asset);
+        var hasPatch = asset.Patches.TryGetValue(currentVersion, out var patch)
+            && !string.IsNullOrWhiteSpace(patch.Url);
+        SetBusy(true, hasPatch
+            ? $"Докачиваю измененные файлы {currentVersion} → {targetVersion}..."
+            : $"Скачиваю полное обновление лаунчера {targetVersion}...");
         var prepared = await PrepareMacLauncherUpdateAsync(update, asset, CurrentToken());
         _progressText.Text = "Обновление скачано. Перезапускаю лаунчер...";
         StartMacUpdaterScript(prepared.ExtractPath, prepared.TargetDirectory, prepared.ProcessId);
@@ -1587,25 +1597,35 @@ public sealed class MainWindow : Window
         LauncherUpdateAsset asset,
         CancellationToken cancellationToken)
     {
+        var targetVersion = ResolveAssetVersion(update, asset);
         var updateRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
             "Library",
             "Application Support",
             "Minivibe",
             "Updates",
-            update.Version,
+            targetVersion,
             MacUpdatePlatformKey());
         Directory.CreateDirectory(updateRoot);
 
-        var zipPath = Path.Combine(updateRoot, "launcher-update.zip");
-        await DownloadFileAsync(asset.Url, zipPath, cancellationToken);
+        var currentVersion = CurrentLauncherVersion();
+        var patch = asset.Patches.TryGetValue(currentVersion, out var availablePatch)
+            && !string.IsNullOrWhiteSpace(availablePatch.Url)
+                ? availablePatch
+                : null;
+        var payloadUrl = patch?.Url ?? asset.Url;
+        var payloadHash = patch?.Sha256 ?? asset.Sha256;
+        var zipPath = Path.Combine(updateRoot, patch is null ? "launcher-update.zip" : "launcher-patch.zip");
+        await DownloadFileAsync(payloadUrl, zipPath, cancellationToken);
 
-        if (!string.IsNullOrWhiteSpace(asset.Sha256))
+        if (!string.IsNullOrWhiteSpace(payloadHash))
         {
             var actualHash = await ComputeSha256Async(zipPath, cancellationToken);
-            if (!string.Equals(actualHash, asset.Sha256, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(actualHash, payloadHash, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("SHA-256 обновления macOS-лаунчера не совпал.");
+                throw new InvalidOperationException(patch is null
+                    ? "SHA-256 обновления macOS-лаунчера не совпал."
+                    : "SHA-256 частичного обновления macOS-лаунчера не совпал.");
             }
         }
 
@@ -1630,6 +1650,11 @@ public sealed class MainWindow : Window
             && !string.IsNullOrWhiteSpace(asset.Url)
             ? asset
             : null;
+    }
+
+    private static string ResolveAssetVersion(LauncherUpdateManifest update, LauncherUpdateAsset asset)
+    {
+        return string.IsNullOrWhiteSpace(asset.Version) ? update.Version : asset.Version;
     }
 
     private static string MacUpdatePlatformKey()
@@ -1666,6 +1691,16 @@ public sealed class MainWindow : Window
           sleep 0.2
         done
         mkdir -p "$target"
+        delete_marker="$source/.minivibe-delete.txt"
+        if [ -f "$delete_marker" ]; then
+          while IFS= read -r relative_path; do
+            case "$relative_path" in
+              ""|/*|*..*) continue ;;
+            esac
+            rm -rf "$target/$relative_path"
+          done < "$delete_marker"
+          rm -f "$delete_marker"
+        fi
         cp -R "$source"/. "$target"/
         chmod +x "$target/MinivibeMac" "$target/Run-Minivibe.command" 2>/dev/null || true
         cd "$target"

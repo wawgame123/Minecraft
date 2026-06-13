@@ -28,12 +28,14 @@ public sealed class LauncherUpdateService
     public async Task<LauncherUpdateManifest?> FindAvailableUpdateAsync(CancellationToken cancellationToken)
     {
         var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
-        if (update is null || string.IsNullOrWhiteSpace(update.Version) || string.IsNullOrWhiteSpace(update.Url))
+        if (update is null)
         {
             return null;
         }
 
-        return IsNewerThanCurrent(update.Version) ? update : null;
+        var asset = ResolveWindowsUpdateAsset(update);
+        var targetVersion = ResolveAssetVersion(update, asset);
+        return !string.IsNullOrWhiteSpace(asset.Url) && IsNewerThanCurrent(targetVersion) ? update : null;
     }
 
     public async Task<PreparedLauncherUpdate?> CheckAndPrepareUpdateAsync(
@@ -61,23 +63,41 @@ public sealed class LauncherUpdateService
             return null;
         }
 
-        progress?.Report($"Скачиваю обновление лаунчера {update.Version}...");
+        var asset = ResolveWindowsUpdateAsset(update);
+        var targetVersion = ResolveAssetVersion(update, asset);
+        var currentVersion = CurrentLauncherVersion();
+        var patch = asset.Patches.TryGetValue(currentVersion, out var availablePatch)
+            && !string.IsNullOrWhiteSpace(availablePatch.Url)
+                ? availablePatch
+                : null;
+        var payloadUrl = patch?.Url ?? asset.Url;
+        var payloadHash = patch?.Sha256 ?? asset.Sha256;
+        if (string.IsNullOrWhiteSpace(payloadUrl))
+        {
+            throw new InvalidOperationException("Для Windows не указан файл обновления лаунчера.");
+        }
+
+        progress?.Report(patch is null
+            ? $"Скачиваю полное обновление лаунчера {targetVersion}..."
+            : $"Докачиваю измененные файлы {currentVersion} → {targetVersion}...");
         var updateRoot = Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
             "Minivibe",
             "Updates",
-            update.Version);
+            targetVersion);
         Directory.CreateDirectory(updateRoot);
 
-        var zipPath = Path.Combine(updateRoot, "launcher-update.zip");
-        await DownloadFileAsync(update.Url, zipPath, cancellationToken);
+        var zipPath = Path.Combine(updateRoot, patch is null ? "launcher-update.zip" : "launcher-patch.zip");
+        await DownloadFileAsync(payloadUrl, zipPath, cancellationToken);
 
-        if (!string.IsNullOrWhiteSpace(update.Sha256))
+        if (!string.IsNullOrWhiteSpace(payloadHash))
         {
             var actualHash = await ComputeSha256Async(zipPath, cancellationToken);
-            if (!string.Equals(actualHash, update.Sha256, StringComparison.OrdinalIgnoreCase))
+            if (!string.Equals(actualHash, payloadHash, StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException("SHA-256 обновления лаунчера не совпал.");
+                throw new InvalidOperationException(patch is null
+                    ? "SHA-256 обновления лаунчера не совпал."
+                    : "SHA-256 частичного обновления лаунчера не совпал.");
             }
         }
 
@@ -89,7 +109,7 @@ public sealed class LauncherUpdateService
 
         ZipFile.ExtractToDirectory(zipPath, extractPath);
         return new PreparedLauncherUpdate(
-            update,
+            CreatePlatformManifest(update, asset),
             extractPath,
             AppContext.BaseDirectory,
             processPath,
@@ -133,12 +153,15 @@ public sealed class LauncherUpdateService
         CancellationToken cancellationToken)
     {
         var update = await LoadUpdateManifestAsync(LauncherEndpoints.UpdateManifestUrl, cancellationToken);
-        if (update is null || !string.Equals(update.Version, version, StringComparison.OrdinalIgnoreCase))
+        if (update is null)
         {
             return null;
         }
 
-        return update;
+        var asset = ResolveWindowsUpdateAsset(update);
+        return string.Equals(ResolveAssetVersion(update, asset), version, StringComparison.OrdinalIgnoreCase)
+            ? CreatePlatformManifest(update, asset)
+            : null;
     }
 
     private async Task<LauncherUpdateManifest?> LoadUpdateManifestAsync(string updateUrl, CancellationToken cancellationToken)
@@ -163,6 +186,60 @@ public sealed class LauncherUpdateService
 
         var currentVersion = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
         return NormalizeVersion(parsedRemoteVersion) > NormalizeVersion(currentVersion);
+    }
+
+    private static LauncherUpdateAsset ResolveWindowsUpdateAsset(LauncherUpdateManifest update)
+    {
+        if (update.Platforms.TryGetValue("win-x64", out var asset)
+            && !string.IsNullOrWhiteSpace(asset.Url))
+        {
+            return asset;
+        }
+
+        return new LauncherUpdateAsset
+        {
+            Version = update.Version,
+            Url = update.Url,
+            Sha256 = update.Sha256,
+            Notes = update.Notes
+        };
+    }
+
+    private static string ResolveAssetVersion(LauncherUpdateManifest update, LauncherUpdateAsset asset)
+    {
+        return string.IsNullOrWhiteSpace(asset.Version) ? update.Version : asset.Version;
+    }
+
+    private static LauncherUpdateManifest CreatePlatformManifest(
+        LauncherUpdateManifest update,
+        LauncherUpdateAsset asset)
+    {
+        return new LauncherUpdateManifest
+        {
+            Version = ResolveAssetVersion(update, asset),
+            Url = asset.Url,
+            Sha256 = asset.Sha256,
+            Mandatory = update.Mandatory,
+            Notes = asset.Notes.Count > 0 ? asset.Notes : update.Notes,
+            Platforms = update.Platforms
+        };
+    }
+
+    private static string CurrentLauncherVersion()
+    {
+        var informationalVersion = Assembly.GetExecutingAssembly()
+            .GetCustomAttribute<AssemblyInformationalVersionAttribute>()?
+            .InformationalVersion?
+            .Split('+')[0];
+        if (!string.IsNullOrWhiteSpace(informationalVersion))
+        {
+            return informationalVersion;
+        }
+
+        var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return version.Build == 0
+            ? $"{version.Major}.{version.Minor}"
+            : $"{version.Major}.{version.Minor}.{version.Build}";
     }
 
     private static Version NormalizeVersion(Version version)
@@ -202,6 +279,18 @@ public sealed class LauncherUpdateService
         } catch {}
         Start-Sleep -Milliseconds 500
         New-Item -ItemType Directory -Force -Path $target | Out-Null
+        $deleteMarker = Join-Path $source '.minivibe-delete.txt'
+        if (Test-Path -LiteralPath $deleteMarker) {
+          $targetRoot = [IO.Path]::GetFullPath($target).TrimEnd([IO.Path]::DirectorySeparatorChar, [IO.Path]::AltDirectorySeparatorChar)
+          foreach ($relativePath in Get-Content -LiteralPath $deleteMarker) {
+            if ([string]::IsNullOrWhiteSpace($relativePath)) { continue }
+            $candidate = [IO.Path]::GetFullPath((Join-Path $target $relativePath))
+            if ($candidate.StartsWith($targetRoot + [IO.Path]::DirectorySeparatorChar, [StringComparison]::OrdinalIgnoreCase)) {
+              Remove-Item -LiteralPath $candidate -Recurse -Force -ErrorAction SilentlyContinue
+            }
+          }
+          Remove-Item -LiteralPath $deleteMarker -Force
+        }
         Copy-Item -Path (Join-Path $source '*') -Destination $target -Recurse -Force
         Start-Process -FilePath $exe -WorkingDirectory $target
         Remove-Item -LiteralPath $MyInvocation.MyCommand.Path -Force
