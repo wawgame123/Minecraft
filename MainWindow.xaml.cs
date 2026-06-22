@@ -9,6 +9,7 @@ using ServerLauncher.Models;
 using ServerLauncher.Services;
 using MediaColor = System.Windows.Media.Color;
 using WinForms = System.Windows.Forms;
+using WpfCheckBox = System.Windows.Controls.CheckBox;
 
 namespace ServerLauncher;
 
@@ -40,6 +41,7 @@ public partial class MainWindow : Window
     private string? _requiredLauncherVersion;
     private Process? _minecraftProcess;
     private CancellationTokenSource? _visualSaveCts;
+    private readonly Dictionary<string, WpfCheckBox> _modTypeCheckBoxes = new(StringComparer.OrdinalIgnoreCase);
 
     public MainWindow()
     {
@@ -308,6 +310,7 @@ public partial class MainWindow : Window
         _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
         _settings.EnableSkinServer = true;
         _settings.ExtraLaunchArguments = ExtraArgsBox.Text.Trim();
+        _settings.SelectedModTypes = SelectedModTypesFromUi();
         _settings.EnableAutoUpdate = AutoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = DynamicBackgroundCheckBox.IsChecked == true;
@@ -348,6 +351,7 @@ public partial class MainWindow : Window
             SidebarOpacitySlider.Value = OpacityToTransparencyPercent(_settings.SidebarOpacity);
             BackgroundEffectOpacitySlider.Value = RatioToPercent(_settings.BackgroundEffectOpacity);
             UpdateOpacityValueLabels();
+            RenderModTypeOptions();
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
             UpdateSkinStatus();
@@ -379,8 +383,71 @@ public partial class MainWindow : Window
 
         HomeChangelogList.ItemsSource = _manifest.Changelog.Take(4);
         RenderNewsList(selectedNewsKey);
+        RenderModTypeOptions();
 
         RenderMapLink();
+    }
+
+    private void RenderModTypeOptions()
+    {
+        _modTypeCheckBoxes.Clear();
+        ModTypesPanel.Children.Clear();
+
+        if (_manifest is null)
+        {
+            return;
+        }
+
+        var optionalTypes = OptionalModTypes(_manifest).ToList();
+        if (optionalTypes.Count == 0)
+        {
+            ModTypesPanel.Children.Add(new TextBlock
+            {
+                Text = "Все моды в этой сборке обязательные.",
+                Foreground = (System.Windows.Media.Brush)FindResource("MutedBrush"),
+                TextWrapping = TextWrapping.Wrap
+            });
+            return;
+        }
+
+        var selectedTypes = new HashSet<string>(_settings.SelectedModTypes ?? [], StringComparer.OrdinalIgnoreCase);
+        foreach (var modType in optionalTypes)
+        {
+            var checkBox = new WpfCheckBox
+            {
+                Content = modType,
+                IsChecked = selectedTypes.Contains(modType)
+            };
+            _modTypeCheckBoxes[modType] = checkBox;
+            ModTypesPanel.Children.Add(checkBox);
+        }
+    }
+
+    private List<string> SelectedModTypesFromUi()
+    {
+        return _modTypeCheckBoxes
+            .Where(pair => pair.Value.IsChecked == true)
+            .Select(pair => pair.Key)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static IEnumerable<string> OptionalModTypes(LauncherManifest manifest)
+    {
+        var types = manifest.RequiredFiles
+            .Where(file => LauncherManifestNormalizer.IsModFile(file) && !file.Required)
+            .Select(file => string.IsNullOrWhiteSpace(file.Category)
+                ? LauncherManifestNormalizer.DefaultModType
+                : file.Category.Trim())
+            .Concat(manifest.ModTypes)
+            .Where(type => !string.IsNullOrWhiteSpace(type))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(type => type, StringComparer.OrdinalIgnoreCase);
+
+        return types.Where(type => manifest.RequiredFiles.Any(file =>
+            LauncherManifestNormalizer.IsModFile(file)
+            && !file.Required
+            && string.Equals(file.Category, type, StringComparison.OrdinalIgnoreCase)));
     }
 
     private void RenderNewsList(string? selectedNewsKey)

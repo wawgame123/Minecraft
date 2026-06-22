@@ -537,6 +537,8 @@
                 </DockPanel>
 
                 <CheckBox x:Name="ShadersCheckBox" Content="Шейдеры"/>
+                <TextBlock Text="Типы модов" Style="{StaticResource LabelStyle}"/>
+                <StackPanel x:Name="ModTypesPanel"/>
                 <DockPanel Margin="0,2,0,0">
                   <Button Content="Переустановить"
                           DockPanel.Dock="Right"

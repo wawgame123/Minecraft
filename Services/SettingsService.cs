@@ -38,6 +38,8 @@ public sealed class SettingsService
             settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
         }
 
+        settings.SelectedModTypes ??= [];
+
         return settings;
     }
 

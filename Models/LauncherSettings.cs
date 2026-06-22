@@ -6,6 +6,7 @@ public sealed class LauncherSettings
     public bool EnableAutoUpdate { get; set; } = true;
     public bool EnableShaders { get; set; }
     public bool EnableEmotes { get; set; }
+    public List<string> SelectedModTypes { get; set; } = [];
     public bool EnableGameConsole { get; set; }
     public bool ShowDownloadDetails { get; set; }
     public int RamMb { get; set; } = 4096;

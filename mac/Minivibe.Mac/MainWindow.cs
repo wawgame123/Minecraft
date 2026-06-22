@@ -99,6 +99,7 @@ public sealed class MainWindow : Window
     private readonly Button _browseInstallDirectoryButton = new();
     private readonly CheckBox _shadersCheckBox = new();
     private readonly CheckBox _emotesCheckBox = new();
+    private readonly StackPanel _modTypesStack = new() { Spacing = 6 };
     private readonly CheckBox _gameConsoleCheckBox = new();
     private readonly CheckBox _downloadDetailsCheckBox = new();
     private readonly TextBox _ramBox = new();
@@ -142,6 +143,7 @@ public sealed class MainWindow : Window
     private Process? _minecraftProcess;
     private Button? _activeNavButton;
     private CancellationTokenSource? _newsMediaCts;
+    private readonly Dictionary<string, CheckBox> _modTypeCheckBoxes = new(StringComparer.OrdinalIgnoreCase);
 
     public MainWindow()
     {
@@ -600,6 +602,8 @@ public sealed class MainWindow : Window
                     }
                 },
                 Toggle(_shadersCheckBox, "Шейдеры"),
+                RegisterMuted(new TextBlock { Text = "Типы модов" }),
+                _modTypesStack,
                 new DockPanel
                 {
                     Children =
@@ -1176,6 +1180,7 @@ public sealed class MainWindow : Window
         _settings.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
         _settings.EnableSkinServer = true;
         _settings.ExtraLaunchArguments = (_extraArgsBox.Text ?? "").Trim();
+        _settings.SelectedModTypes = SelectedModTypesFromUi();
         _settings.EnableAutoUpdate = _autoUpdateCheckBox.IsChecked == true;
         SaveCustomColorsFromUi();
         _settings.DynamicBackground = _dynamicBackgroundCheckBox.IsChecked == true;
@@ -1216,6 +1221,7 @@ public sealed class MainWindow : Window
             _sidebarOpacitySlider.Value = OpacityToTransparencyPercent(_settings.SidebarOpacity);
             _backgroundEffectOpacitySlider.Value = RatioToPercent(_settings.BackgroundEffectOpacity);
             UpdateOpacityValueLabels();
+            RenderModTypeOptions();
             UpdatePlayerPreview();
             UpdatePlayerNameMode();
             UpdateSkinStatus();
@@ -1256,7 +1262,66 @@ public sealed class MainWindow : Window
         }
 
         RenderNewsList(selectedNewsKey);
+        RenderModTypeOptions();
         RenderMapLink();
+    }
+
+    private void RenderModTypeOptions()
+    {
+        _modTypeCheckBoxes.Clear();
+        _modTypesStack.Children.Clear();
+
+        if (_manifest is null)
+        {
+            return;
+        }
+
+        var optionalTypes = OptionalModTypes(_manifest).ToList();
+        if (optionalTypes.Count == 0)
+        {
+            _modTypesStack.Children.Add(RegisterMuted(new TextBlock
+            {
+                Text = "Все моды в этой сборке обязательные.",
+                TextWrapping = TextWrapping.Wrap
+            }));
+            return;
+        }
+
+        var selectedTypes = new HashSet<string>(_settings.SelectedModTypes ?? [], StringComparer.OrdinalIgnoreCase);
+        foreach (var modType in optionalTypes)
+        {
+            var checkBox = Toggle(new CheckBox(), modType);
+            checkBox.IsChecked = selectedTypes.Contains(modType);
+            _modTypeCheckBoxes[modType] = checkBox;
+            _modTypesStack.Children.Add(checkBox);
+        }
+    }
+
+    private List<string> SelectedModTypesFromUi()
+    {
+        return _modTypeCheckBoxes
+            .Where(pair => pair.Value.IsChecked == true)
+            .Select(pair => pair.Key)
+            .OrderBy(value => value, StringComparer.OrdinalIgnoreCase)
+            .ToList();
+    }
+
+    private static IEnumerable<string> OptionalModTypes(LauncherManifest manifest)
+    {
+        var types = manifest.RequiredFiles
+            .Where(file => LauncherManifestNormalizer.IsModFile(file) && !file.Required)
+            .Select(file => string.IsNullOrWhiteSpace(file.Category)
+                ? LauncherManifestNormalizer.DefaultModType
+                : file.Category.Trim())
+            .Concat(manifest.ModTypes)
+            .Where(type => !string.IsNullOrWhiteSpace(type))
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(type => type, StringComparer.OrdinalIgnoreCase);
+
+        return types.Where(type => manifest.RequiredFiles.Any(file =>
+            LauncherManifestNormalizer.IsModFile(file)
+            && !file.Required
+            && string.Equals(file.Category, type, StringComparison.OrdinalIgnoreCase)));
     }
 
     private void RenderNewsList(string? selectedNewsKey)

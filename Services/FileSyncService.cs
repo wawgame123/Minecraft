@@ -41,8 +41,14 @@ public sealed class FileSyncService
     {
         Directory.CreateDirectory(settings.InstallDirectory);
 
-        var files = GetManagedFiles(manifest, settings.EnableShaders, includeEmotes, includeRequiredFiles).ToList();
+        var files = GetManagedFiles(
+            manifest,
+            settings.EnableShaders,
+            includeEmotes,
+            includeRequiredFiles,
+            settings.SelectedModTypes).ToList();
         RemoveBlockedMods(settings.InstallDirectory, progress);
+        RemoveDisabledManagedMods(settings.InstallDirectory, manifest, files, progress);
         RemoveOutdatedManagedMods(settings.InstallDirectory, files, progress);
 
         var statuses = new FileStatusItem[files.Count];
@@ -118,13 +124,23 @@ public sealed class FileSyncService
         LauncherManifest manifest,
         bool includeShaders,
         bool includeEmotes = false,
-        bool includeRequiredFiles = true)
+        bool includeRequiredFiles = true,
+        IEnumerable<string>? selectedModTypes = null)
     {
+        var selectedTypes = new HashSet<string>(
+            selectedModTypes ?? [],
+            StringComparer.OrdinalIgnoreCase);
+
         if (includeRequiredFiles)
         {
             foreach (var file in manifest.RequiredFiles)
             {
-                yield return file;
+                if (!LauncherManifestNormalizer.IsModFile(file)
+                    || file.Required
+                    || selectedTypes.Contains(file.Category))
+                {
+                    yield return file;
+                }
             }
         }
 
@@ -144,6 +160,31 @@ public sealed class FileSyncService
         foreach (var file in manifest.OptionalEmotes)
         {
             yield return file;
+        }
+    }
+
+    private static void RemoveDisabledManagedMods(
+        string installDirectory,
+        LauncherManifest manifest,
+        IReadOnlyCollection<ManifestFile> enabledFiles,
+        IProgress<string>? progress)
+    {
+        var enabledPaths = new HashSet<string>(
+            enabledFiles
+                .Where(LauncherManifestNormalizer.IsModFile)
+                .Select(file => file.Path.Replace('\\', '/')),
+            StringComparer.OrdinalIgnoreCase);
+
+        foreach (var file in manifest.RequiredFiles.Where(LauncherManifestNormalizer.IsModFile))
+        {
+            var normalizedPath = file.Path.Replace('\\', '/');
+            if (file.Required || enabledPaths.Contains(normalizedPath))
+            {
+                continue;
+            }
+
+            DeleteInsideInstallDirectory(installDirectory, normalizedPath, recursive: false);
+            progress?.Report("Отключен мод: " + Path.GetFileName(normalizedPath));
         }
     }
 

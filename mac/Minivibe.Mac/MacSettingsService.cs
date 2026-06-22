@@ -46,6 +46,7 @@ internal sealed class MacSettingsService
         loaded.SkinServerUrl = LauncherSettings.DefaultSkinServerUrl;
         loaded.EnableSkinServer = true;
         loaded.EnableAutoUpdate = true;
+        loaded.SelectedModTypes ??= [];
         return loaded;
     }
 

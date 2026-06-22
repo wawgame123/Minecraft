@@ -39,6 +39,7 @@ public sealed class ManifestService
             throw new InvalidOperationException("manifest.json пустой или имеет неверный формат.");
         }
 
+        LauncherManifestNormalizer.Normalize(manifest);
         return manifest;
     }
 
