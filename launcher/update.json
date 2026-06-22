@@ -1,42 +1,57 @@
-{
-  "version": "0.4.0",
-  "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-WIN-portable.zip",
-  "sha256": "f8afd2945de06c057e252a489cf3b0f1fb79c42a508c750b950a6d56d83bd34c",
-  "mandatory": false,
-  "notes": [
-    "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430: \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u0430 \u043D\u0430 0.4.0 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B.",
-    "\u0412\u0435\u0440\u0441\u0438\u0438 \u0438 \u043F\u0430\u0442\u0447\u043D\u043E\u0443\u0442\u044B Windows \u0438 macOS \u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u044B: \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F \u043E\u0434\u043D\u043E\u0439 \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u044B \u0431\u043E\u043B\u044C\u0448\u0435 \u043D\u0435 \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u044E\u0442 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0434\u0440\u0443\u0433\u043E\u0439."
-  ],
-  "platforms": {
-    "win-x64": {
-      "version": "0.4.0",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-WIN-portable.zip",
-      "sha256": "f8afd2945de06c057e252a489cf3b0f1fb79c42a508c750b950a6d56d83bd34c",
-      "notes": [
-        "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F \u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430: \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u0430 \u043D\u0430 0.4.0 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B.",
-        "\u0412\u0435\u0440\u0441\u0438\u0438 \u0438 \u043F\u0430\u0442\u0447\u043D\u043E\u0443\u0442\u044B Windows \u0438 macOS \u0440\u0430\u0437\u0434\u0435\u043B\u0435\u043D\u044B: \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F \u043E\u0434\u043D\u043E\u0439 \u043F\u043B\u0430\u0442\u0444\u043E\u0440\u043C\u044B \u0431\u043E\u043B\u044C\u0448\u0435 \u043D\u0435 \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u044E\u0442 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u0434\u0440\u0443\u0433\u043E\u0439."
-      ],
-      "patches": {}
-    },
-    "mac-arm64": {
-      "version": "0.4.0",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-MAC-arm64.zip",
-      "sha256": "07b0fd485311e637c93bcd5b47f120a23ba9029d8a3f1510b151c4dd730837d2",
-      "notes": [
-        "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430: \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u0430 \u043D\u0430 0.4.0 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B.",
-        "\u0412\u0435\u0440\u0441\u0438\u0438 \u0438 \u043F\u0430\u0442\u0447\u043D\u043E\u0443\u0442\u044B macOS \u043E\u0442\u0434\u0435\u043B\u0435\u043D\u044B \u043E\u0442 Windows: \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F Windows \u0431\u043E\u043B\u044C\u0448\u0435 \u043D\u0435 \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u044E\u0442 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 Mac."
-      ],
-      "patches": {}
-    },
-    "mac-x64": {
-      "version": "0.4.0",
-      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.0-MAC-x64.zip",
-      "sha256": "d8596052f882f1b74097d299bdade229ffb88a5f057c5824a8d5b9a9b2d64076",
-      "notes": [
-        "\u0414\u043E\u0431\u0430\u0432\u043B\u0435\u043D\u044B \u0447\u0430\u0441\u0442\u0438\u0447\u043D\u044B\u0435 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u044F macOS-\u043B\u0430\u0443\u043D\u0447\u0435\u0440\u0430: \u043F\u043E\u0441\u043B\u0435 \u043F\u0435\u0440\u0435\u0445\u043E\u0434\u0430 \u043D\u0430 0.4.0 \u0441\u043A\u0430\u0447\u0438\u0432\u0430\u044E\u0442\u0441\u044F \u0442\u043E\u043B\u044C\u043A\u043E \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u043D\u044B\u0435 \u0444\u0430\u0439\u043B\u044B.",
-        "\u0412\u0435\u0440\u0441\u0438\u0438 \u0438 \u043F\u0430\u0442\u0447\u043D\u043E\u0443\u0442\u044B macOS \u043E\u0442\u0434\u0435\u043B\u0435\u043D\u044B \u043E\u0442 Windows: \u0438\u0437\u043C\u0435\u043D\u0435\u043D\u0438\u044F Windows \u0431\u043E\u043B\u044C\u0448\u0435 \u043D\u0435 \u0437\u0430\u043F\u0443\u0441\u043A\u0430\u044E\u0442 \u043E\u0431\u043D\u043E\u0432\u043B\u0435\u043D\u0438\u0435 \u043D\u0430 Mac."
-      ],
-      "patches": {}
-    }
-  }
+﻿{
+    "version":  "0.4.1",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-WIN-portable.zip",
+    "sha256":  "6a04f116f4a0de5293cb22244c75e656a26139e312794bb259f83474a25a5bb4",
+    "mandatory":  false,
+    "notes":  [
+                  "Добавлен выбор типов модов в настройках лаунчера: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
+                  "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+              ],
+    "platforms":  {
+                      "win-x64":  {
+                                      "version":  "0.4.1",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-WIN-portable.zip",
+                                      "sha256":  "6a04f116f4a0de5293cb22244c75e656a26139e312794bb259f83474a25a5bb4",
+                                      "notes":  [
+                                                    "Добавлен выбор типов модов в настройках лаунчера: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
+                                                    "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                ],
+                                      "patches":  {
+                                                      "0.4.0":  {
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-WIN-patch.zip",
+                                                                    "sha256":  "fbd277ff262edb21eaaca23baabd9ecd492df99247cb0adf46dd2cb3e8574f0b"
+                                                                }
+                                                  }
+                                  },
+                      "mac-arm64":  {
+                                        "version":  "0.4.1",
+                                        "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-MAC-arm64.zip",
+                                        "sha256":  "a959dbc496adb9643909762639e98ff3f4d0b75d37cad8a94ec30178f8cf1863",
+                                        "notes":  [
+                                                      "В macOS-лаунчер добавлен выбор типов модов: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
+                                                      "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                  ],
+                                        "patches":  {
+                                                        "0.4.0":  {
+                                                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-MAC-arm64-patch.zip",
+                                                                      "sha256":  "4acc75cfeddff3115b9e2b37e5aef46745184b3eec14d82ebeba11df621959d8"
+                                                                  }
+                                                    }
+                                    },
+                      "mac-x64":  {
+                                      "version":  "0.4.1",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-MAC-x64.zip",
+                                      "sha256":  "10fac241974bf1f2a3cc3a98b2bee42511e2c9891ff3d98bcd288d152837ff0a",
+                                      "notes":  [
+                                                    "В macOS-лаунчер добавлен выбор типов модов: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
+                                                    "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                ],
+                                      "patches":  {
+                                                      "0.4.0":  {
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-MAC-x64-patch.zip",
+                                                                    "sha256":  "70fd3a4470167312790371af453fd64be5f918afce47a44871b117d120937d80"
+                                                                }
+                                                  }
+                                  }
+                  }
 }
