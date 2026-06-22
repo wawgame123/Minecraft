@@ -7,6 +7,7 @@
   "loaderVersion": "21.1.228",
   "blueMapUrl": "http://213.152.43.44:25738/#world:338:0:-823:6754:0:0:0:1:flat",
   "modTypes": [
+    "\u0417\u0443\u043C",
     "\u041A\u0430\u0441\u0442\u043E\u043C\u043D\u044B\u0435 3\u0434 \u0421\u043A\u0438\u043D\u044B",
     "\u041E\u0441\u043D\u043E\u0432\u043D\u044B\u0435"
   ],
@@ -937,6 +938,22 @@
       "sha256": "b285c73d4ec010d9a9be3c53c1bee890cf269645be5f1bcf1c27a2e8e82807cb",
       "size": 63463229,
       "category": "\u041A\u0430\u0441\u0442\u043E\u043C\u043D\u044B\u0435 3\u0434 \u0421\u043A\u0438\u043D\u044B",
+      "required": false
+    },
+    {
+      "path": "mods/justzoom_neoforge_2.1.0_MC_1.21.1.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/justzoom_neoforge_2.1.0_MC_1.21.1.jar",
+      "sha256": "83f1701f7802d4355e57f73c2751b29e4b760a4e2a18427504bbd9ce7090a0c1",
+      "size": 43798,
+      "category": "\u0417\u0443\u043C",
+      "required": false
+    },
+    {
+      "path": "mods/konkrete_neoforge_1.9.9_MC_1.21.jar",
+      "url": "https://raw.githubusercontent.com/wawgame123/Minecraft/main/server-pack/neoforge-21.1.228/mods/konkrete_neoforge_1.9.9_MC_1.21.jar",
+      "sha256": "791c5538751dd3015ef3a2ce92d98719e1a28a48ebbd817b78506771256654cd",
+      "size": 618842,
+      "category": "\u0417\u0443\u043C",
       "required": false
     },
     {
