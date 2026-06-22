@@ -99,7 +99,7 @@ public sealed class MainWindow : Window
     private readonly Button _browseInstallDirectoryButton = new();
     private readonly CheckBox _shadersCheckBox = new();
     private readonly CheckBox _emotesCheckBox = new();
-    private readonly StackPanel _modTypesStack = new() { Spacing = 6 };
+    private readonly StackPanel _modTypesStack = new() { Spacing = 6, Margin = new Thickness(0, 6, 0, 0) };
     private readonly CheckBox _gameConsoleCheckBox = new();
     private readonly CheckBox _downloadDetailsCheckBox = new();
     private readonly TextBox _ramBox = new();
@@ -602,8 +602,12 @@ public sealed class MainWindow : Window
                     }
                 },
                 Toggle(_shadersCheckBox, "Шейдеры"),
-                RegisterMuted(new TextBlock { Text = "Типы модов" }),
-                _modTypesStack,
+                new Expander
+                {
+                    Header = RegisterMuted(new TextBlock { Text = "Типы модов" }),
+                    IsExpanded = false,
+                    Content = _modTypesStack
+                },
                 new DockPanel
                 {
                     Children =
@@ -751,8 +755,8 @@ public sealed class MainWindow : Window
         }
 
         await RefreshLauncherUpdateGateAsync();
-        await ShowPatchNotesIfNeededAsync();
         await LoadManifestAsync(repairMissingGameFiles: false);
+        await ShowPatchNotesIfNeededAsync();
         await LoadSkinPreviewAsync(_skinService.CachedSkinPath(_settings) ?? _settings.SkinSourcePath);
     }
 

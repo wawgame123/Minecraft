@@ -1,4 +1,5 @@
 using System.Text.Json;
+using System.Reflection;
 using ServerLauncher.Models;
 
 namespace Minivibe.Mac;
@@ -30,7 +31,7 @@ internal sealed class MacSettingsService
                 SkinServerUrl = LauncherSettings.DefaultSkinServerUrl,
                 EnableSkinServer = true,
                 EnableAutoUpdate = true,
-                LastSeenLauncherVersion = "0.4.1"
+                LastSeenLauncherVersion = CurrentLauncherVersion()
             };
             await SaveAsync(settings);
             return settings;
@@ -65,5 +66,11 @@ internal sealed class MacSettingsService
             "Application Support",
             "minivibe",
             "Game");
+    }
+
+    private static string CurrentLauncherVersion()
+    {
+        var version = Assembly.GetExecutingAssembly().GetName().Version ?? new Version(0, 0, 0);
+        return $"{version.Major}.{version.Minor}.{version.Build}";
     }
 }

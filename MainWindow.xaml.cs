@@ -89,8 +89,8 @@ public partial class MainWindow : Window
             }
 
             await RefreshLauncherUpdateGateAsync();
-            await ShowPendingPatchNotesAsync();
             await LoadManifestAsync(repairMissingGameFiles: false);
+            await ShowPendingPatchNotesAsync();
             await LoadSkinPreviewAsync(_skinService.CachedSkinPath(_settings) ?? _settings.SkinSourcePath);
         });
     }

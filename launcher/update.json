@@ -1,55 +1,71 @@
 ﻿{
-    "version":  "0.4.1",
-    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-WIN-portable.zip",
-    "sha256":  "6a04f116f4a0de5293cb22244c75e656a26139e312794bb259f83474a25a5bb4",
+    "version":  "0.4.2",
+    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-WIN-portable.zip",
+    "sha256":  "5e3d70a061fe448a15a209b81c7282197a2d18db4a30b9cbdce04ff098c6c8bd",
     "mandatory":  false,
     "notes":  [
-                  "Добавлен выбор типов модов в настройках лаунчера: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
-                  "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                  "Типы модов в настройках теперь свернуты в список и не занимают место по умолчанию.",
+                  "После самообновления manifest.json проверяется сразу после перезапуска лаунчера, до показа патчноутов.",
+                  "Версия пакета поднята до 0.4.2, update.json указывает на новые архивы и включает патчи от 0.4.0 и 0.4.1."
               ],
     "platforms":  {
                       "win-x64":  {
-                                      "version":  "0.4.1",
-                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-WIN-portable.zip",
-                                      "sha256":  "6a04f116f4a0de5293cb22244c75e656a26139e312794bb259f83474a25a5bb4",
+                                      "version":  "0.4.2",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-WIN-portable.zip",
+                                      "sha256":  "5e3d70a061fe448a15a209b81c7282197a2d18db4a30b9cbdce04ff098c6c8bd",
                                       "notes":  [
-                                                    "Добавлен выбор типов модов в настройках лаунчера: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
-                                                    "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                    "Типы модов в настройках теперь свернуты в список и не занимают место по умолчанию.",
+                                                    "После самообновления manifest.json проверяется сразу после перезапуска лаунчера, до показа патчноутов.",
+                                                    "Версия пакета поднята до 0.4.2, update.json указывает на новые архивы и включает патчи от 0.4.0 и 0.4.1."
                                                 ],
                                       "patches":  {
                                                       "0.4.0":  {
-                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-WIN-patch.zip",
-                                                                    "sha256":  "fbd277ff262edb21eaaca23baabd9ecd492df99247cb0adf46dd2cb3e8574f0b"
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.0-WIN-patch.zip",
+                                                                    "sha256":  "2189509105ad1758882fce1573212a0ae5b4637292f184ec2bd5e0b38095a6e7"
+                                                                },
+                                                      "0.4.1":  {
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.1-WIN-patch.zip",
+                                                                    "sha256":  "2189509105ad1758882fce1573212a0ae5b4637292f184ec2bd5e0b38095a6e7"
                                                                 }
                                                   }
                                   },
                       "mac-arm64":  {
-                                        "version":  "0.4.1",
-                                        "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-MAC-arm64.zip",
-                                        "sha256":  "a959dbc496adb9643909762639e98ff3f4d0b75d37cad8a94ec30178f8cf1863",
+                                        "version":  "0.4.2",
+                                        "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-MAC-arm64.zip",
+                                        "sha256":  "8a9a15b8348c75dc3e6fbd6ecaf986af602c6a3c4f098c0ca45b5c11179e8e7d",
                                         "notes":  [
-                                                      "В macOS-лаунчер добавлен выбор типов модов: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
-                                                      "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                      "В macOS-лаунчере типы модов теперь свернуты в список и не занимают место по умолчанию.",
+                                                      "После самообновления manifest.json проверяется сразу после перезапуска лаунчера, до показа патчноутов.",
+                                                      "Версия пакета поднята до 0.4.2, update.json указывает на новые архивы и включает патчи от 0.4.0 и 0.4.1."
                                                   ],
                                         "patches":  {
                                                         "0.4.0":  {
-                                                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-MAC-arm64-patch.zip",
-                                                                      "sha256":  "4acc75cfeddff3115b9e2b37e5aef46745184b3eec14d82ebeba11df621959d8"
+                                                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.0-MAC-arm64-patch.zip",
+                                                                      "sha256":  "faa709cd5ff6fa5c8aff327a5ed50a34f8f684198aa5b0297208e526b052cab4"
+                                                                  },
+                                                        "0.4.1":  {
+                                                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.1-MAC-arm64-patch.zip",
+                                                                      "sha256":  "b3fdd6db98ce02e8fa7eece5148751496277bf010e16a6b5fa123c58ee50c1ab"
                                                                   }
                                                     }
                                     },
                       "mac-x64":  {
-                                      "version":  "0.4.1",
-                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-MAC-x64.zip",
-                                      "sha256":  "10fac241974bf1f2a3cc3a98b2bee42511e2c9891ff3d98bcd288d152837ff0a",
+                                      "version":  "0.4.2",
+                                      "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-MAC-x64.zip",
+                                      "sha256":  "38f0f86fe463ee75b80840b17d4947d94e58c41eca3b0bf2fd8b1c41ae9d64fb",
                                       "notes":  [
-                                                    "В macOS-лаунчер добавлен выбор типов модов: обязательные моды скачиваются всегда, необязательные - только для выбранных типов.",
-                                                    "Версия пакета поднята до 0.4.1, update.json указывает на новые архивы и включает патч от 0.4.0."
+                                                    "В macOS-лаунчере типы модов теперь свернуты в список и не занимают место по умолчанию.",
+                                                    "После самообновления manifest.json проверяется сразу после перезапуска лаунчера, до показа патчноутов.",
+                                                    "Версия пакета поднята до 0.4.2, update.json указывает на новые архивы и включает патчи от 0.4.0 и 0.4.1."
                                                 ],
                                       "patches":  {
                                                       "0.4.0":  {
-                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.1-FROM-0.4.0-MAC-x64-patch.zip",
-                                                                    "sha256":  "70fd3a4470167312790371af453fd64be5f918afce47a44871b117d120937d80"
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.0-MAC-x64-patch.zip",
+                                                                    "sha256":  "f83b1da7e82c9e341f5927d590c88a009336143d40a34ab20543f530f382e851"
+                                                                },
+                                                      "0.4.1":  {
+                                                                    "url":  "https://raw.githubusercontent.com/wawgame123/Minecraft/main/launcher/Minivibe-0.4.2-FROM-0.4.1-MAC-x64-patch.zip",
+                                                                    "sha256":  "dc86edea707b98b68dba70004866aafe0296bb0adac8bbf660a22e08e8a5a659"
                                                                 }
                                                   }
                                   }
